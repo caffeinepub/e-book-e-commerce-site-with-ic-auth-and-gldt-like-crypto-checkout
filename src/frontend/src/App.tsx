@@ -10,6 +10,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import MyLibraryPage from './pages/MyLibraryPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminRecoveryPage from './pages/admin/AdminRecoveryPage';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -63,6 +64,12 @@ const adminRoute = createRoute({
   component: AdminDashboardPage,
 });
 
+const adminRecoveryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/recover',
+  component: AdminRecoveryPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   catalogRoute,
@@ -72,6 +79,7 @@ const routeTree = rootRoute.addChildren([
   orderConfirmationRoute,
   libraryRoute,
   adminRoute,
+  adminRecoveryRoute,
 ]);
 
 const router = createRouter({ routeTree });

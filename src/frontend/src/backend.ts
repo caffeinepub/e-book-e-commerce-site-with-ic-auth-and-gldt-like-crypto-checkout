@@ -141,6 +141,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCart(): Promise<Array<CartItem>>;
+    getDesignatedOwner(): Promise<Principal | null>;
     getMessageResponses(messageId: bigint): Promise<Array<CustomerMessage>>;
     getOrder(orderId: string): Promise<Order>;
     getPurchasedBookContent(orderId: string, bookId: string): Promise<string | null>;
@@ -149,11 +150,13 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
+    recoverAdminAccess(): Promise<void>;
     removeFromCart(bookId: string): Promise<void>;
     resetStore(): Promise<void>;
     respondToMessage(originalMessageId: bigint, response: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendSupportMessage(content: string): Promise<bigint>;
+    setDesignatedOwner(owner: Principal): Promise<void>;
     updateBook(id: string, title: string, author: string, price: bigint, available: boolean): Promise<void>;
     updateBookContent(id: string, content: string): Promise<void>;
 }
@@ -356,18 +359,32 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getDesignatedOwner(): Promise<Principal | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDesignatedOwner();
+                return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDesignatedOwner();
+            return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getMessageResponses(arg0: bigint): Promise<Array<CustomerMessage>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getMessageResponses(arg0);
-                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getMessageResponses(arg0);
-            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getOrder(arg0: string): Promise<Order> {
@@ -402,14 +419,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserMessages(arg0);
-                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserMessages(arg0);
-            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserOrders(arg0: Principal): Promise<Array<Order>> {
@@ -465,6 +482,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.mintTokens(arg0, arg1);
+            return result;
+        }
+    }
+    async recoverAdminAccess(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.recoverAdminAccess();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.recoverAdminAccess();
             return result;
         }
     }
@@ -538,6 +569,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setDesignatedOwner(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setDesignatedOwner(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setDesignatedOwner(arg0);
+            return result;
+        }
+    }
     async updateBook(arg0: string, arg1: string, arg2: string, arg3: bigint, arg4: boolean): Promise<void> {
         if (this.processError) {
             try {
@@ -570,13 +615,16 @@ export class Backend implements backendInterface {
 function from_candid_Book_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Book): Book {
     return from_candid_record_n6(_uploadFile, _downloadFile, value);
 }
-function from_candid_CustomerMessage_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CustomerMessage): CustomerMessage {
-    return from_candid_record_n13(_uploadFile, _downloadFile, value);
+function from_candid_CustomerMessage_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CustomerMessage): CustomerMessage {
+    return from_candid_record_n14(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
@@ -585,7 +633,7 @@ function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     content: string;
     author: Principal;
@@ -605,7 +653,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
         content: value.content,
         author: value.author,
         timestamp: value.timestamp,
-        responseToMsgId: record_opt_to_undefined(from_candid_opt_n14(_uploadFile, _downloadFile, value.responseToMsgId)),
+        responseToMsgId: record_opt_to_undefined(from_candid_opt_n15(_uploadFile, _downloadFile, value.responseToMsgId)),
         isAdminResponse: value.isAdminResponse
     };
 }
@@ -642,8 +690,8 @@ function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CustomerMessage>): Array<CustomerMessage> {
-    return value.map((x)=>from_candid_CustomerMessage_n12(_uploadFile, _downloadFile, x));
+function from_candid_vec_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CustomerMessage>): Array<CustomerMessage> {
+    return value.map((x)=>from_candid_CustomerMessage_n13(_uploadFile, _downloadFile, x));
 }
 function from_candid_vec_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Book>): Array<Book> {
     return value.map((x)=>from_candid_Book_n5(_uploadFile, _downloadFile, x));

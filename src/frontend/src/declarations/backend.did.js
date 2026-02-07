@@ -63,6 +63,7 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
+  'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
   'getMessageResponses' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(CustomerMessage)],
@@ -87,11 +88,13 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'recoverAdminAccess' : IDL.Func([], [], []),
   'removeFromCart' : IDL.Func([IDL.Text], [], []),
   'resetStore' : IDL.Func([], [], []),
   'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendSupportMessage' : IDL.Func([IDL.Text], [IDL.Nat], []),
+  'setDesignatedOwner' : IDL.Func([IDL.Principal], [], []),
   'updateBook' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
       [],
@@ -155,6 +158,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
+    'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
     'getMessageResponses' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(CustomerMessage)],
@@ -179,11 +183,13 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'recoverAdminAccess' : IDL.Func([], [], []),
     'removeFromCart' : IDL.Func([IDL.Text], [], []),
     'resetStore' : IDL.Func([], [], []),
     'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendSupportMessage' : IDL.Func([IDL.Text], [IDL.Nat], []),
+    'setDesignatedOwner' : IDL.Func([IDL.Principal], [], []),
     'updateBook' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
         [],

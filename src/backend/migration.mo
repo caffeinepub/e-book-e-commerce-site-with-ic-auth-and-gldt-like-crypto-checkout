@@ -1,41 +1,52 @@
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
+import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Time "mo:core/Time";
+import Text "mo:core/Text";
 
 module {
-  type OldActor = {
-    userProfiles : Map.Map<Principal, { name : Text }>;
-    // Other fields (copied/adopted automatically)
+  type Book = {
+    id : Text;
+    title : Text;
+    author : Text;
+    price : Nat;
+    available : Bool;
+    content : ?Text;
   };
 
-  type NewActor = {
-    userProfiles : Map.Map<Principal, { name : Text }>;
-    // Other fields (copied/adopted automatically)
-    nextMessageId : Nat;
-    supportMessages : Map.Map<Nat, {
-      id : Nat;
-      author : Principal;
-      content : Text;
-      timestamp : Time.Time;
-      isAdminResponse : Bool;
-      responseToMsgId : ?Nat;
-    }>;
+  type CartItem = {
+    bookId : Text;
+    quantity : Nat;
   };
 
-  public func run(old : OldActor) : NewActor {
-    let supportMessages = Map.empty<Nat, {
-      id : Nat;
-      author : Principal;
-      content : Text;
-      timestamp : Time.Time;
-      isAdminResponse : Bool;
-      responseToMsgId : ?Nat;
-    }>();
-    {
-      old with
-      nextMessageId = 0;
-      supportMessages;
-    };
+  type Order = {
+    orderId : Text;
+    user : Principal;
+    items : [CartItem];
+    totalAmount : Nat;
+    timestamp : Time.Time;
+    deliveredBookIds : [Text];
+  };
+
+  type CustomerMessage = {
+    id : Nat;
+    author : Principal;
+    content : Text;
+    timestamp : Time.Time;
+    isAdminResponse : Bool;
+    responseToMsgId : ?Nat;
+  };
+
+  type Actor = {
+    bookStore : Map.Map<Text, Book>;
+    cartStore : Map.Map<Principal, List.List<CartItem>>;
+    orderStore : Map.Map<Text, Order>;
+    balanceStore : Map.Map<Principal, Nat>;
+    supportMessages : Map.Map<Nat, CustomerMessage>;
+    // designatedOwner is new - no migration from old state needed
+  };
+
+  public func run(old : Actor) : Actor {
+    old;
   };
 };

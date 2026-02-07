@@ -1,67 +1,81 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Footer social handles and asynchronous customer service support inbox UI",
+  "title": "Admin recovery and store relaunch/reset (frontend-only wiring)",
   "requirements": [
     {
-      "id": "REQ-14",
-      "summary": "Add X (Twitter) and OpenChat contact handles to the site footer while preserving existing attribution.",
+      "id": "REQ-22",
+      "summary": "Expose and handle the one-time admin recovery flow UX so the intended owner can regain /admin access when recovery is available.",
       "acceptanceCriteria": [
-        "Footer displays two contact items labeled “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”.",
-        "The handle text is clickable (links open in a new tab) and visually consistent with existing footer styling.",
-        "Footer still includes the existing copyright and caffeine.ai attribution."
+        "If the canister has no admin configured (or otherwise indicates it is uninitialized for admin), a logged-in user can complete a one-time recovery flow that assigns their current Internet Identity principal as admin.",
+        "Once an admin has been successfully assigned via the recovery flow, subsequent attempts to run the recovery flow are blocked and show an English error message indicating recovery is no longer available.",
+        "After successful recovery, navigating to /admin allows access for that recovered admin principal and continues to deny access for non-admin principals.",
+        "All user-facing error/status text introduced for this flow is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/Footer.tsx",
+          "path": "frontend/src/hooks/useAdminRecovery.ts",
+          "operation": "create",
+          "description": "Add a React Query mutation hook that calls the backend capability for admin recovery and, on success, invalidates the cached admin/authz queries (e.g., ['isAdmin']) so AdminRoute re-evaluates access. Map backend authorization/trap failures into clear English error text for the UI. Use the selected 'authorization' component’s frontend guidance for handling authorization errors and Internet Identity-dependent state; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/AdminRoute.tsx",
           "operation": "modify",
-          "description": "Extend the existing footer to include two new contact items: “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”, with the handle rendered as an external link (new tab) styled consistently with the current footer, while keeping the existing copyright + caffeine.ai attribution intact."
+          "description": "Enhance the existing Access Denied state to include a self-serve navigation option to the recovery route when a user is authenticated but not an admin (keep English text). Use TanStack Router navigation/linking from within this guard. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-15",
-      "summary": "Implement an async customer service chat UI (visitor submission dialog, authenticated reply viewing, and admin support inbox) using React Query refetch/polling (no real-time push).",
+      "id": "REQ-23",
+      "summary": "Add a dedicated admin recovery screen at /admin/recover and route users to it from the admin Access Denied screen.",
       "acceptanceCriteria": [
-        "Backend exposes a public method to submit a support message without requiring authentication, storing message text plus timestamp and optional contact fields (e.g., display name and/or email).",
-        "Backend exposes an admin-only method to list support messages and post replies tied to a specific message/thread.",
-        "Backend exposes a method for a caller to list/view the messages and replies associated with their own submissions (if submitted while authenticated), and for guest submissions to be retrievable only via an admin view.",
-        "Frontend adds a “Customer Service Chat” entry point in the footer that opens a dialog/panel where a visitor can submit a question.",
-        "Frontend provides an admin UI (accessible from the existing Admin area and guarded by admin auth) to view incoming support messages and send replies.",
-        "Frontend provides an authenticated user view to see replies to their submitted messages (e.g., within the same dialog/panel when logged in).",
-        "If a user is not logged in, the UI clearly indicates they can still submit a question but that tracking replies is better when logged in (English text).",
-        "No WebSockets or real-time push behavior is required; updates can be polling or manual refresh via React Query refetch."
+        "Add a route for an admin recovery page (e.g., /admin/recover) and link to it from the existing Access Denied state shown by the admin route guard.",
+        "The recovery page clearly displays the currently authenticated principal (English label text) and provides an action to attempt admin recovery.",
+        "If the user is not logged in, the recovery page shows an explicit login call-to-action using the existing Internet Identity login UI components/patterns.",
+        "If recovery succeeds, the UI confirms success in English and provides a direct navigation action to /admin."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
+          "path": "frontend/src/pages/admin/AdminRecoveryPage.tsx",
+          "operation": "create",
+          "description": "Implement the admin recovery page UI: (1) when not authenticated, show an English explanation and reuse the existing LoginButton for a clear login call-to-action; (2) when authenticated, show an English-labeled 'Current principal' value and a button that triggers the recovery mutation (from the new recovery hook); (3) on success, show an English success confirmation and a direct navigation action to /admin; (4) on failure, show an English error message (including the blocked/recovery-unavailable case). Use the selected 'authorization' component’s frontend guidance for Internet Identity and authorization error handling; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Update frontend actor TypeScript typings to reflect the support-chat backend capabilities required by REQ-15 (public submit with optional contact fields; admin list + reply; authenticated user message/reply retrieval) so the new React Query hooks and UI compile against the actor surface."
+          "description": "Register and wire the /admin/recover route in the TanStack Router route tree, pointing to the new AdminRecoveryPage so it is navigable and not orphaned."
         },
         {
-          "path": "frontend/src/hooks/useSupportChat.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for support messaging: submit support message (works for guests and authenticated users), fetch authenticated user’s own messages/replies, fetch admin inbox (admin-only), and send admin replies. Implement polling or manual refetch (no WebSockets) and handle authorization failures gracefully. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/support/CustomerServiceChatDialog.tsx",
-          "operation": "create",
-          "description": "Add a shadcn-ui based dialog/panel component for “Customer Service Chat” that allows any visitor to submit a question and shows clear guest vs authenticated messaging (guest can submit, but replies are best tracked when logged in). When authenticated, show a list of the user’s submitted messages and associated replies with a refresh action and/or React Query polling. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/layout/Footer.tsx",
+          "path": "frontend/src/components/auth/AdminRoute.tsx",
           "operation": "modify",
-          "description": "Add a “Customer Service Chat” entry point in the footer that opens the new CustomerServiceChatDialog; keep the new social/contact links from REQ-14 and preserve existing footer attribution. Verify the component's usage instructions before implementing."
+          "description": "Wire the Access Denied UI link/button to navigate to /admin/recover so users denied admin access can self-serve recovery when available (English text)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "summary": "Add an admin-only relaunch/reset control in the Admin area with confirmation and UI cache refresh after reset.",
+      "acceptanceCriteria": [
+        "Expose an admin-only UI action in the Admin area to reset/relaunch the store, calling the existing backend reset capability.",
+        "The reset action requires an explicit confirmation step in the UI (English text) to prevent accidental resets.",
+        "After a successful reset, the UI shows an English confirmation and the app reflects empty/clean state (e.g., empty catalog, empty orders, empty support threads).",
+        "Non-admin users cannot see the reset/relaunch control, and attempts to invoke the reset backend method as non-admin continue to fail."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useResetStore.ts",
+          "operation": "create",
+          "description": "Create a React Query mutation hook that calls the backend reset capability and, on success, invalidates relevant query caches so the UI refreshes to a clean state (e.g., ['allBooks'], ['availableBooks'], ['cart'], ['allOrders'], ['userOrders'], ['userMessages'], ['adminSupportInbox'], ['balance']). Ensure errors are surfaced with English messaging. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "path": "frontend/src/pages/admin/AdminSettingsPage.tsx",
           "operation": "create",
-          "description": "Create an admin-only “Support Inbox” UI for viewing incoming support messages/threads and posting replies (async, no real-time). Use existing AdminRoute guarding via the Admin dashboard and include manual refresh and/or React Query polling. Verify the component's usage instructions before implementing."
+          "description": "Add an Admin Settings view component (rendered inside the existing Admin dashboard tabs) that contains a clearly labeled 'Reset / Relaunch Store' control with an explicit confirmation step (e.g., shadcn/ui AlertDialog) and English warnings about irreversible deletion of store state. On success, show an English confirmation and provide an optional navigation action (e.g., to /catalog or remain in admin). Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
           "operation": "modify",
-          "description": "Wire the new admin Support Inbox into the existing AdminDashboardPage by adding a new tab (e.g., “Support Inbox”) that renders AdminSupportInboxPage, keeping it guarded by the existing AdminRoute wrapper. Verify the component's usage instructions before implementing."
+          "description": "Wire the new settings/reset UI into the existing Admin area by adding a new tab (e.g., 'Settings') and rendering AdminSettingsPage within TabsContent. Keep the control admin-only by virtue of the existing AdminRoute guard."
         }
       ]
     }

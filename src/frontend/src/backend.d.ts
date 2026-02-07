@@ -58,6 +58,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCart(): Promise<Array<CartItem>>;
+    getDesignatedOwner(): Promise<Principal | null>;
     getMessageResponses(messageId: bigint): Promise<Array<CustomerMessage>>;
     getOrder(orderId: string): Promise<Order>;
     getPurchasedBookContent(orderId: string, bookId: string): Promise<string | null>;
@@ -66,11 +67,13 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
+    recoverAdminAccess(): Promise<void>;
     removeFromCart(bookId: string): Promise<void>;
     resetStore(): Promise<void>;
     respondToMessage(originalMessageId: bigint, response: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendSupportMessage(content: string): Promise<bigint>;
+    setDesignatedOwner(owner: Principal): Promise<void>;
     updateBook(id: string, title: string, author: string, price: bigint, available: boolean): Promise<void>;
     updateBookContent(id: string, content: string): Promise<void>;
 }

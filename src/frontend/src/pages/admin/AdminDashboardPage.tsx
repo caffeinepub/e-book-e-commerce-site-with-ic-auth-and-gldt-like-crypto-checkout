@@ -5,6 +5,7 @@ import AdminCatalogPage from './AdminCatalogPage';
 import AdminOrdersPage from './AdminOrdersPage';
 import AdminMintPage from './AdminMintPage';
 import AdminSupportInboxPage from './AdminSupportInboxPage';
+import AdminSettingsPage from './AdminSettingsPage';
 
 export default function AdminDashboardPage() {
   return (
@@ -22,6 +23,7 @@ export default function AdminDashboardPage() {
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="mint">Mint Tokens</TabsTrigger>
               <TabsTrigger value="support">Support Inbox</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="catalog">
@@ -38,6 +40,10 @@ export default function AdminDashboardPage() {
 
             <TabsContent value="support">
               <AdminSupportInboxPage />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <AdminSettingsPage />
             </TabsContent>
           </Tabs>
         </div>

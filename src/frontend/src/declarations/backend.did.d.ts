@@ -58,6 +58,7 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCart' : ActorMethod<[], Array<CartItem>>,
+  'getDesignatedOwner' : ActorMethod<[], [] | [Principal]>,
   'getMessageResponses' : ActorMethod<[bigint], Array<CustomerMessage>>,
   'getOrder' : ActorMethod<[string], Order>,
   'getPurchasedBookContent' : ActorMethod<[string, string], [] | [string]>,
@@ -66,11 +67,13 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'mintTokens' : ActorMethod<[Principal, bigint], undefined>,
+  'recoverAdminAccess' : ActorMethod<[], undefined>,
   'removeFromCart' : ActorMethod<[string], undefined>,
   'resetStore' : ActorMethod<[], undefined>,
   'respondToMessage' : ActorMethod<[bigint, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendSupportMessage' : ActorMethod<[string], bigint>,
+  'setDesignatedOwner' : ActorMethod<[Principal], undefined>,
   'updateBook' : ActorMethod<
     [string, string, string, bigint, boolean],
     undefined

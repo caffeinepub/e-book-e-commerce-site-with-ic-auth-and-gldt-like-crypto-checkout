@@ -1,44 +1,55 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T00:34:29.933Z",
+  "generatedAt": "2026-02-07T02:15:52.677Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-14",
-        "summary": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
+        "id": "REQ-22",
+        "summary": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/layout/Footer.tsx"
+          "frontend/src/hooks/useAdminRecovery.ts",
+          "frontend/src/components/auth/AdminRoute.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/layout/Footer.tsx"
+          "frontend/src/hooks/useAdminRecovery.ts",
+          "frontend/src/components/auth/AdminRoute.tsx"
         ]
       },
       {
-        "id": "REQ-15",
-        "summary": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
+        "id": "REQ-23",
+        "summary": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useSupportChat.ts",
-          "frontend/src/components/support/CustomerServiceChatDialog.tsx",
-          "frontend/src/components/layout/Footer.tsx",
-          "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "frontend/src/pages/admin/AdminRecoveryPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/auth/AdminRoute.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminRecoveryPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/auth/AdminRoute.tsx"
+        ]
+      },
+      {
+        "id": "REQ-24",
+        "summary": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useResetStore.ts",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx",
           "frontend/src/pages/admin/AdminDashboardPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useSupportChat.ts",
-          "frontend/src/components/support/CustomerServiceChatDialog.tsx",
-          "frontend/src/components/layout/Footer.tsx",
-          "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "frontend/src/hooks/useResetStore.ts",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx",
           "frontend/src/pages/admin/AdminDashboardPage.tsx"
         ]
       }
@@ -51,15 +62,17 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/layout/Footer.tsx",
-    "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+    "frontend/src/components/auth/AdminRoute.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useSupportChat.ts",
+    "frontend/src/hooks/useAdminRecovery.ts",
+    "frontend/src/hooks/useResetStore.ts",
     "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+    "frontend/src/pages/admin/AdminRecoveryPage.tsx",
+    "frontend/src/pages/admin/AdminSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,59 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Add footer social handles and async customer service chat (support inbox)",
-  "priority": "normal",
+  "title": "Add admin recovery + relaunch (reset) flow so the owner can regain /admin access",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-14",
-      "text": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-5"
-        ],
-        "quotes": [
-          "could you add a twitter/ X account and openchat account handles @ RadicalEconomist101  at the bottom which where people can reach us."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Footer displays two contact items labeled “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”.",
-        "The handle text is clickable (links open in a new tab) and visually consistent with existing footer styling.",
-        "Footer still includes the existing copyright and caffeine.ai attribution."
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "text": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
+      "id": "REQ-22",
+      "text": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-1"
         ],
         "quotes": [
-          "Also add a customer service chat where people can ask questions and I can answer them"
+          "Can we re-do the app and relaunch it"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a public method to submit a support message without requiring authentication, storing message text plus timestamp and optional contact fields (e.g., display name and/or email).",
-        "Backend exposes an admin-only method to list support messages and post replies tied to a specific message/thread.",
-        "Backend exposes a method for a caller to list/view the messages and replies associated with their own submissions (if submitted while authenticated), and for guest submissions to be retrievable only via an admin view.",
-        "Frontend adds a “Customer Service Chat” entry point in the footer that opens a dialog/panel where a visitor can submit a question.",
-        "Frontend provides an admin UI (accessible from the existing Admin area and guarded by admin auth) to view incoming support messages and send replies.",
-        "Frontend provides an authenticated user view to see replies to their submitted messages (e.g., within the same dialog/panel when logged in).",
-        "If a user is not logged in, the UI clearly indicates they can still submit a question but that tracking replies is better when logged in (English text).",
-        "No WebSockets or real-time push behavior is required; updates can be polling or manual refresh via React Query refetch."
+        "If the canister has no admin configured (or otherwise indicates it is uninitialized for admin), a logged-in user can complete a one-time recovery flow that assigns their current Internet Identity principal as admin.",
+        "Once an admin has been successfully assigned via the recovery flow, subsequent attempts to run the recovery flow are blocked and show an English error message indicating recovery is no longer available.",
+        "After successful recovery, navigating to /admin allows access for that recovered admin principal and continues to deny access for non-admin principals.",
+        "All user-facing error/status text introduced for this flow is in English."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Can we re-do the app and relaunch it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Add a route for an admin recovery page (e.g., /admin/recover) and link to it from the existing Access Denied state shown by the admin route guard.",
+        "The recovery page clearly displays the currently authenticated principal (English label text) and provides an action to attempt admin recovery.",
+        "If the user is not logged in, the recovery page shows an explicit login call-to-action using the existing Internet Identity login UI components/patterns.",
+        "If recovery succeeds, the UI confirms success in English and provides a direct navigation action to /admin."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Can we re-do the app and relaunch it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Expose an admin-only UI action in the Admin area to reset/relaunch the store, calling the existing backend reset capability.",
+        "The reset action requires an explicit confirmation step in the UI (English text) to prevent accidental resets.",
+        "After a successful reset, the UI shows an English confirmation and the app reflects empty/clean state (e.g., empty catalog, empty orders, empty support threads).",
+        "Non-admin users cannot see the reset/relaunch control, and attempts to invoke the reset backend method as non-admin continue to fail."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/immutablePaths (compose existing UI components instead).",
-    "Backend must remain a single Motoko actor in backend/main.mo; add new support-chat logic there.",
-    "Do not implement real-time chat via WebSockets/push notifications; implement async messaging using standard canister calls and React Query refetch/polling."
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo; add migration.mo only if an upgrade requires state migration).",
+    "Do not edit files under frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui). Compose existing components instead.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Integrating third-party chat providers or messaging services.",
-    "Email/SMS notifications to users.",
-    "Publicly exposing all support messages to all users (admin should see all; users should only see their own, when applicable)."
+    "Implementing third-party authentication beyond Internet Identity (Google/Apple/Microsoft are still mediated by Internet Identity).",
+    "Adding external databases, off-chain storage, or any non-Internet-Computer backend services.",
+    "Changing the storefront feature set (catalog/cart/checkout/library/support) beyond what is needed for admin recovery and relaunch/reset."
   ],
   "imageRequirements": {
     "required": [],

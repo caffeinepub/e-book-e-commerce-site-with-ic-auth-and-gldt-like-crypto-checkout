@@ -1,63 +1,55 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T00:34:29.930Z",
-  "summary": "REQ-14 appears implemented in the footer (X/Twitter and OpenChat handles as new-tab links, plus existing attribution). REQ-15 is partially implemented (support message submission, polling-based UI, admin reply UI), but key backend capabilities for admin listing and optional contact fields are missing/inconsistent with the frontend hooks.",
+  "generatedAt": "2026-02-07T02:15:52.673Z",
+  "summary": "The diff adds a frontend /admin/recover screen and links it from the AdminRoute access denied state, plus an admin Settings tab with a confirmed reset action. However, the backend recovery mechanism implemented is based on a pre-set `designatedOwner` (settable only by an existing admin), not a one-time recovery when the canister has no admin configured, and it does not appear to enforce a one-time recovery lockout after success.",
   "missing_requirements": [
     {
-      "id": "REQ-15",
-      "requirement": "Backend stores optional contact fields (e.g., display name and/or email) with each support message submission.",
-      "reason": "The backend CustomerMessage type and sendSupportMessage only include id/author/content/timestamp/isAdminResponse/responseToMsgId; no contact fields are present.",
+      "id": "REQ-22",
+      "requirement": "If the canister has no admin configured (or otherwise indicates it is uninitialized for admin), a logged-in user can complete a one-time recovery flow that assigns their current Internet Identity principal as admin.",
+      "reason": "Backend recovery is gated on `designatedOwner` being set and matching the caller, and `designatedOwner` can only be set by an existing admin. This does not implement the specified flow for an uninitialized/no-admin canister where a logged-in user can self-assign admin via a one-time recovery.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (setDesignatedOwner is admin-only; recoverAdminAccess traps when designatedOwner is null: \"No designated owner set - recovery not available\")"
       ]
     },
     {
-      "id": "REQ-15",
-      "requirement": "Backend exposes an admin-only method to list support messages (all incoming messages), and guests' submissions are retrievable only via an admin view.",
-      "reason": "No explicit admin-only 'list all support messages' method is shown. The frontend admin inbox hook calls actor.getUserMessages(true) and comments that the backend will return all messages for admins, but backend getUserMessages filters messages by msg.author == caller, which would not return all messages for an admin.",
+      "id": "REQ-22",
+      "requirement": "Once an admin has been successfully assigned via the recovery flow, subsequent attempts to run the recovery flow are blocked and show an English error message indicating recovery is no longer available.",
+      "reason": "No state or check is shown that prevents calling `recoverAdminAccess()` again after it has succeeded. The only blocking shown is when `designatedOwner` is null or caller is not the designated owner.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useSupportChat.ts"
+        "backend/main.mo (recoverAdminAccess assigns role but does not record/flip a one-time-used flag or otherwise block subsequent calls)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Enforced minimum message length of 10 characters for support messages (backend trap + frontend validation/copy).",
-      "reason": "The BuildRequest/AC do not specify any minimum length requirement for submitted questions.",
+      "description": "Admin-only APIs to set and query a \"designated owner\" (`setDesignatedOwner`, `getDesignatedOwner`) as part of recovery.",
+      "reason": "REQ-22/23 specify a recovery flow for regaining admin access when the canister has no admin configured; they do not request introducing a separate designated-owner management API callable by existing admins.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/support/CustomerServiceChatDialog.tsx",
-        "frontend/src/pages/admin/AdminSupportInboxPage.tsx"
+        "backend/main.mo (public shared func setDesignatedOwner; public query func getDesignatedOwner)"
       ]
     },
     {
-      "description": "Added a backend migration module/file.",
-      "reason": "The BuildRequest does not request adding a migration system or a new backend file; it only specifies adding support-chat logic in backend/main.mo and keeping the backend as a single actor there.",
+      "description": "Added a migration module and wired it into the main actor upgrade path.",
+      "reason": "Constraint says to add `migration.mo` only if an upgrade requires state migration; the added migration explicitly returns old state and comments that no migration is needed for the new field.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Changed footer copyright year to 2026.",
-      "reason": "The BuildRequest requires keeping the existing copyright and caffeine.ai attribution but does not request changing the year.",
-      "evidence": [
-        "frontend/src/components/layout/Footer.tsx"
+        "backend/migration.mo (run(old) : Actor { old; } and comment \"no migration from old state needed\")",
+        "backend/main.mo ((with migration = Migration.run))"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.66,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/layout/Footer.tsx",
-    "frontend/src/components/support/CustomerServiceChatDialog.tsx",
-    "frontend/src/hooks/useSupportChat.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/AdminRoute.tsx",
+    "frontend/src/hooks/useAdminRecovery.ts",
+    "frontend/src/hooks/useResetStore.ts",
     "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+    "frontend/src/pages/admin/AdminRecoveryPage.tsx",
+    "frontend/src/pages/admin/AdminSettingsPage.tsx",
     "project_state.json"
   ]
 }

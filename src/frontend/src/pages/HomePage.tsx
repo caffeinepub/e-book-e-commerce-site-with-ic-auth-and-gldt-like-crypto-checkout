@@ -17,7 +17,7 @@ export default function HomePage() {
           <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-6">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                Discover Digital Books
+                Discover the Digital Revolution
                 <span className="block text-primary mt-2">Powered by Crypto</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl">
@@ -41,8 +41,8 @@ export default function HomePage() {
             </div>
             <div className="relative aspect-[8/3] lg:aspect-auto lg:h-[400px] rounded-lg overflow-hidden shadow-2xl">
               <img
-                src="/assets/generated/hero-reading-nook.dim_1600x600.png"
-                alt="Cozy reading nook with comfortable seating and shelves of books"
+                src="/assets/generated/hero-economist-phoenix-cover.dim_1600x600.png"
+                alt="Phoenix rising with a gold chain from the 1988 Economist magazine cover"
                 className="h-full w-full object-cover"
               />
             </div>

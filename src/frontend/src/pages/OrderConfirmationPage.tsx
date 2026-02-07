@@ -5,7 +5,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Library } from 'lucide-react';
+import { Library } from 'lucide-react';
 import { formatTokenAmount } from '@/utils/format';
 import { formatDate } from '@/utils/format';
 
@@ -42,12 +42,16 @@ export default function OrderConfirmationPage() {
     <PageLayout maxWidth="lg">
       <div className="space-y-8">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20">
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="flex justify-center animate-in fade-in zoom-in duration-500">
+            <img 
+              src="/assets/generated/thanks-for-your-purchase-icon.dim_256x256.png" 
+              alt="Thanks for your purchase icon"
+              className="w-20 h-20 object-contain"
+            />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Order Confirmed!</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Thanks for your purchase!</h1>
           <p className="text-muted-foreground">
-            Your purchase was successful. Your books are now available in your library.
+            Your order was successful. Your books are now available in your library.
           </p>
         </div>
 

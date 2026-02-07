@@ -1,12 +1,16 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
+  "projectStateVersion": 19,
   "summary": "Build an e-commerce website for selling e-books with cryptocurrency payments (e.g., GLDT-like).",
   "architectural_notes": [
-    "Revert the Home page hero image to the original/initial asset; do not use the recently generated replacement photo."
+    "Revert the Home page hero image to the original/initial asset; do not use the recently generated replacement photo.",
+    "Admin access is bound to the Internet Identity principal/anchor captured at initial project creation; if the owner cannot access /admin, consider providing a way to reinitialize or update the admin principal (or redeploy/recreate the app) to regain admin control."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "User requested using an exact depiction from a specific (1988) Economist magazine cover; this likely raises copyright/licensing constraints and may be incompatible with the requirement to use original non-infringing assets.",
+    "Owner cannot access /admin (\"Access denied\") despite believing they used the same email/Google login used to create the app; likely Internet Identity principal mismatch or missing admin principal configuration, prompting request to rebuild/relaunch."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-internet-identity-sign-in-out-and-show-an-authenticated-user-header-state-principal-token-balance-and-navigation",
@@ -103,6 +107,78 @@
         "REQ-15"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-after-a-customer-successfully-completes-checkout-and-is-redirected-to-the-order-confirmation-page-order-orderid-display-a-prominent-thanks-for-your-purchase-icon-alongside-a-short-thank-you-message-in-english",
+      "title": "After a customer successfully completes checkout and is redirected to the Order Confirmation page (/order/$orderId), display a prominent 'Thanks for your purchase' icon alongside a short thank-you message in English.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-generated-thanks-for-your-purchase-icon-image-file-to-the-frontend-static-assets-and-use-it-from-the-order-confirmation-page",
+      "title": "Add the generated 'Thanks for your purchase' icon image file to the frontend static assets and use it from the Order Confirmation page.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-small-confirmation-animation-on-the-order-confirmation-page-route-order-orderid-to-accompany-the-existing-thanks-for-your-purchase-icon",
+      "title": "Add a small confirmation animation on the Order Confirmation page (route: /order/$orderId) to accompany the existing “Thanks for your purchase” icon.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-home-page-hero-discover-digital-books-powered-by-crypto-logo-headline-text-with-discover-the-digital-revolution-powered-by-crypto",
+      "title": "Replace the Home page hero “Discover Digital Books Powered by Crypto” logo/headline text with: “Discover the Digital Revolution Powered by Crypto”.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-static-hero-image-asset-representing-the-1988-economist-magazine-cover-depiction-of-a-phoenix-with-a-gold-chain-and-place-it-in-the-frontend-public-generated-assets-folder-so-it-can-be-referenced-by-url-at-runtime",
+      "title": "Add a new static hero image asset representing the 1988 Economist magazine cover depiction of a phoenix with a gold chain, and place it in the frontend public generated assets folder so it can be referenced by URL at runtime.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-page-hero-image-in-frontend-src-pages-homepage-tsx-to-use-the-new-phoenix-and-gold-chain-hero-asset-instead-of-the-current-assets-generated-hero-reading-nook-dim-1600x600-png-and-update-the-img-alt-text-in-english-to-describe-the-new-image-accurately",
+      "title": "Update the Home page hero image in frontend/src/pages/HomePage.tsx to use the new phoenix-and-gold-chain hero asset instead of the current /assets/generated/hero-reading-nook.dim_1600x600.png, and update the <img> alt text in English to describe the new image accurately.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-owner-admin-recovery-mechanism-so-the-intended-owner-account-can-regain-access-to-admin-without-requiring-a-full-rebuild-of-the-app",
+      "title": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-frontend-recovery-screen-and-routing-so-users-who-are-denied-admin-access-can-self-serve-the-admin-recovery-when-available",
+      "title": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-relaunch-reset-capability-that-allows-the-recovered-admin-to-clear-store-state-catalog-carts-orders-balances-and-support-messages-and-return-the-app-to-a-clean-post-launch-state",
+      "title": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -159,6 +235,36 @@
     {
       "id": "AR-14",
       "summary": "Add a customer service chat feature so visitors can ask questions and the admin/team can respond (live or async).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Display a 'Thanks for your purchase' icon after a customer successfully completes a purchase.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add a small confirmation animation on the Order Confirmation page to accompany the 'Thanks for your purchase' icon.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Replace the 'Discover Digital books Powered by Crypto' logo text with 'Discover the Digital Revolution Powered by Crypto'.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Replace the center (home hero) photo/image with the 1988 Economist magazine cover depiction of a phoenix with a gold chain, matching the original exactly.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Re-do (rebuild/reinitialize) and relaunch the app to restore/admin-enable access to the Admin panel for the intended owner account.",
       "reqIds": [],
       "status": "pending"
     }

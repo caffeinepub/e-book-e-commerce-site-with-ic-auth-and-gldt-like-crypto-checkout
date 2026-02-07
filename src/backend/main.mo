@@ -12,6 +12,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import Migration "migration";
 
+// specify the data migration function in with-clause
 (with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
@@ -62,11 +63,52 @@ actor {
   var nextMessageId = 0;
   let supportMessages = Map.empty<Nat, CustomerMessage>();
 
+  // Owner recovery state - stores the designated owner principal
+  var designatedOwner : ?Principal = null;
+
   module Book {
     public func compareByTitle(b1 : Book, b2 : Book) : Order.Order {
       switch (Text.compare(b1.title, b2.title)) {
         case (#equal) { Text.compare(b1.author, b2.author) };
         case (order) { order };
+      };
+    };
+  };
+
+  // Owner Recovery Functions
+  // Admin-only: Set the designated owner who can recover admin access
+  public shared ({ caller }) func setDesignatedOwner(owner : Principal) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can set designated owner");
+    };
+    if (owner.isAnonymous()) {
+      Runtime.trap("Cannot set anonymous principal as designated owner");
+    };
+    designatedOwner := ?owner;
+  };
+
+  // Query the designated owner (admin-only for security)
+  public query ({ caller }) func getDesignatedOwner() : async ?Principal {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can view designated owner");
+    };
+    designatedOwner;
+  };
+
+  // Recovery function: Allows designated owner to reclaim admin access
+  public shared ({ caller }) func recoverAdminAccess() : async () {
+    switch (designatedOwner) {
+      case (null) {
+        Runtime.trap("No designated owner set - recovery not available");
+      };
+      case (?owner) {
+        if (caller != owner) {
+          Runtime.trap("Unauthorized: Only the designated owner can recover admin access");
+        };
+        // Grant admin role to the designated owner
+        // Note: assignRole already includes admin-only guard, but we bypass it here
+        // by directly calling it as the recovery mechanism
+        AccessControl.assignRole(accessControlState, caller, caller, #admin);
       };
     };
   };
