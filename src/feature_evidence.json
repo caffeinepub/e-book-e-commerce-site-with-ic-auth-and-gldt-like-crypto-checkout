@@ -1,0 +1,47 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-site-footer-to-display-contact-social-handles-for-twitter-x-and-openchat-using-the-handle-radicaleconomist101-placed-at-the-bottom-of-the-site-as-ways-to-reach-the-team",
+      "featureTitle": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
+      "files": [
+        "frontend/src/components/layout/Footer.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-customer-service-chat-feature-as-an-asynchronous-support-messaging-system-visitors-can-submit-questions-and-an-admin-can-reply-users-can-view-replies-to-their-own-messages",
+      "featureTitle": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
+      "files": [
+        "frontend/src/components/layout/Footer.tsx",
+        "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+        "frontend/src/hooks/useSupportChat.ts",
+        "frontend/src/pages/admin/AdminDashboardPage.tsx",
+        "frontend/src/pages/admin/AdminSupportInboxPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-15"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

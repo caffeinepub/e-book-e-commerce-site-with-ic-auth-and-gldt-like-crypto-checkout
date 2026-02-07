@@ -1,0 +1,68 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-07T00:34:29.933Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 2,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-14",
+        "summary": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/layout/Footer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/layout/Footer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-15",
+        "summary": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/backend.d.ts",
+          "frontend/src/hooks/useSupportChat.ts",
+          "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+          "frontend/src/components/layout/Footer.tsx",
+          "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/backend.d.ts",
+          "frontend/src/hooks/useSupportChat.ts",
+          "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+          "frontend/src/components/layout/Footer.tsx",
+          "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useSupportChat.ts",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

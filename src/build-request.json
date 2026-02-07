@@ -1,0 +1,62 @@
+{
+  "kind": "build_request",
+  "title": "Add footer social handles and async customer service chat (support inbox)",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-14",
+      "text": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "could you add a twitter/ X account and openchat account handles @ RadicalEconomist101  at the bottom which where people can reach us."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Footer displays two contact items labeled “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”.",
+        "The handle text is clickable (links open in a new tab) and visually consistent with existing footer styling.",
+        "Footer still includes the existing copyright and caffeine.ai attribution."
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "Also add a customer service chat where people can ask questions and I can answer them"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes a public method to submit a support message without requiring authentication, storing message text plus timestamp and optional contact fields (e.g., display name and/or email).",
+        "Backend exposes an admin-only method to list support messages and post replies tied to a specific message/thread.",
+        "Backend exposes a method for a caller to list/view the messages and replies associated with their own submissions (if submitted while authenticated), and for guest submissions to be retrievable only via an admin view.",
+        "Frontend adds a “Customer Service Chat” entry point in the footer that opens a dialog/panel where a visitor can submit a question.",
+        "Frontend provides an admin UI (accessible from the existing Admin area and guarded by admin auth) to view incoming support messages and send replies.",
+        "Frontend provides an authenticated user view to see replies to their submitted messages (e.g., within the same dialog/panel when logged in).",
+        "If a user is not logged in, the UI clearly indicates they can still submit a question but that tracking replies is better when logged in (English text).",
+        "No WebSockets or real-time push behavior is required; updates can be polling or manual refresh via React Query refetch."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit files under frontend/immutablePaths (compose existing UI components instead).",
+    "Backend must remain a single Motoko actor in backend/main.mo; add new support-chat logic there.",
+    "Do not implement real-time chat via WebSockets/push notifications; implement async messaging using standard canister calls and React Query refetch/polling."
+  ],
+  "nonGoals": [
+    "Integrating third-party chat providers or messaging services.",
+    "Email/SMS notifications to users.",
+    "Publicly exposing all support messages to all users (admin should see all; users should only see their own, when applicable)."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

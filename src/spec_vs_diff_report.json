@@ -1,0 +1,63 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-07T00:34:29.930Z",
+  "summary": "REQ-14 appears implemented in the footer (X/Twitter and OpenChat handles as new-tab links, plus existing attribution). REQ-15 is partially implemented (support message submission, polling-based UI, admin reply UI), but key backend capabilities for admin listing and optional contact fields are missing/inconsistent with the frontend hooks.",
+  "missing_requirements": [
+    {
+      "id": "REQ-15",
+      "requirement": "Backend stores optional contact fields (e.g., display name and/or email) with each support message submission.",
+      "reason": "The backend CustomerMessage type and sendSupportMessage only include id/author/content/timestamp/isAdminResponse/responseToMsgId; no contact fields are present.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "requirement": "Backend exposes an admin-only method to list support messages (all incoming messages), and guests' submissions are retrievable only via an admin view.",
+      "reason": "No explicit admin-only 'list all support messages' method is shown. The frontend admin inbox hook calls actor.getUserMessages(true) and comments that the backend will return all messages for admins, but backend getUserMessages filters messages by msg.author == caller, which would not return all messages for an admin.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useSupportChat.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Enforced minimum message length of 10 characters for support messages (backend trap + frontend validation/copy).",
+      "reason": "The BuildRequest/AC do not specify any minimum length requirement for submitted questions.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+        "frontend/src/pages/admin/AdminSupportInboxPage.tsx"
+      ]
+    },
+    {
+      "description": "Added a backend migration module/file.",
+      "reason": "The BuildRequest does not request adding a migration system or a new backend file; it only specifies adding support-chat logic in backend/main.mo and keeping the backend as a single actor there.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Changed footer copyright year to 2026.",
+      "reason": "The BuildRequest requires keeping the existing copyright and caffeine.ai attribution but does not request changing the year.",
+      "evidence": [
+        "frontend/src/components/layout/Footer.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.74,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+    "frontend/src/hooks/useSupportChat.ts",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+    "project_state.json"
+  ]
+}

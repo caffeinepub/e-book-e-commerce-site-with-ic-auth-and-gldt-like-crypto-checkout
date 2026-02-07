@@ -1,2 +1,3 @@
-# e-book-e-commerce-site-with-ic-auth-and-gldt-like-crypto-checkout
-Exported from Caffeine project: E-book e-commerce site with IC auth and GLDT-like crypto checkout
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

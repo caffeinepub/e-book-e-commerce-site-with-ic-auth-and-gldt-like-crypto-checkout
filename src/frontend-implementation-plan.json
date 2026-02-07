@@ -1,0 +1,69 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Footer social handles and asynchronous customer service support inbox UI",
+  "requirements": [
+    {
+      "id": "REQ-14",
+      "summary": "Add X (Twitter) and OpenChat contact handles to the site footer while preserving existing attribution.",
+      "acceptanceCriteria": [
+        "Footer displays two contact items labeled “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”.",
+        "The handle text is clickable (links open in a new tab) and visually consistent with existing footer styling.",
+        "Footer still includes the existing copyright and caffeine.ai attribution."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/Footer.tsx",
+          "operation": "modify",
+          "description": "Extend the existing footer to include two new contact items: “X (Twitter): @RadicalEconomist101” and “OpenChat: @RadicalEconomist101”, with the handle rendered as an external link (new tab) styled consistently with the current footer, while keeping the existing copyright + caffeine.ai attribution intact."
+        }
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "summary": "Implement an async customer service chat UI (visitor submission dialog, authenticated reply viewing, and admin support inbox) using React Query refetch/polling (no real-time push).",
+      "acceptanceCriteria": [
+        "Backend exposes a public method to submit a support message without requiring authentication, storing message text plus timestamp and optional contact fields (e.g., display name and/or email).",
+        "Backend exposes an admin-only method to list support messages and post replies tied to a specific message/thread.",
+        "Backend exposes a method for a caller to list/view the messages and replies associated with their own submissions (if submitted while authenticated), and for guest submissions to be retrievable only via an admin view.",
+        "Frontend adds a “Customer Service Chat” entry point in the footer that opens a dialog/panel where a visitor can submit a question.",
+        "Frontend provides an admin UI (accessible from the existing Admin area and guarded by admin auth) to view incoming support messages and send replies.",
+        "Frontend provides an authenticated user view to see replies to their submitted messages (e.g., within the same dialog/panel when logged in).",
+        "If a user is not logged in, the UI clearly indicates they can still submit a question but that tracking replies is better when logged in (English text).",
+        "No WebSockets or real-time push behavior is required; updates can be polling or manual refresh via React Query refetch."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/backend.d.ts",
+          "operation": "modify",
+          "description": "Update frontend actor TypeScript typings to reflect the support-chat backend capabilities required by REQ-15 (public submit with optional contact fields; admin list + reply; authenticated user message/reply retrieval) so the new React Query hooks and UI compile against the actor surface."
+        },
+        {
+          "path": "frontend/src/hooks/useSupportChat.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for support messaging: submit support message (works for guests and authenticated users), fetch authenticated user’s own messages/replies, fetch admin inbox (admin-only), and send admin replies. Implement polling or manual refetch (no WebSockets) and handle authorization failures gracefully. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/support/CustomerServiceChatDialog.tsx",
+          "operation": "create",
+          "description": "Add a shadcn-ui based dialog/panel component for “Customer Service Chat” that allows any visitor to submit a question and shows clear guest vs authenticated messaging (guest can submit, but replies are best tracked when logged in). When authenticated, show a list of the user’s submitted messages and associated replies with a refresh action and/or React Query polling. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/layout/Footer.tsx",
+          "operation": "modify",
+          "description": "Add a “Customer Service Chat” entry point in the footer that opens the new CustomerServiceChatDialog; keep the new social/contact links from REQ-14 and preserve existing footer attribution. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminSupportInboxPage.tsx",
+          "operation": "create",
+          "description": "Create an admin-only “Support Inbox” UI for viewing incoming support messages/threads and posting replies (async, no real-time). Use existing AdminRoute guarding via the Admin dashboard and include manual refresh and/or React Query polling. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Wire the new admin Support Inbox into the existing AdminDashboardPage by adding a new tab (e.g., “Support Inbox”) that renders AdminSupportInboxPage, keeping it guarded by the existing AdminRoute wrapper. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}
