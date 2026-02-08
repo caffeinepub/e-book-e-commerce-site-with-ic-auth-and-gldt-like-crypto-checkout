@@ -45,7 +45,7 @@ export default function CheckoutPage() {
     try {
       await checkout.mutateAsync(orderId);
       toast.success('Order placed successfully!');
-      navigate({ to: '/order/$orderId', params: { orderId } });
+      navigate({ to: '/purchase-confirmation/$orderId', params: { orderId } });
     } catch (error: any) {
       console.error('Checkout failed:', error);
       const errorMessage = error.message || 'Checkout failed. Please try again.';

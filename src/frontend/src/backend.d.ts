@@ -7,6 +7,13 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export class ExternalBlob {
+    getBytes(): Promise<Uint8Array<ArrayBuffer>>;
+    getDirectURL(): string;
+    static fromURL(url: string): ExternalBlob;
+    static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
+    withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
+}
 export interface CustomerMessage {
     id: bigint;
     content: string;
@@ -18,6 +25,7 @@ export interface CustomerMessage {
 export type Time = bigint;
 export interface Book {
     id: string;
+    pdf?: ExternalBlob;
     title: string;
     content?: string;
     author: string;
@@ -50,6 +58,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     checkout(orderId: string): Promise<void>;
     deleteBook(id: string): Promise<void>;
+    fetchPurchasedBookPdf(orderId: string, bookId: string): Promise<ExternalBlob | null>;
     getAllBooks(): Promise<Array<Book>>;
     getAllOrders(): Promise<Array<Order>>;
     getAvailableBooks(): Promise<Array<Book>>;
@@ -68,6 +77,7 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
     recoverAdminAccess(): Promise<void>;
+    removeBookPdf(bookId: string): Promise<void>;
     removeFromCart(bookId: string): Promise<void>;
     resetStore(): Promise<void>;
     respondToMessage(originalMessageId: bigint, response: string): Promise<void>;
@@ -76,4 +86,5 @@ export interface backendInterface {
     setDesignatedOwner(owner: Principal): Promise<void>;
     updateBook(id: string, title: string, author: string, price: bigint, available: boolean): Promise<void>;
     updateBookContent(id: string, content: string): Promise<void>;
+    uploadBookPdf(bookId: string, pdfBlob: ExternalBlob): Promise<void>;
 }

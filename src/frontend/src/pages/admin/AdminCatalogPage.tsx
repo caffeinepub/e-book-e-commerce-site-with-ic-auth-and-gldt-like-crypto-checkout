@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllBooks, useAddBook, useUpdateBook, useUpdateBookContent, useDeleteBook } from '@/hooks/useBooks';
+import { useGetAllBooks, useAddBook, useUpdateBook, useUpdateBookContent, useDeleteBook, useUploadBookPdf, useRemoveBookPdf } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, FileText } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Plus, Edit, Trash2, FileText, Upload, X } from 'lucide-react';
 import { formatTokenAmount, parseTokenAmount } from '@/utils/format';
 import { toast } from 'sonner';
 import type { Book } from '@/backend';
@@ -60,6 +61,7 @@ export default function AdminCatalogPage() {
                 <TableHead>Author</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>PDF</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -72,6 +74,11 @@ export default function AdminCatalogPage() {
                   <TableCell>
                     <Badge variant={book.available ? 'default' : 'secondary'}>
                       {book.available ? 'Available' : 'Unavailable'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={book.pdf ? 'default' : 'outline'}>
+                      {book.pdf ? 'Yes' : 'No'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
@@ -95,6 +102,7 @@ export default function AdminCatalogPage() {
                     >
                       <FileText className="h-4 w-4" />
                     </Button>
+                    <PdfUploadButton book={book} />
                     <DeleteBookButton bookId={book.id} />
                   </TableCell>
                 </TableRow>
@@ -331,6 +339,100 @@ function EditContentForm({ book, onSuccess }: { book: Book; onSuccess: () => voi
         {updateContent.isPending ? 'Updating...' : 'Update Content'}
       </Button>
     </form>
+  );
+}
+
+function PdfUploadButton({ book }: { book: Book }) {
+  const uploadPdf = useUploadBookPdf();
+  const removePdf = useRemoveBookPdf();
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast.error('Only PDF files are allowed');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+
+      await uploadPdf.mutateAsync({
+        bookId: book.id,
+        pdfBytes: bytes,
+        onProgress: (percentage) => {
+          setUploadProgress(percentage);
+        },
+      });
+
+      toast.success('PDF uploaded successfully');
+      setUploadProgress(0);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload PDF');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemovePdf = async () => {
+    if (!confirm('Are you sure you want to remove the PDF for this book?')) return;
+
+    try {
+      await removePdf.mutateAsync(book.id);
+      toast.success('PDF removed successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to remove PDF');
+    }
+  };
+
+  if (isUploading) {
+    return (
+      <div className="inline-flex flex-col items-center gap-1 min-w-[100px]">
+        <Progress value={uploadProgress} className="h-2 w-full" />
+        <span className="text-xs text-muted-foreground">{Math.round(uploadProgress)}%</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        asChild
+        disabled={uploadPdf.isPending}
+      >
+        <label className="cursor-pointer">
+          <Upload className="h-4 w-4" />
+          <input
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+        </label>
+      </Button>
+      {book.pdf && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleRemovePdf}
+          disabled={removePdf.isPending}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }
 

@@ -29,3 +29,19 @@ export function useGetBookContent(orderId: string, bookId: string) {
     enabled: !!actor && !isFetching && !!orderId && !!bookId,
   });
 }
+
+export async function fetchPurchasedBookPdf(
+  actor: any,
+  orderId: string,
+  bookId: string
+): Promise<Uint8Array | null> {
+  if (!actor) throw new Error('Actor not available');
+  
+  const pdfBlob = await actor.fetchPurchasedBookPdf(orderId, bookId);
+  
+  if (!pdfBlob) {
+    return null;
+  }
+  
+  return await pdfBlob.getBytes();
+}

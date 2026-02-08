@@ -1,78 +1,68 @@
 {
   "kind": "build_request",
-  "title": "Add admin recovery + relaunch (reset) flow so the owner can regain /admin access",
-  "priority": "high",
+  "title": "Add a small post-purchase confirmation screen",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-22",
-      "text": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Can we re-do the app and relaunch it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If the canister has no admin configured (or otherwise indicates it is uninitialized for admin), a logged-in user can complete a one-time recovery flow that assigns their current Internet Identity principal as admin.",
-        "Once an admin has been successfully assigned via the recovery flow, subsequent attempts to run the recovery flow are blocked and show an English error message indicating recovery is no longer available.",
-        "After successful recovery, navigating to /admin allows access for that recovered admin principal and continues to deny access for non-admin principals.",
-        "All user-facing error/status text introduced for this flow is in English."
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
+      "id": "REQ-1",
+      "text": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-3"
         ],
         "quotes": [
-          "Can we re-do the app and relaunch it"
+          "yeah add a small confirmation screen after purchase"
         ]
       },
       "acceptanceCriteria": [
-        "Add a route for an admin recovery page (e.g., /admin/recover) and link to it from the existing Access Denied state shown by the admin route guard.",
-        "The recovery page clearly displays the currently authenticated principal (English label text) and provides an action to attempt admin recovery.",
-        "If the user is not logged in, the recovery page shows an explicit login call-to-action using the existing Internet Identity login UI components/patterns.",
-        "If recovery succeeds, the UI confirms success in English and provides a direct navigation action to /admin."
+        "After clicking “Complete Purchase” on the Checkout page and the checkout mutation succeeds, the user is navigated to a new confirmation route (not the existing /order/$orderId page).",
+        "The new confirmation screen clearly indicates the purchase succeeded and uses concise English UI copy.",
+        "The confirmation screen provides at least these actions: “Go to My Library”, “View Order Details”, and “Continue Shopping”.",
+        "“View Order Details” navigates to the existing order details route (/order/$orderId)."
       ]
     },
     {
-      "id": "REQ-24",
-      "text": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
-      "target": "both",
+      "id": "REQ-2",
+      "text": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-3"
         ],
         "quotes": [
-          "Can we re-do the app and relaunch it"
+          "yeah add a small confirmation screen after purchase"
         ]
       },
       "acceptanceCriteria": [
-        "Expose an admin-only UI action in the Admin area to reset/relaunch the store, calling the existing backend reset capability.",
-        "The reset action requires an explicit confirmation step in the UI (English text) to prevent accidental resets.",
-        "After a successful reset, the UI shows an English confirmation and the app reflects empty/clean state (e.g., empty catalog, empty orders, empty support threads).",
-        "Non-admin users cannot see the reset/relaunch control, and attempts to invoke the reset backend method as non-admin continue to fail."
+        "The app has a new TanStack Router route registered in frontend/src/App.tsx for the new confirmation screen.",
+        "Checkout success navigation in frontend/src/pages/CheckoutPage.tsx routes to the new confirmation screen and passes the generated orderId via route params.",
+        "The existing OrderConfirmationPage at /order/$orderId remains accessible (e.g., via the “View Order Details” button on the new confirmation screen)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo; add migration.mo only if an upgrade requires state migration).",
-    "Do not edit files under frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui). Compose existing components instead.",
-    "Use English for any user-facing text."
+    "Do not modify files under frontend/src/components/ui (shadcn components are read-only).",
+    "Do not change Internet Identity or actor initialization hooks (immutable paths).",
+    "Backend canister API and storage schema must remain unchanged."
   ],
   "nonGoals": [
-    "Implementing third-party authentication beyond Internet Identity (Google/Apple/Microsoft are still mediated by Internet Identity).",
-    "Adding external databases, off-chain storage, or any non-Internet-Computer backend services.",
-    "Changing the storefront feature set (catalog/cart/checkout/library/support) beyond what is needed for admin recovery and relaunch/reset."
+    "Redesigning the entire checkout flow.",
+    "Changing order creation logic or backend order schema.",
+    "Adding new payment providers or external integrations."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

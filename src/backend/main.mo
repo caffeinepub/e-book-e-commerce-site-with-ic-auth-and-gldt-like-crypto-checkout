@@ -8,13 +8,17 @@ import Array "mo:core/Array";
 import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Storage "blob-storage/Storage";
+import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
+
 
 // specify the data migration function in with-clause
-(with migration = Migration.run)
+
 actor {
+  include MixinStorage();
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
@@ -29,6 +33,7 @@ actor {
     price : Nat;
     available : Bool;
     content : ?Text;
+    pdf : ?Storage.ExternalBlob; // Optional PDF field
   };
 
   type CartItem = {
@@ -254,6 +259,7 @@ actor {
       price;
       available = true;
       content;
+      pdf = null; // New books default to no PDF
     };
     bookStore.add(id, book);
   };
@@ -273,6 +279,7 @@ actor {
           price;
           available;
           content = existingBook.content;
+          pdf = existingBook.pdf; // Preserve existing PDF
         };
         bookStore.add(id, updatedBook);
       };
@@ -294,8 +301,99 @@ actor {
           price = existingBook.price;
           available = existingBook.available;
           content = ?content;
+          pdf = existingBook.pdf; // Preserve existing PDF
         };
         bookStore.add(id, updatedBook);
+      };
+    };
+  };
+
+  // New PDF upload function (Admin-only)
+  public shared ({ caller }) func uploadBookPdf(bookId : Text, pdfBlob : Storage.ExternalBlob) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can upload PDFs");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let updatedBook : Book = {
+          book with pdf = ?pdfBlob
+        };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  // New PDF removal function (Admin-only)
+  public shared ({ caller }) func removeBookPdf(bookId : Text) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove PDFs");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let updatedBook : Book = {
+          book with pdf = null
+        };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  // Function to check if a user has purchased a specific book
+  func hasPurchasedBook(user : Principal, bookId : Text) : Bool {
+    for (order in orderStore.values()) {
+      if (order.user == user) {
+        for (item in order.items.values()) {
+          if (item.bookId == bookId) { return true };
+        };
+      };
+    };
+    false;
+  };
+
+  // Function with access control check for book PDF purchase
+  func hasAccessToBook(user : Principal, bookId : Text) : Bool {
+    // Admins always have access
+    if (AccessControl.hasPermission(accessControlState, user, #admin)) {
+      return true;
+    };
+
+    // Check if the user has purchased the book
+    return hasPurchasedBook(user, bookId);
+  };
+
+  // Function to check for valid order and access rights
+  func hasOrderAccess(caller : Principal, orderId : Text) : Bool {
+    switch (orderStore.get(orderId)) {
+      case (null) { false };
+      case (?order) {
+        // Allow access if the caller is the order owner or an admin
+        order.user == caller or AccessControl.hasPermission(accessControlState, caller, #admin)
+      };
+    };
+  };
+
+  public query ({ caller }) func fetchPurchasedBookPdf(orderId : Text, bookId : Text) : async ?Storage.ExternalBlob {
+    if (not hasOrderAccess(caller, orderId)) {
+      Runtime.trap("Unauthorized: Only the order owner or admins can access PDF");
+    };
+
+    switch (orderStore.get(orderId)) {
+      case (null) { Runtime.trap("Order not found") };
+      case (?order) {
+        // Check if the order includes the requested book
+        let bookPurchased = order.items.any(
+          func(item) { item.bookId == bookId }
+        );
+        if (not bookPurchased) {
+          Runtime.trap("Book not included in order");
+        };
+
+        switch (bookStore.get(bookId)) {
+          case (null) { Runtime.trap("Book not found") };
+          case (?book) { return book.pdf };
+        };
       };
     };
   };

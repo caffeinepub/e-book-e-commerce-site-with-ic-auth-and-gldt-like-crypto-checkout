@@ -12,6 +12,7 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Book {
   'id' : string,
+  'pdf' : [] | [ExternalBlob],
   'title' : string,
   'content' : [] | [string],
   'author' : string,
@@ -27,6 +28,7 @@ export interface CustomerMessage {
   'responseToMsgId' : [] | [bigint],
   'isAdminResponse' : boolean,
 }
+export type ExternalBlob = Uint8Array;
 export interface Order {
   'user' : Principal,
   'orderId' : string,
@@ -40,7 +42,33 @@ export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addBook' : ActorMethod<
     [string, string, string, bigint, [] | [string]],
@@ -50,6 +78,7 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'checkout' : ActorMethod<[string], undefined>,
   'deleteBook' : ActorMethod<[string], undefined>,
+  'fetchPurchasedBookPdf' : ActorMethod<[string, string], [] | [ExternalBlob]>,
   'getAllBooks' : ActorMethod<[], Array<Book>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAvailableBooks' : ActorMethod<[], Array<Book>>,
@@ -68,6 +97,7 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'mintTokens' : ActorMethod<[Principal, bigint], undefined>,
   'recoverAdminAccess' : ActorMethod<[], undefined>,
+  'removeBookPdf' : ActorMethod<[string], undefined>,
   'removeFromCart' : ActorMethod<[string], undefined>,
   'resetStore' : ActorMethod<[], undefined>,
   'respondToMessage' : ActorMethod<[bigint, string], undefined>,
@@ -79,6 +109,7 @@ export interface _SERVICE {
     undefined
   >,
   'updateBookContent' : ActorMethod<[string, string], undefined>,
+  'uploadBookPdf' : ActorMethod<[string, ExternalBlob], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

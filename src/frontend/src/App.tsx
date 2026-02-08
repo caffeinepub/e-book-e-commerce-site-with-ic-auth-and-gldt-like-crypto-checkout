@@ -7,6 +7,7 @@ import CatalogPage from './pages/CatalogPage';
 import BookDetailsPage from './pages/BookDetailsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PurchaseConfirmationPage from './pages/PurchaseConfirmationPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import MyLibraryPage from './pages/MyLibraryPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -46,6 +47,12 @@ const checkoutRoute = createRoute({
   component: CheckoutPage,
 });
 
+const purchaseConfirmationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/purchase-confirmation/$orderId',
+  component: PurchaseConfirmationPage,
+});
+
 const orderConfirmationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/order/$orderId',
@@ -76,6 +83,7 @@ const routeTree = rootRoute.addChildren([
   bookDetailsRoute,
   cartRoute,
   checkoutRoute,
+  purchaseConfirmationRoute,
   orderConfirmationRoute,
   libraryRoute,
   adminRoute,

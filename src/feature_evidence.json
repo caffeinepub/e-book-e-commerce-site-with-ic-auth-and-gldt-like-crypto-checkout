@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-an-owner-admin-recovery-mechanism-so-the-intended-owner-account-can-regain-access-to-admin-without-requiring-a-full-rebuild-of-the-app",
-      "featureTitle": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
+      "featureId": "feature-add-a-lightweight-purchase-confirmation-screen-that-is-shown-immediately-after-a-successful-checkout-before-the-existing-full-order-confirmation-details-page",
+      "featureTitle": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
       "files": [
-        "frontend/src/components/auth/AdminRoute.tsx",
-        "frontend/src/hooks/useAdminRecovery.ts"
+        "frontend/src/pages/PurchaseConfirmationPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -14,20 +13,20 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-22"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-dedicated-frontend-recovery-screen-and-routing-so-users-who-are-denied-admin-access-can-self-serve-the-admin-recovery-when-available",
-      "featureTitle": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
+      "featureId": "feature-update-routing-to-include-the-new-confirmation-screen-route-and-adjust-the-checkout-success-navigation-to-point-to-it-while-keeping-the-existing-order-orderid-route-functional-and-reachable",
+      "featureTitle": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
       "files": [
         "frontend/src/App.tsx",
-        "frontend/src/components/auth/AdminRoute.tsx",
-        "frontend/src/pages/admin/AdminRecoveryPage.tsx"
+        "frontend/src/pages/CheckoutPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -35,31 +34,11 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-23"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-relaunch-reset-capability-that-allows-the-recovered-admin-to-clear-store-state-catalog-carts-orders-balances-and-support-messages-and-return-the-app-to-a-clean-post-launch-state",
-      "featureTitle": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
-      "files": [
-        "frontend/src/hooks/useResetStore.ts",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx",
-        "frontend/src/pages/admin/AdminSettingsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-24"
+        "REQ-2"
       ],
       "confidence": "high"
     }

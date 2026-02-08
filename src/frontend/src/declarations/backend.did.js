@@ -8,13 +8,26 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Book = IDL.Record({
   'id' : IDL.Text,
+  'pdf' : IDL.Opt(ExternalBlob),
   'title' : IDL.Text,
   'content' : IDL.Opt(IDL.Text),
   'author' : IDL.Text,
@@ -45,6 +58,32 @@ export const CustomerMessage = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addBook' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
@@ -55,6 +94,11 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'checkout' : IDL.Func([IDL.Text], [], []),
   'deleteBook' : IDL.Func([IDL.Text], [], []),
+  'fetchPurchasedBookPdf' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(ExternalBlob)],
+      ['query'],
+    ),
   'getAllBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAvailableBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
@@ -89,6 +133,7 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'recoverAdminAccess' : IDL.Func([], [], []),
+  'removeBookPdf' : IDL.Func([IDL.Text], [], []),
   'removeFromCart' : IDL.Func([IDL.Text], [], []),
   'resetStore' : IDL.Func([], [], []),
   'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
@@ -101,18 +146,32 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateBookContent' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'uploadBookPdf' : IDL.Func([IDL.Text, ExternalBlob], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Book = IDL.Record({
     'id' : IDL.Text,
+    'pdf' : IDL.Opt(ExternalBlob),
     'title' : IDL.Text,
     'content' : IDL.Opt(IDL.Text),
     'author' : IDL.Text,
@@ -140,6 +199,32 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addBook' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
@@ -150,6 +235,11 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'checkout' : IDL.Func([IDL.Text], [], []),
     'deleteBook' : IDL.Func([IDL.Text], [], []),
+    'fetchPurchasedBookPdf' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(ExternalBlob)],
+        ['query'],
+      ),
     'getAllBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAvailableBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
@@ -184,6 +274,7 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'recoverAdminAccess' : IDL.Func([], [], []),
+    'removeBookPdf' : IDL.Func([IDL.Text], [], []),
     'removeFromCart' : IDL.Func([IDL.Text], [], []),
     'resetStore' : IDL.Func([], [], []),
     'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
@@ -196,6 +287,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateBookContent' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'uploadBookPdf' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   });
 };
 

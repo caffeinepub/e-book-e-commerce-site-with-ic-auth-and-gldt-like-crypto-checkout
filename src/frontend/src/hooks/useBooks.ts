@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
+import { ExternalBlob } from '@/backend';
 import type { Book } from '@/backend';
 
 export function useGetAvailableBooks() {
@@ -97,6 +98,49 @@ export function useUpdateBookContent() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['book', variables.id] });
+    },
+  });
+}
+
+export function useUploadBookPdf() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; pdfBytes: Uint8Array; onProgress?: (percentage: number) => void }) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      // Cast to the expected type
+      const bytes = new Uint8Array(params.pdfBytes.buffer.slice(params.pdfBytes.byteOffset, params.pdfBytes.byteOffset + params.pdfBytes.byteLength)) as Uint8Array<ArrayBuffer>;
+      
+      let blob = ExternalBlob.fromBytes(bytes);
+      if (params.onProgress) {
+        blob = blob.withUploadProgress(params.onProgress);
+      }
+      
+      return actor.uploadBookPdf(params.bookId, blob);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useRemoveBookPdf() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (bookId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.removeBookPdf(bookId);
+    },
+    onSuccess: (_, bookId) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', bookId] });
     },
   });
 }

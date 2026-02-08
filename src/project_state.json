@@ -1,182 +1,24 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 19,
-  "summary": "Build an e-commerce website for selling e-books with cryptocurrency payments (e.g., GLDT-like).",
-  "architectural_notes": [
-    "Revert the Home page hero image to the original/initial asset; do not use the recently generated replacement photo.",
-    "Admin access is bound to the Internet Identity principal/anchor captured at initial project creation; if the owner cannot access /admin, consider providing a way to reinitialize or update the admin principal (or redeploy/recreate the app) to regain admin control."
-  ],
-  "known_issues": [
-    "User requested using an exact depiction from a specific (1988) Economist magazine cover; this likely raises copyright/licensing constraints and may be incompatible with the requirement to use original non-infringing assets.",
-    "Owner cannot access /admin (\"Access denied\") despite believing they used the same email/Google login used to create the app; likely Internet Identity principal mismatch or missing admin principal configuration, prompting request to rebuild/relaunch."
-  ],
-  "isFixRequest": true,
+  "projectStateVersion": 3,
+  "summary": "Project includes a post-purchase flow with buyer download access, and will add a small confirmation screen after purchase.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-implement-internet-identity-sign-in-out-and-show-an-authenticated-user-header-state-principal-token-balance-and-navigation",
-      "title": "Implement Internet Identity sign-in/out and show an authenticated user header state (principal, token balance, and navigation).",
+      "id": "feature-add-a-lightweight-purchase-confirmation-screen-that-is-shown-immediately-after-a-successful-checkout-before-the-existing-full-order-confirmation-details-page",
+      "title": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-cart-and-checkout-ux-add-remove-items-quantity-if-supported-order-summary-and-a-checkout-flow-that-pays-using-the-gldt-like-balance-and-produces-an-order-record",
-      "title": "Implement cart and checkout UX: add/remove items, quantity (if supported), order summary, and a checkout flow that pays using the GLDT-like balance and produces an order record.",
+      "id": "feature-update-routing-to-include-the-new-confirmation-screen-route-and-adjust-the-checkout-success-navigation-to-point-to-it-while-keeping-the-existing-order-orderid-route-functional-and-reachable",
+      "title": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
       "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-provide-digital-delivery-after-purchase-store-e-book-content-in-the-backend-small-sample-e-books-and-allow-only-purchasers-to-download-view-their-purchased-e-books-via-a-gated-backend-endpoint",
-      "title": "Provide digital delivery after purchase: store e-book content in the backend (small sample e-books) and allow only purchasers to download/view their purchased e-books via a gated backend endpoint.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-admin-ui-for-managing-the-store-create-edit-e-books-view-orders-and-mint-gldt-like-tokens-to-users-for-testing",
-      "title": "Add an admin UI for managing the store: create/edit e-books, view orders, and mint GLDT-like tokens to users for testing.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-core-storefront-pages-and-navigation-home-featured-catalog-book-details-cart-checkout-my-library-and-admin-if-authorized",
-      "title": "Create core storefront pages and navigation: Home/Featured, Catalog, Book Details, Cart, Checkout, My Library, and Admin (if authorized).",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-establish-a-cohesive-visual-theme-for-the-entire-ui-colors-typography-spacing-component-styling-appropriate-for-a-digital-bookstore-avoid-blue-purple-as-the-primary-palette",
-      "title": "Establish a cohesive visual theme for the entire UI (colors, typography, spacing, component styling) appropriate for a digital bookstore; avoid blue/purple as the primary palette.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-site-header-branding-by-replacing-the-current-bookcoin-logo-wordmark-with-the-text-radical-economist-collection-at-the-top-left-of-the-header-and-remove-the-bookcoin-logo-image-so-the-header-uses-text-only-branding",
-      "title": "Update the site header branding by replacing the current BookCoin logo/wordmark with the text “Radical Economist Collection” at the top-left of the header, and remove the BookCoin logo image so the header uses text-only branding.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-refine-the-checkout-flow-ux-to-make-it-clearer-and-more-actionable-1-when-the-user-is-not-logged-in-the-checkout-page-should-include-an-explicit-login-call-to-action-reuse-the-existing-internet-identity-login-ui-2-when-checkout-fails-show-a-persistent-inline-error-message-on-the-checkout-page-in-addition-to-or-instead-of-a-toast-so-users-can-understand-what-happened-3-provide-a-clear-navigation-action-back-to-the-cart-from-the-checkout-page-so-users-can-easily-review-modify-items-before-paying",
-      "title": "Refine the checkout flow UX to make it clearer and more actionable: (1) when the user is not logged in, the Checkout page should include an explicit login call-to-action (reuse the existing Internet Identity login UI); (2) when checkout fails, show a persistent inline error message on the Checkout page in addition to (or instead of) a toast so users can understand what happened; (3) provide a clear navigation action back to the Cart from the Checkout page so users can easily review/modify items before paying.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-home-page-center-hero-image-with-a-futuristic-ready-player-one-inspired-scene-an-original-non-copyright-infringing-depiction-of-a-parzival-like-sci-fi-protagonist-lying-upside-down-in-zero-gravity-reading-a-glowing-book-that-is-also-floating-in-zero-gravity-and-update-the-home-page-to-use-the-new-image-asset",
-      "title": "Replace the Home page center/hero image with a futuristic, 'Ready Player One'-inspired scene: an original (non-copyright-infringing) depiction of a Parzival-like sci‑fi protagonist lying upside down in zero gravity, reading a glowing book that is also floating in zero gravity, and update the Home page to use the new image asset.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-revert-the-home-page-hero-image-back-to-the-initial-hero-asset-by-updating-the-hero-img-in-frontend-src-pages-homepage-tsx-to-use-assets-generated-hero-reading-nook-dim-1600x600-png-instead-of-the-newer-assets-generated-hero-zero-gravity-reading-dim-1600x600-png-update-the-image-alt-text-to-accurately-describe-the-restored-initial-hero-image-english",
-      "title": "Revert the Home page hero image back to the initial hero asset by updating the hero <img> in frontend/src/pages/HomePage.tsx to use \"/assets/generated/hero-reading-nook.dim_1600x600.png\" instead of the newer \"/assets/generated/hero-zero-gravity-reading.dim_1600x600.png\". Update the image alt text to accurately describe the restored initial hero image (English).",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-site-footer-to-display-contact-social-handles-for-twitter-x-and-openchat-using-the-handle-radicaleconomist101-placed-at-the-bottom-of-the-site-as-ways-to-reach-the-team",
-      "title": "Update the site footer to display contact/social handles for Twitter/X and OpenChat using the handle “@RadicalEconomist101”, placed at the bottom of the site as ways to reach the team.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-a-customer-service-chat-feature-as-an-asynchronous-support-messaging-system-visitors-can-submit-questions-and-an-admin-can-reply-users-can-view-replies-to-their-own-messages",
-      "title": "Implement a customer service chat feature as an asynchronous support messaging system: visitors can submit questions, and an admin can reply; users can view replies to their own messages.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-after-a-customer-successfully-completes-checkout-and-is-redirected-to-the-order-confirmation-page-order-orderid-display-a-prominent-thanks-for-your-purchase-icon-alongside-a-short-thank-you-message-in-english",
-      "title": "After a customer successfully completes checkout and is redirected to the Order Confirmation page (/order/$orderId), display a prominent 'Thanks for your purchase' icon alongside a short thank-you message in English.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-the-generated-thanks-for-your-purchase-icon-image-file-to-the-frontend-static-assets-and-use-it-from-the-order-confirmation-page",
-      "title": "Add the generated 'Thanks for your purchase' icon image file to the frontend static assets and use it from the Order Confirmation page.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-small-confirmation-animation-on-the-order-confirmation-page-route-order-orderid-to-accompany-the-existing-thanks-for-your-purchase-icon",
-      "title": "Add a small confirmation animation on the Order Confirmation page (route: /order/$orderId) to accompany the existing “Thanks for your purchase” icon.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-home-page-hero-discover-digital-books-powered-by-crypto-logo-headline-text-with-discover-the-digital-revolution-powered-by-crypto",
-      "title": "Replace the Home page hero “Discover Digital Books Powered by Crypto” logo/headline text with: “Discover the Digital Revolution Powered by Crypto”.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-new-static-hero-image-asset-representing-the-1988-economist-magazine-cover-depiction-of-a-phoenix-with-a-gold-chain-and-place-it-in-the-frontend-public-generated-assets-folder-so-it-can-be-referenced-by-url-at-runtime",
-      "title": "Add a new static hero image asset representing the 1988 Economist magazine cover depiction of a phoenix with a gold chain, and place it in the frontend public generated assets folder so it can be referenced by URL at runtime.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-home-page-hero-image-in-frontend-src-pages-homepage-tsx-to-use-the-new-phoenix-and-gold-chain-hero-asset-instead-of-the-current-assets-generated-hero-reading-nook-dim-1600x600-png-and-update-the-img-alt-text-in-english-to-describe-the-new-image-accurately",
-      "title": "Update the Home page hero image in frontend/src/pages/HomePage.tsx to use the new phoenix-and-gold-chain hero asset instead of the current /assets/generated/hero-reading-nook.dim_1600x600.png, and update the <img> alt text in English to describe the new image accurately.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-an-owner-admin-recovery-mechanism-so-the-intended-owner-account-can-regain-access-to-admin-without-requiring-a-full-rebuild-of-the-app",
-      "title": "Implement an owner/admin recovery mechanism so the intended owner account can regain access to /admin without requiring a full rebuild of the app.",
-      "reqIds": [
-        "REQ-22"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-dedicated-frontend-recovery-screen-and-routing-so-users-who-are-denied-admin-access-can-self-serve-the-admin-recovery-when-available",
-      "title": "Add a dedicated frontend recovery screen and routing so users who are denied admin access can self-serve the admin recovery (when available).",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-relaunch-reset-capability-that-allows-the-recovered-admin-to-clear-store-state-catalog-carts-orders-balances-and-support-messages-and-return-the-app-to-a-clean-post-launch-state",
-      "title": "Add a relaunch/reset capability that allows the recovered admin to clear store state (catalog, carts, orders, balances, and support messages) and return the app to a clean post-launch state.",
-      "reqIds": [
-        "REQ-24"
+        "REQ-2"
       ],
       "version": 1
     }
@@ -184,93 +26,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Create an e-commerce website for selling e-books with cryptocurrency payment support (e.g., GLDT-like).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Create backend data models and APIs for an e-book store: catalog listing, book details, inventory/availability flag, and admin-managed catalog creation/update/removal.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Implement a GLDT-like on-canister token ledger suitable for checkout: per-user balances, admin minting, and transfer/burn-on-purchase semantics.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Implement basic safety and integrity rules in the backend: validate prices, prevent duplicate order IDs, record timestamps, and ensure only the authorized caller can access their library/orders (except admin viewing all).",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Update the site header branding: replace the BookCoin logo at the top with the text 'Radical Economist Collection'.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Apply the agreed checkout flow UX refinements: explicit login CTA when logged out, persistent inline error on failure, and a clear back-to-cart navigation action.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Add footer contact/social handles: display Twitter/X and OpenChat handle “@RadicalEconomist101” at the bottom of the site as ways to reach the team.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Add a customer service chat feature so visitors can ask questions and the admin/team can respond (live or async).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Display a 'Thanks for your purchase' icon after a customer successfully completes a purchase.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Add a small confirmation animation on the Order Confirmation page to accompany the 'Thanks for your purchase' icon.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Replace the 'Discover Digital books Powered by Crypto' logo text with 'Discover the Digital Revolution Powered by Crypto'.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Replace the center (home hero) photo/image with the 1988 Economist magazine cover depiction of a phoenix with a gold chain, matching the original exactly.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Re-do (rebuild/reinitialize) and relaunch the app to restore/admin-enable access to the Admin panel for the intended owner account.",
+      "summary": "Add a small confirmation screen after purchase",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "E-book e-commerce site with IC auth and GLDT-like crypto checkout",
+  "projectName": "Add a small post-purchase confirmation screen",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
