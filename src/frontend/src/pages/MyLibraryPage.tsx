@@ -1,41 +1,29 @@
 import { useState } from 'react';
-import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { Link } from '@tanstack/react-router';
 import { useGetUserLibrary, useGetBookContent } from '@/hooks/useLibrary';
 import PageLayout from '@/components/layout/PageLayout';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import EmptyState from '@/components/EmptyState';
 import BookContentDialog from '@/components/library/BookContentDialog';
-import CoverImage from '@/components/books/CoverImage';
 import LibraryPdfDownloadButton from '@/components/library/LibraryPdfDownloadButton';
-import { Library, BookOpen } from 'lucide-react';
-import { formatDate } from '@/utils/format';
+import EmptyState from '@/components/EmptyState';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import CoverImage from '@/components/books/CoverImage';
+import { BookOpen, Image, Music, Video } from 'lucide-react';
+import type { Book, Order } from '@/backend';
 
 export default function MyLibraryPage() {
-  const { identity } = useInternetIdentity();
   const { libraryBooks, isLoading } = useGetUserLibrary();
-  const [selectedBook, setSelectedBook] = useState<{ 
-    orderId: string; 
-    bookId: string; 
-    title: string;
-    hasPdf: boolean;
-  } | null>(null);
-  const { data: content, isLoading: contentLoading, error: contentError } = useGetBookContent(
-    selectedBook?.orderId || '',
-    selectedBook?.bookId || ''
+  const [selectedBook, setSelectedBook] = useState<{ book: Book; order: Order } | null>(null);
+
+  const { data: content, isLoading: isLoadingContent, error: contentError } = useGetBookContent(
+    selectedBook?.order.orderId || '',
+    selectedBook?.book.id || ''
   );
 
-  if (!identity) {
-    return (
-      <PageLayout>
-        <EmptyState
-          icon={<Library className="h-12 w-12" />}
-          title="Please log in"
-          description="You need to be logged in to view your library"
-        />
-      </PageLayout>
-    );
-  }
+  const handleReadBook = (book: Book, order: Order) => {
+    setSelectedBook({ book, order });
+  };
 
   if (isLoading) {
     return (
@@ -51,9 +39,14 @@ export default function MyLibraryPage() {
     return (
       <PageLayout>
         <EmptyState
-          icon={<Library className="h-12 w-12" />}
+          icon={<BookOpen className="h-12 w-12" />}
           title="Your library is empty"
-          description="Purchase books from the catalog to start reading"
+          description="Purchase books from the catalog to start building your collection"
+          action={
+            <Link to="/catalog">
+              <Button>Browse Catalog</Button>
+            </Link>
+          }
         />
       </PageLayout>
     );
@@ -63,56 +56,69 @@ export default function MyLibraryPage() {
     <PageLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Library</h1>
-          <p className="text-muted-foreground">Your purchased e-books</p>
+          <h1 className="text-3xl font-bold tracking-tight">My Library</h1>
+          <p className="text-muted-foreground mt-2">
+            Your purchased e-books ({libraryBooks.length})
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {libraryBooks.map(({ book, order }) => (
-            <Card key={`${order.orderId}-${book.id}`} className="flex flex-col">
-              <CardHeader>
-                <div className="relative">
-                  <CoverImage 
-                    bookId={book.id} 
-                    title={book.title}
-                    className="w-full h-48 object-cover rounded-md mb-4" 
-                  />
-                  {book.pdf && (
-                    <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-md">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {libraryBooks.map(({ book, order }) => {
+            const hasMedia = book.media.pdf || book.media.images.length > 0 || book.media.audio.length > 0 || book.media.video.length > 0;
+            
+            return (
+              <div key={`${order.orderId}-${book.id}`} className="relative">
+                <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
+                  <div className="relative">
+                    <CoverImage bookId={book.id} title={book.title} className="aspect-[2/3] w-full" />
+                    {book.media.pdf && (
                       <LibraryPdfDownloadButton
                         orderId={order.orderId}
                         bookId={book.id}
-                        title={book.title}
+                        bookTitle={book.title}
                       />
-                    </div>
-                  )}
-                </div>
-                <CardTitle className="line-clamp-2">{book.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <p className="text-sm text-muted-foreground mb-2">by {book.author}</p>
-                <p className="text-xs text-muted-foreground">
-                  Purchased: {formatDate(order.timestamp)}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  className="w-full"
-                  onClick={() =>
-                    setSelectedBook({
-                      orderId: order.orderId,
-                      bookId: book.id,
-                      title: book.title,
-                      hasPdf: !!book.pdf,
-                    })
-                  }
-                >
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  Read
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                    )}
+                  </div>
+                  <CardHeader className="flex-1">
+                    <CardTitle className="line-clamp-2 text-lg">{book.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{book.author}</p>
+                  </CardHeader>
+                  <CardFooter className="flex flex-col items-start gap-3">
+                    {hasMedia && (
+                      <div className="flex gap-1 flex-wrap w-full">
+                        {book.media.images.length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Image className="h-3 w-3 mr-1" />
+                            {book.media.images.length}
+                          </Badge>
+                        )}
+                        {book.media.audio.length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Music className="h-3 w-3 mr-1" />
+                            {book.media.audio.length}
+                          </Badge>
+                        )}
+                        {book.media.video.length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Video className="h-3 w-3 mr-1" />
+                            {book.media.video.length}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleReadBook(book, order)}
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Read
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -120,13 +126,12 @@ export default function MyLibraryPage() {
         <BookContentDialog
           open={!!selectedBook}
           onOpenChange={(open) => !open && setSelectedBook(null)}
-          title={selectedBook.title}
-          orderId={selectedBook.orderId}
-          bookId={selectedBook.bookId}
-          hasPdf={selectedBook.hasPdf}
+          title={selectedBook.book.title}
+          orderId={selectedBook.order.orderId}
+          bookId={selectedBook.book.id}
           content={content || null}
-          isLoading={contentLoading}
-          error={contentError}
+          isLoadingContent={isLoadingContent}
+          contentError={contentError}
         />
       )}
     </PageLayout>

@@ -3,7 +3,7 @@ import { useRecoverAdminAccess } from '@/hooks/useAdminRecovery';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Loader2, Info } from 'lucide-react';
 import PageLayout from '@/components/layout/PageLayout';
 import LoginButton from '@/components/auth/LoginButton';
 import { useNavigate } from '@tanstack/react-router';
@@ -85,6 +85,14 @@ export default function AdminRecoveryPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>How Admin Recovery Works</AlertTitle>
+              <AlertDescription>
+                If you are the designated owner of this store, you can recover admin access. The first user to deploy this canister was automatically assigned as admin.
+              </AlertDescription>
+            </Alert>
+
             <div className="space-y-2">
               <p className="text-sm font-medium">Current Principal:</p>
               <code className="block p-3 bg-muted rounded-md text-xs break-all">
@@ -92,34 +100,27 @@ export default function AdminRecoveryPage() {
               </code>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                If you are the designated owner of this store, you can recover admin access by clicking the button below.
-                This action can only be performed once.
-              </p>
+            {recoverMutation.isError && (
+              <Alert variant="destructive">
+                <ShieldAlert className="h-4 w-4" />
+                <AlertTitle>Recovery Failed</AlertTitle>
+                <AlertDescription>
+                  {recoverMutation.error instanceof Error
+                    ? recoverMutation.error.message
+                    : 'An unexpected error occurred. Please try again or contact support.'}
+                </AlertDescription>
+              </Alert>
+            )}
 
-              {recoverMutation.isError && (
-                <Alert variant="destructive">
-                  <ShieldAlert className="h-4 w-4" />
-                  <AlertTitle>Recovery Failed</AlertTitle>
-                  <AlertDescription>
-                    {recoverMutation.error instanceof Error
-                      ? recoverMutation.error.message
-                      : 'An unexpected error occurred'}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Button
-                onClick={handleRecover}
-                disabled={recoverMutation.isPending}
-                size="lg"
-                className="w-full"
-              >
-                {recoverMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Recover Admin Access
-              </Button>
-            </div>
+            <Button
+              onClick={handleRecover}
+              disabled={recoverMutation.isPending}
+              size="lg"
+              className="w-full"
+            >
+              {recoverMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Recover Admin Access
+            </Button>
           </CardContent>
         </Card>
       </div>

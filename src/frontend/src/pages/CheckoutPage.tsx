@@ -4,14 +4,16 @@ import { useGetCartWithBooks } from '@/hooks/useCart';
 import { useGetBalance } from '@/hooks/useBalance';
 import { useCheckout } from '@/hooks/useCart';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { useGetCallerUserProfile } from '@/hooks/useAuthz';
 import PageLayout from '@/components/layout/PageLayout';
 import LoginButton from '@/components/auth/LoginButton';
+import KycVerificationCard from '@/components/checkout/KycVerificationCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import EmptyState from '@/components/EmptyState';
-import { ShoppingCart, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, AlertCircle, CheckCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { formatTokenAmount } from '@/utils/format';
 import { generateOrderId } from '@/utils/orderId';
 import { toast } from 'sonner';
@@ -21,11 +23,26 @@ export default function CheckoutPage() {
   const { identity } = useInternetIdentity();
   const { cartWithBooks, totalAmount } = useGetCartWithBooks();
   const { data: balance = 0n } = useGetBalance();
+  const { data: userProfile } = useGetCallerUserProfile();
   const checkout = useCheckout();
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [kycVerified, setKycVerified] = useState(false);
+  const [kycIdentifier, setKycIdentifier] = useState('');
 
   const hasInsufficientBalance = balance < totalAmount;
+  const hasKycRestrictedBooks = cartWithBooks.some(({ book }) => book?.kycRestricted);
+  const hasSingleCopyIssue = cartWithBooks.some(
+    ({ item, book }) => book?.singleCopy && item.quantity > 1n
+  );
+
+  const canProceed = !hasInsufficientBalance && !hasSingleCopyIssue && 
+    (!hasKycRestrictedBooks || kycVerified);
+
+  const handleKycVerificationComplete = (identifier: string) => {
+    setKycVerified(true);
+    setKycIdentifier(identifier);
+  };
 
   const handleCheckout = async () => {
     if (!identity) {
@@ -38,17 +55,46 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (hasSingleCopyIssue) {
+      toast.error('Please fix cart issues before proceeding');
+      return;
+    }
+
+    if (hasKycRestrictedBooks && !kycVerified) {
+      toast.error('Please complete identity verification for KYC-restricted books');
+      return;
+    }
+
     setIsProcessing(true);
     setCheckoutError(null);
     const orderId = generateOrderId();
 
     try {
-      await checkout.mutateAsync(orderId);
+      const finalKycIdentifier = hasKycRestrictedBooks ? kycIdentifier : (userProfile?.name || '');
+      const [message] = await checkout.mutateAsync({ 
+        orderId, 
+        kycIdentifier: finalKycIdentifier,
+        kycProofValid: hasKycRestrictedBooks ? kycVerified : true,
+      });
+      
       toast.success('Order placed successfully!');
       navigate({ to: '/purchase-confirmation/$orderId', params: { orderId } });
     } catch (error: any) {
       console.error('Checkout failed:', error);
-      const errorMessage = error.message || 'Checkout failed. Please try again.';
+      let errorMessage = error.message || 'Checkout failed. Please try again.';
+      
+      if (errorMessage.includes('expired') || errorMessage.includes('Invalid or expired proof')) {
+        errorMessage = 'Your verification has expired. Please complete verification again.';
+        setKycVerified(false);
+        setKycIdentifier('');
+      } else if (errorMessage.includes('blacklisted')) {
+        errorMessage = 'Your account has been blacklisted and cannot make purchases. Please contact support.';
+      } else if (errorMessage.includes('already purchased') || errorMessage.includes('KYC-restricted')) {
+        errorMessage = 'You have already purchased one or more KYC-restricted books in your cart with this identity.';
+      } else if (errorMessage.includes('sold out') || errorMessage.includes('single copy')) {
+        errorMessage = 'One or more books in your cart are sold out. Please remove them and try again.';
+      }
+      
       setCheckoutError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -131,6 +177,16 @@ export default function CheckoutPage() {
           </Alert>
         )}
 
+        {hasSingleCopyIssue && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Cart Issue</AlertTitle>
+            <AlertDescription>
+              One or more single-copy books have invalid quantities. Please return to cart and fix this issue.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <Card>
@@ -143,12 +199,28 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-medium">{book?.title || 'Unknown Book'}</p>
                       <p className="text-sm text-muted-foreground">{book?.author || 'Unknown Author'}</p>
+                      {book?.singleCopy && (
+                        <p className="text-xs text-muted-foreground mt-1">Limited Edition (Single Copy)</p>
+                      )}
+                      {book?.kycRestricted && (
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <ShieldCheck className="h-3 w-3" />
+                          KYC Required
+                        </p>
+                      )}
                     </div>
                     <p className="font-mono">{book ? formatTokenAmount(book.price) : '0'} GLDT</p>
                   </div>
                 ))}
               </CardContent>
             </Card>
+
+            {hasKycRestrictedBooks && (
+              <KycVerificationCard
+                onVerificationComplete={handleKycVerificationComplete}
+                isCheckoutProcessing={isProcessing}
+              />
+            )}
 
             <Card>
               <CardHeader>
@@ -199,7 +271,7 @@ export default function CheckoutPage() {
               <CardFooter>
                 <Button
                   onClick={handleCheckout}
-                  disabled={hasInsufficientBalance || isProcessing}
+                  disabled={!canProceed || isProcessing}
                   className="w-full"
                   size="lg"
                 >

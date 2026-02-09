@@ -1,68 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Add a small post-purchase confirmation screen",
+  "title": "Revert homepage hero image to the previous asset",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
+      "text": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-3"
         ],
         "quotes": [
-          "yeah add a small confirmation screen after purchase"
+          "just replace the current one with the previous one since clearly the one i'm uploading is being censored"
         ]
       },
       "acceptanceCriteria": [
-        "After clicking “Complete Purchase” on the Checkout page and the checkout mutation succeeds, the user is navigated to a new confirmation route (not the existing /order/$orderId page).",
-        "The new confirmation screen clearly indicates the purchase succeeded and uses concise English UI copy.",
-        "The confirmation screen provides at least these actions: “Go to My Library”, “View Order Details”, and “Continue Shopping”.",
-        "“View Order Details” navigates to the existing order details route (/order/$orderId)."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "yeah add a small confirmation screen after purchase"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The app has a new TanStack Router route registered in frontend/src/App.tsx for the new confirmation screen.",
-        "Checkout success navigation in frontend/src/pages/CheckoutPage.tsx routes to the new confirmation screen and passes the generated orderId via route params.",
-        "The existing OrderConfirmationPage at /order/$orderId remains accessible (e.g., via the “View Order Details” button on the new confirmation screen)."
+        "In frontend/src/pages/HomePage.tsx, the hero <img> src points to /assets/generated/phoenix-1988-image-3.dim_564x483.png.",
+        "The homepage loads successfully and displays the hero image at 564x483 without a missing-asset/broken image icon.",
+        "No other pages (checkout/KYC flow, book covers, admin pages) are changed as part of this update."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (shadcn components are read-only).",
-    "Do not change Internet Identity or actor initialization hooks (immutable paths).",
-    "Backend canister API and storage schema must remain unchanged."
+    "Do not edit files under frontend/src/components/ui (read-only).",
+    "Do not edit any paths listed in frontend.immutablePaths (read-only).",
+    "Keep all backend logic unchanged (no Motoko changes required)."
   ],
   "nonGoals": [
-    "Redesigning the entire checkout flow.",
-    "Changing order creation logic or backend order schema.",
-    "Adding new payment providers or external integrations."
+    "Diagnose or change any image upload/processing/censorship behavior for user-uploaded images beyond reverting the homepage hero asset reference.",
+    "Any changes to the KYC flow or checkout behavior."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

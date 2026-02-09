@@ -12,11 +12,13 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Book {
   'id' : string,
-  'pdf' : [] | [ExternalBlob],
+  'media' : MediaContent,
   'title' : string,
   'content' : [] | [string],
   'author' : string,
   'available' : boolean,
+  'kycRestricted' : boolean,
+  'singleCopy' : boolean,
   'price' : bigint,
 }
 export interface CartItem { 'bookId' : string, 'quantity' : bigint }
@@ -29,6 +31,17 @@ export interface CustomerMessage {
   'isAdminResponse' : boolean,
 }
 export type ExternalBlob = Uint8Array;
+export type KYcState = { 'awaitingProof' : null } |
+  { 'validatedProof' : null } |
+  { 'permanentlyBlacklisted' : null } |
+  { 'rejected' : null } |
+  { 'notRequired' : null };
+export interface MediaContent {
+  'pdf' : [] | [ExternalBlob],
+  'audio' : Array<ExternalBlob>,
+  'video' : Array<ExternalBlob>,
+  'images' : Array<ExternalBlob>,
+}
 export interface Order {
   'user' : Principal,
   'orderId' : string,
@@ -71,14 +84,15 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addBook' : ActorMethod<
-    [string, string, string, bigint, [] | [string]],
+    [string, string, string, bigint, [] | [string], boolean, boolean],
     undefined
   >,
   'addToCart' : ActorMethod<[string, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'checkout' : ActorMethod<[string], undefined>,
+  'blacklistKyc' : ActorMethod<[string], KYcState>,
+  'checkout' : ActorMethod<[string, string, boolean], [string, [] | [Order]]>,
   'deleteBook' : ActorMethod<[string], undefined>,
-  'fetchPurchasedBookPdf' : ActorMethod<[string, string], [] | [ExternalBlob]>,
+  'fetchPurchasedBookMedia' : ActorMethod<[string, string], MediaContent>,
   'getAllBooks' : ActorMethod<[], Array<Book>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAvailableBooks' : ActorMethod<[], Array<Book>>,
@@ -88,6 +102,7 @@ export interface _SERVICE {
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCart' : ActorMethod<[], Array<CartItem>>,
   'getDesignatedOwner' : ActorMethod<[], [] | [Principal]>,
+  'getKycProof' : ActorMethod<[string], KYcState>,
   'getMessageResponses' : ActorMethod<[bigint], Array<CustomerMessage>>,
   'getOrder' : ActorMethod<[string], Order>,
   'getPurchasedBookContent' : ActorMethod<[string, string], [] | [string]>,
@@ -97,19 +112,27 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'mintTokens' : ActorMethod<[Principal, bigint], undefined>,
   'recoverAdminAccess' : ActorMethod<[], undefined>,
+  'rejectKycProof' : ActorMethod<[string], KYcState>,
+  'removeBookAudio' : ActorMethod<[string, bigint], undefined>,
+  'removeBookImage' : ActorMethod<[string, bigint], undefined>,
   'removeBookPdf' : ActorMethod<[string], undefined>,
+  'removeBookVideo' : ActorMethod<[string, bigint], undefined>,
   'removeFromCart' : ActorMethod<[string], undefined>,
   'resetStore' : ActorMethod<[], undefined>,
   'respondToMessage' : ActorMethod<[bigint, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendSupportMessage' : ActorMethod<[string], bigint>,
   'setDesignatedOwner' : ActorMethod<[Principal], undefined>,
+  'submitKycProof' : ActorMethod<[string, boolean], string>,
   'updateBook' : ActorMethod<
-    [string, string, string, bigint, boolean],
+    [string, string, string, bigint, boolean, boolean, boolean],
     undefined
   >,
   'updateBookContent' : ActorMethod<[string, string], undefined>,
+  'uploadBookAudio' : ActorMethod<[string, ExternalBlob], undefined>,
+  'uploadBookImage' : ActorMethod<[string, ExternalBlob], undefined>,
   'uploadBookPdf' : ActorMethod<[string, ExternalBlob], undefined>,
+  'uploadBookVideo' : ActorMethod<[string, ExternalBlob], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

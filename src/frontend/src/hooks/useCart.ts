@@ -53,9 +53,9 @@ export function useCheckout() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (orderId: string) => {
+    mutationFn: async (params: { orderId: string; kycIdentifier: string; kycProofValid: boolean }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.checkout(orderId);
+      return actor.checkout(params.orderId, params.kycIdentifier, params.kycProofValid);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
@@ -74,8 +74,8 @@ export function useGetCartWithBooks() {
     return { item, book };
   });
 
-  const totalAmount = cartWithBooks.reduce((sum, { book }) => {
-    return sum + (book?.price || 0n);
+  const totalAmount = cartWithBooks.reduce((sum, { item, book }) => {
+    return sum + (book?.price || 0n) * item.quantity;
   }, 0n);
 
   return { cartWithBooks, totalAmount };

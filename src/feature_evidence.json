@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-lightweight-purchase-confirmation-screen-that-is-shown-immediately-after-a-successful-checkout-before-the-existing-full-order-confirmation-details-page",
-      "featureTitle": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
+      "featureId": "feature-update-the-homepage-hero-image-to-use-the-previous-static-asset-assets-generated-phoenix-1988-image-3-dim-564x483-png-instead-of-the-current-one-assets-generated-home-hero-replacement-dim-564x483-png-keep-the-image-dimensions-at-564x483-and-ensure-the-page-renders-without-broken-image-errors",
+      "featureTitle": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
       "files": [
-        "frontend/src/pages/PurchaseConfirmationPage.tsx"
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -14,31 +14,11 @@
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
         "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-routing-to-include-the-new-confirmation-screen-route-and-adjust-the-checkout-success-navigation-to-point-to-it-while-keeping-the-existing-order-orderid-route-functional-and-reachable",
-      "featureTitle": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/CheckoutPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
       ],
       "confidence": "high"
     }

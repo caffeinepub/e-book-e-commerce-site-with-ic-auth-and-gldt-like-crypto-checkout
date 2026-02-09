@@ -5,8 +5,9 @@ import PageLayout from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import EmptyState from '@/components/EmptyState';
-import { ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
 import { formatTokenAmount } from '@/utils/format';
 import { toast } from 'sonner';
 
@@ -16,6 +17,11 @@ export default function CartPage() {
   const { data: cart = [] } = useGetCart();
   const { cartWithBooks, totalAmount } = useGetCartWithBooks();
   const removeFromCart = useRemoveFromCart();
+
+  // Check for single-copy books with quantity > 1
+  const hasSingleCopyIssue = cartWithBooks.some(
+    ({ item, book }) => book?.singleCopy && item.quantity > 1n
+  );
 
   const handleRemove = async (bookId: string) => {
     try {
@@ -30,6 +36,10 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!identity) {
       toast.error('Please log in to checkout');
+      return;
+    }
+    if (hasSingleCopyIssue) {
+      toast.error('Please fix cart issues before proceeding');
       return;
     }
     navigate({ to: '/checkout' });
@@ -75,29 +85,47 @@ export default function CartPage() {
           <p className="text-muted-foreground mt-2">{cart.length} item(s) in your cart</p>
         </div>
 
+        {hasSingleCopyIssue && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Cart Issue Detected</AlertTitle>
+            <AlertDescription>
+              One or more single-copy books in your cart have invalid quantities. Please remove and re-add them to continue.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-4">
-            {cartWithBooks.map(({ item, book }) => (
-              <Card key={item.bookId}>
-                <CardContent className="flex gap-4 p-6">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{book?.title || 'Unknown Book'}</h3>
-                    <p className="text-sm text-muted-foreground">{book?.author || 'Unknown Author'}</p>
-                    <p className="text-sm font-mono mt-2">
-                      {book ? formatTokenAmount(book.price) : '0'} GLDT
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemove(item.bookId)}
-                    disabled={removeFromCart.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {cartWithBooks.map(({ item, book }) => {
+              const hasSingleCopyError = book?.singleCopy && item.quantity > 1n;
+              return (
+                <Card key={item.bookId} className={hasSingleCopyError ? 'border-destructive' : ''}>
+                  <CardContent className="flex gap-4 p-6">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{book?.title || 'Unknown Book'}</h3>
+                      <p className="text-sm text-muted-foreground">{book?.author || 'Unknown Author'}</p>
+                      <p className="text-sm font-mono mt-2">
+                        {book ? formatTokenAmount(book.price) : '0'} GLDT
+                      </p>
+                      {hasSingleCopyError && (
+                        <p className="text-sm text-destructive mt-2">
+                          ⚠ Single-copy book - remove and re-add to fix
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemove(item.bookId)}
+                      disabled={removeFromCart.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="lg:col-span-1">
@@ -117,7 +145,12 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleCheckout} className="w-full" size="lg">
+                <Button 
+                  onClick={handleCheckout} 
+                  className="w-full" 
+                  size="lg"
+                  disabled={hasSingleCopyIssue}
+                >
                   Proceed to Checkout
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

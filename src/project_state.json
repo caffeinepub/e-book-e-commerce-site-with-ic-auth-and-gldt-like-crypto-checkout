@@ -1,37 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project includes a post-purchase flow with buyer download access, and will add a small confirmation screen after purchase.",
+  "summary": "App draft with full-size image display; user reports uploaded image appears censored and requests reverting to the previous image.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Full-size image display/upload appears censored; user requests replacing current image with the previous (revert)."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-a-lightweight-purchase-confirmation-screen-that-is-shown-immediately-after-a-successful-checkout-before-the-existing-full-order-confirmation-details-page",
-      "title": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
+      "id": "feature-update-the-homepage-hero-image-to-use-the-previous-static-asset-assets-generated-phoenix-1988-image-3-dim-564x483-png-instead-of-the-current-one-assets-generated-home-hero-replacement-dim-564x483-png-keep-the-image-dimensions-at-564x483-and-ensure-the-page-renders-without-broken-image-errors",
+      "title": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-update-routing-to-include-the-new-confirmation-screen-route-and-adjust-the-checkout-success-navigation-to-point-to-it-while-keeping-the-existing-order-orderid-route-functional-and-reachable",
-      "title": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Add a small confirmation screen after purchase",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Add a small post-purchase confirmation screen",
+  "new_feature_requests": [],
+  "projectName": "Revert homepage hero image to the previous asset",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

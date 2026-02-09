@@ -1,43 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Post-purchase lightweight confirmation screen",
+  "title": "Revert homepage hero image asset reference",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Create a lightweight post-checkout success screen that appears immediately after a successful purchase and offers key next actions.",
+      "summary": "Revert the HomePage hero image src to the previous generated static asset while keeping 564x483 dimensions and avoiding broken-image rendering.",
       "acceptanceCriteria": [
-        "After clicking “Complete Purchase” on the Checkout page and the checkout mutation succeeds, the user is navigated to a new confirmation route (not the existing /order/$orderId page).",
-        "The new confirmation screen clearly indicates the purchase succeeded and uses concise English UI copy.",
-        "The confirmation screen provides at least these actions: “Go to My Library”, “View Order Details”, and “Continue Shopping”.",
-        "“View Order Details” navigates to the existing order details route (/order/$orderId)."
+        "In frontend/src/pages/HomePage.tsx, the hero <img> src points to /assets/generated/phoenix-1988-image-3.dim_564x483.png.",
+        "The homepage loads successfully and displays the hero image at 564x483 without a missing-asset/broken image icon.",
+        "No other pages (checkout/KYC flow, book covers, admin pages) are changed as part of this update."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/PurchaseConfirmationPage.tsx",
-          "operation": "create",
-          "description": "Add a new lightweight purchase confirmation page that reads orderId from TanStack Router params and renders concise success messaging plus three actions: navigate to /library, navigate to /order/$orderId, and navigate to /catalog. Use existing shadcn/ui components via imports (do not modify anything under frontend/src/components/ui)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Register the new confirmation route and redirect checkout success navigation to it while keeping the existing order details route functional.",
-      "acceptanceCriteria": [
-        "The app has a new TanStack Router route registered in frontend/src/App.tsx for the new confirmation screen.",
-        "Checkout success navigation in frontend/src/pages/CheckoutPage.tsx routes to the new confirmation screen and passes the generated orderId via route params.",
-        "The existing OrderConfirmationPage at /order/$orderId remains accessible (e.g., via the “View Order Details” button on the new confirmation screen)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Register a new TanStack Router route (e.g., /purchase-confirmation/$orderId) that renders PurchaseConfirmationPage, and add it to the route tree while leaving the existing /order/$orderId route intact and reachable."
-        },
-        {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
-          "operation": "modify",
-          "description": "Update the checkout success navigation so that after checkout.mutateAsync(orderId) succeeds, it navigates to the new confirmation route and passes orderId via route params (instead of navigating directly to /order/$orderId)."
+          "description": "Update the hero <img> to use the previous static asset path /assets/generated/phoenix-1988-image-3.dim_564x483.png (replacing /assets/generated/home-hero-replacement.dim_564x483.png), keeping the existing width/height styling at 564x483 to prevent layout shifts and broken-image issues."
         }
       ]
     }

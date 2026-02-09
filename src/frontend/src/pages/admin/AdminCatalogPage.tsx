@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useGetAllBooks, useAddBook, useUpdateBook, useUpdateBookContent, useDeleteBook, useUploadBookPdf, useRemoveBookPdf } from '@/hooks/useBooks';
+import { useGetAllBooks, useAddBook, useUpdateBook, useUpdateBookContent, useDeleteBook } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,10 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Plus, Edit, Trash2, FileText, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, FileText, ShieldCheck, Copy, Image, Music, Video } from 'lucide-react';
 import { formatTokenAmount, parseTokenAmount } from '@/utils/format';
 import { toast } from 'sonner';
+import BookMediaManager from '@/components/admin/BookMediaManager';
 import type { Book } from '@/backend';
 
 export default function AdminCatalogPage() {
@@ -21,6 +21,7 @@ export default function AdminCatalogPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isContentDialogOpen, setIsContentDialogOpen] = useState(false);
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -33,7 +34,7 @@ export default function AdminCatalogPage() {
               Add Book
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Add New Book</DialogTitle>
             </DialogHeader>
@@ -61,7 +62,8 @@ export default function AdminCatalogPage() {
                 <TableHead>Author</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>PDF</TableHead>
+                <TableHead>Restrictions</TableHead>
+                <TableHead>Media</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -77,9 +79,52 @@ export default function AdminCatalogPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={book.pdf ? 'default' : 'outline'}>
-                      {book.pdf ? 'Yes' : 'No'}
-                    </Badge>
+                    <div className="flex gap-1">
+                      {book.singleCopy && (
+                        <Badge variant="outline" className="text-xs">
+                          <Copy className="h-3 w-3 mr-1" />
+                          Single
+                        </Badge>
+                      )}
+                      {book.kycRestricted && (
+                        <Badge variant="outline" className="text-xs">
+                          <ShieldCheck className="h-3 w-3 mr-1" />
+                          KYC
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1 flex-wrap">
+                      {book.media.pdf && (
+                        <Badge variant="default" className="text-xs">
+                          PDF
+                        </Badge>
+                      )}
+                      {book.media.images.length > 0 && (
+                        <Badge variant="default" className="text-xs">
+                          <Image className="h-3 w-3 mr-1" />
+                          {book.media.images.length}
+                        </Badge>
+                      )}
+                      {book.media.audio.length > 0 && (
+                        <Badge variant="default" className="text-xs">
+                          <Music className="h-3 w-3 mr-1" />
+                          {book.media.audio.length}
+                        </Badge>
+                      )}
+                      {book.media.video.length > 0 && (
+                        <Badge variant="default" className="text-xs">
+                          <Video className="h-3 w-3 mr-1" />
+                          {book.media.video.length}
+                        </Badge>
+                      )}
+                      {!book.media.pdf && book.media.images.length === 0 && book.media.audio.length === 0 && book.media.video.length === 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          None
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
@@ -102,7 +147,16 @@ export default function AdminCatalogPage() {
                     >
                       <FileText className="h-4 w-4" />
                     </Button>
-                    <PdfUploadButton book={book} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setEditingBook(book);
+                        setIsMediaDialogOpen(true);
+                      }}
+                    >
+                      <Image className="h-4 w-4" />
+                    </Button>
                     <DeleteBookButton bookId={book.id} />
                   </TableCell>
                 </TableRow>
@@ -113,7 +167,7 @@ export default function AdminCatalogPage() {
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Book</DialogTitle>
           </DialogHeader>
@@ -145,6 +199,15 @@ export default function AdminCatalogPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isMediaDialogOpen} onOpenChange={setIsMediaDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage Media Attachments</DialogTitle>
+          </DialogHeader>
+          {editingBook && <BookMediaManager book={editingBook} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -157,6 +220,8 @@ function AddBookForm({ onSuccess }: { onSuccess: () => void }) {
     author: '',
     price: '',
     content: '',
+    singleCopy: false,
+    kycRestricted: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,6 +234,8 @@ function AddBookForm({ onSuccess }: { onSuccess: () => void }) {
         author: formData.author,
         price,
         content: formData.content || null,
+        singleCopy: formData.singleCopy,
+        kycRestricted: formData.kycRestricted,
       });
       toast.success('Book added successfully');
       onSuccess();
@@ -178,7 +245,7 @@ function AddBookForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
       <div className="space-y-2">
         <Label htmlFor="id">Book ID</Label>
         <Input
@@ -227,6 +294,32 @@ function AddBookForm({ onSuccess }: { onSuccess: () => void }) {
           rows={5}
         />
       </div>
+      <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="singleCopy" className="text-base">Single Copy Only</Label>
+          <p className="text-sm text-muted-foreground">
+            Only one copy can be sold (sold out after first purchase)
+          </p>
+        </div>
+        <Switch
+          id="singleCopy"
+          checked={formData.singleCopy}
+          onCheckedChange={(checked) => setFormData({ ...formData, singleCopy: checked })}
+        />
+      </div>
+      <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="kycRestricted" className="text-base">KYC Required (One Per Person)</Label>
+          <p className="text-sm text-muted-foreground">
+            Requires unique identifier; prevents same person from buying twice
+          </p>
+        </div>
+        <Switch
+          id="kycRestricted"
+          checked={formData.kycRestricted}
+          onCheckedChange={(checked) => setFormData({ ...formData, kycRestricted: checked })}
+        />
+      </div>
       <Button type="submit" disabled={addBook.isPending} className="w-full">
         {addBook.isPending ? 'Adding...' : 'Add Book'}
       </Button>
@@ -241,6 +334,8 @@ function EditBookForm({ book, onSuccess }: { book: Book; onSuccess: () => void }
     author: book.author,
     price: formatTokenAmount(book.price),
     available: book.available,
+    singleCopy: book.singleCopy,
+    kycRestricted: book.kycRestricted,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -253,6 +348,8 @@ function EditBookForm({ book, onSuccess }: { book: Book; onSuccess: () => void }
         author: formData.author,
         price,
         available: formData.available,
+        singleCopy: formData.singleCopy,
+        kycRestricted: formData.kycRestricted,
       });
       toast.success('Book updated successfully');
       onSuccess();
@@ -262,7 +359,7 @@ function EditBookForm({ book, onSuccess }: { book: Book; onSuccess: () => void }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
       <div className="space-y-2">
         <Label htmlFor="edit-title">Title</Label>
         <Input
@@ -293,13 +390,44 @@ function EditBookForm({ book, onSuccess }: { book: Book; onSuccess: () => void }
           required
         />
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="edit-available" className="text-base">Available for Purchase</Label>
+          <p className="text-sm text-muted-foreground">
+            Toggle book availability in the catalog
+          </p>
+        </div>
         <Switch
           id="edit-available"
           checked={formData.available}
           onCheckedChange={(checked) => setFormData({ ...formData, available: checked })}
         />
-        <Label htmlFor="edit-available">Available for purchase</Label>
+      </div>
+      <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="edit-singleCopy" className="text-base">Single Copy Only</Label>
+          <p className="text-sm text-muted-foreground">
+            Only one copy can be sold (sold out after first purchase)
+          </p>
+        </div>
+        <Switch
+          id="edit-singleCopy"
+          checked={formData.singleCopy}
+          onCheckedChange={(checked) => setFormData({ ...formData, singleCopy: checked })}
+        />
+      </div>
+      <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="edit-kycRestricted" className="text-base">KYC Required (One Per Person)</Label>
+          <p className="text-sm text-muted-foreground">
+            Requires unique identifier; prevents same person from buying twice
+          </p>
+        </div>
+        <Switch
+          id="edit-kycRestricted"
+          checked={formData.kycRestricted}
+          onCheckedChange={(checked) => setFormData({ ...formData, kycRestricted: checked })}
+        />
       </div>
       <Button type="submit" disabled={updateBook.isPending} className="w-full">
         {updateBook.isPending ? 'Updating...' : 'Update Book'}
@@ -336,103 +464,9 @@ function EditContentForm({ book, onSuccess }: { book: Book; onSuccess: () => voi
         />
       </div>
       <Button type="submit" disabled={updateContent.isPending} className="w-full">
-        {updateContent.isPending ? 'Updating...' : 'Update Content'}
+        {updateContent.isPending ? 'Saving...' : 'Save Content'}
       </Button>
     </form>
-  );
-}
-
-function PdfUploadButton({ book }: { book: Book }) {
-  const uploadPdf = useUploadBookPdf();
-  const removePdf = useRemoveBookPdf();
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      e.target.value = '';
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
-
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-
-      await uploadPdf.mutateAsync({
-        bookId: book.id,
-        pdfBytes: bytes,
-        onProgress: (percentage) => {
-          setUploadProgress(percentage);
-        },
-      });
-
-      toast.success('PDF uploaded successfully');
-      setUploadProgress(0);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload PDF');
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleRemovePdf = async () => {
-    if (!confirm('Are you sure you want to remove the PDF for this book?')) return;
-
-    try {
-      await removePdf.mutateAsync(book.id);
-      toast.success('PDF removed successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to remove PDF');
-    }
-  };
-
-  if (isUploading) {
-    return (
-      <div className="inline-flex flex-col items-center gap-1 min-w-[100px]">
-        <Progress value={uploadProgress} className="h-2 w-full" />
-        <span className="text-xs text-muted-foreground">{Math.round(uploadProgress)}%</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="inline-flex gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        asChild
-        disabled={uploadPdf.isPending}
-      >
-        <label className="cursor-pointer">
-          <Upload className="h-4 w-4" />
-          <input
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
-        </label>
-      </Button>
-      {book.pdf && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleRemovePdf}
-          disabled={removePdf.isPending}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
   );
 }
 
@@ -440,7 +474,9 @@ function DeleteBookButton({ bookId }: { bookId: string }) {
   const deleteBook = useDeleteBook();
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this book?')) return;
+    if (!confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
+      return;
+    }
 
     try {
       await deleteBook.mutateAsync(bookId);
@@ -451,7 +487,12 @@ function DeleteBookButton({ bookId }: { bookId: string }) {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleDelete} disabled={deleteBook.isPending}>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleDelete}
+      disabled={deleteBook.isPending}
+    >
       <Trash2 className="h-4 w-4" />
     </Button>
   );

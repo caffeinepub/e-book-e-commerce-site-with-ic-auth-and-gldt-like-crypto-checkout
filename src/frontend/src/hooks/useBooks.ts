@@ -53,9 +53,19 @@ export function useAddBook() {
       author: string;
       price: bigint;
       content: string | null;
+      singleCopy: boolean;
+      kycRestricted: boolean;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addBook(params.id, params.title, params.author, params.price, params.content);
+      return actor.addBook(
+        params.id,
+        params.title,
+        params.author,
+        params.price,
+        params.content,
+        params.singleCopy,
+        params.kycRestricted
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allBooks'] });
@@ -75,9 +85,19 @@ export function useUpdateBook() {
       author: string;
       price: bigint;
       available: boolean;
+      singleCopy: boolean;
+      kycRestricted: boolean;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateBook(params.id, params.title, params.author, params.price, params.available);
+      return actor.updateBook(
+        params.id,
+        params.title,
+        params.author,
+        params.price,
+        params.available,
+        params.singleCopy,
+        params.kycRestricted
+      );
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['allBooks'] });
@@ -110,7 +130,6 @@ export function useUploadBookPdf() {
     mutationFn: async (params: { bookId: string; pdfBytes: Uint8Array; onProgress?: (percentage: number) => void }) => {
       if (!actor) throw new Error('Actor not available');
       
-      // Cast to the expected type
       const bytes = new Uint8Array(params.pdfBytes.buffer.slice(params.pdfBytes.byteOffset, params.pdfBytes.byteOffset + params.pdfBytes.byteLength)) as Uint8Array<ArrayBuffer>;
       
       let blob = ExternalBlob.fromBytes(bytes);
@@ -141,6 +160,132 @@ export function useRemoveBookPdf() {
       queryClient.invalidateQueries({ queryKey: ['allBooks'] });
       queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
       queryClient.invalidateQueries({ queryKey: ['book', bookId] });
+    },
+  });
+}
+
+export function useUploadBookImage() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; imageBytes: Uint8Array; onProgress?: (percentage: number) => void }) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      const bytes = new Uint8Array(params.imageBytes.buffer.slice(params.imageBytes.byteOffset, params.imageBytes.byteOffset + params.imageBytes.byteLength)) as Uint8Array<ArrayBuffer>;
+      
+      let blob = ExternalBlob.fromBytes(bytes);
+      if (params.onProgress) {
+        blob = blob.withUploadProgress(params.onProgress);
+      }
+      
+      return actor.uploadBookImage(params.bookId, blob);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useRemoveBookImage() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; imageIndex: number }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.removeBookImage(params.bookId, BigInt(params.imageIndex));
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useUploadBookAudio() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; audioBytes: Uint8Array; onProgress?: (percentage: number) => void }) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      const bytes = new Uint8Array(params.audioBytes.buffer.slice(params.audioBytes.byteOffset, params.audioBytes.byteOffset + params.audioBytes.byteLength)) as Uint8Array<ArrayBuffer>;
+      
+      let blob = ExternalBlob.fromBytes(bytes);
+      if (params.onProgress) {
+        blob = blob.withUploadProgress(params.onProgress);
+      }
+      
+      return actor.uploadBookAudio(params.bookId, blob);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useRemoveBookAudio() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; audioIndex: number }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.removeBookAudio(params.bookId, BigInt(params.audioIndex));
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useUploadBookVideo() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; videoBytes: Uint8Array; onProgress?: (percentage: number) => void }) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      const bytes = new Uint8Array(params.videoBytes.buffer.slice(params.videoBytes.byteOffset, params.videoBytes.byteOffset + params.videoBytes.byteLength)) as Uint8Array<ArrayBuffer>;
+      
+      let blob = ExternalBlob.fromBytes(bytes);
+      if (params.onProgress) {
+        blob = blob.withUploadProgress(params.onProgress);
+      }
+      
+      return actor.uploadBookVideo(params.bookId, blob);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
+    },
+  });
+}
+
+export function useRemoveBookVideo() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { bookId: string; videoIndex: number }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.removeBookVideo(params.bookId, BigInt(params.videoIndex));
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['book', variables.bookId] });
     },
   });
 }

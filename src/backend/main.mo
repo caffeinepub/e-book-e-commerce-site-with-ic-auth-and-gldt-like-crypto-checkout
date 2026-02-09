@@ -2,19 +2,15 @@ import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Time "mo:core/Time";
-import Int "mo:core/Int";
-import Order "mo:core/Order";
-import Array "mo:core/Array";
 import List "mo:core/List";
+import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Array "mo:core/Array";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
-
-// specify the data migration function in with-clause
 
 actor {
   include MixinStorage();
@@ -26,6 +22,13 @@ actor {
     name : Text;
   };
 
+  type MediaContent = {
+    pdf : ?Storage.ExternalBlob;
+    images : [Storage.ExternalBlob];
+    audio : [Storage.ExternalBlob];
+    video : [Storage.ExternalBlob];
+  };
+
   type Book = {
     id : Text;
     title : Text;
@@ -33,7 +36,14 @@ actor {
     price : Nat;
     available : Bool;
     content : ?Text;
-    pdf : ?Storage.ExternalBlob; // Optional PDF field
+    media : MediaContent;
+    singleCopy : Bool;
+    kycRestricted : Bool;
+  };
+
+  type OwnedBook = {
+    bookId : Text;
+    purchasedBy : Text; // KYC identifier
   };
 
   type CartItem = {
@@ -64,12 +74,29 @@ actor {
   let cartStore = Map.empty<Principal, List.List<CartItem>>();
   let orderStore = Map.empty<Text, Order>();
   let balanceStore = Map.empty<Principal, Nat>();
+  let ownedBooks = Map.empty<Text, OwnedBook>();
 
   var nextMessageId = 0;
   let supportMessages = Map.empty<Nat, CustomerMessage>();
 
   // Owner recovery state - stores the designated owner principal
   var designatedOwner : ?Principal = null;
+
+  // KYC customer record database (in-canister "database")
+  // Persistent storage for verified KYC identities and their associated data
+  let kycIdToPrincipal = Map.empty<Text, Principal>();
+  let principalToKycId = Map.empty<Principal, Text>();
+  let purchasesByCustomerId = Map.empty<Text, List.List<Text>>();
+  let permanentlyBlacklisted = Map.empty<Text, ()>();
+  let validationTimestamps = Map.empty<Text, Time.Time>();
+
+  public type KYcState = {
+    #notRequired;
+    #awaitingProof;
+    #validatedProof;
+    #rejected;
+    #permanentlyBlacklisted;
+  };
 
   module Book {
     public func compareByTitle(b1 : Book, b2 : Book) : Order.Order {
@@ -81,7 +108,6 @@ actor {
   };
 
   // Owner Recovery Functions
-  // Admin-only: Set the designated owner who can recover admin access
   public shared ({ caller }) func setDesignatedOwner(owner : Principal) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can set designated owner");
@@ -92,7 +118,6 @@ actor {
     designatedOwner := ?owner;
   };
 
-  // Query the designated owner (admin-only for security)
   public query ({ caller }) func getDesignatedOwner() : async ?Principal {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can view designated owner");
@@ -100,7 +125,6 @@ actor {
     designatedOwner;
   };
 
-  // Recovery function: Allows designated owner to reclaim admin access
   public shared ({ caller }) func recoverAdminAccess() : async () {
     switch (designatedOwner) {
       case (null) {
@@ -110,16 +134,12 @@ actor {
         if (caller != owner) {
           Runtime.trap("Unauthorized: Only the designated owner can recover admin access");
         };
-        // Grant admin role to the designated owner
-        // Note: assignRole already includes admin-only guard, but we bypass it here
-        // by directly calling it as the recovery mechanism
         AccessControl.assignRole(accessControlState, caller, caller, #admin);
       };
     };
   };
 
   // Customer Service Chat Functions
-  // Any user including guests can submit questions
   public shared ({ caller }) func sendSupportMessage(content : Text) : async Nat {
     if (content.size() < 10) {
       Runtime.trap("Message must contain at least 10 characters (counting spaces)");
@@ -141,7 +161,6 @@ actor {
     messageId;
   };
 
-  // Only admins can reply to messages
   public shared ({ caller }) func respondToMessage(originalMessageId : Nat, response : Text) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can respond to messages");
@@ -165,7 +184,6 @@ actor {
     };
   };
 
-  // Users can view replies to their own messages
   public query ({ caller }) func getUserMessages(includeResponses : Bool) : async [CustomerMessage] {
     let messages = supportMessages.values().filter(
       func(msg) { msg.author == caller }
@@ -181,9 +199,7 @@ actor {
     filteredMessages.toArray();
   };
 
-  // Users can view responses to their own messages
   public query ({ caller }) func getMessageResponses(messageId : Nat) : async [CustomerMessage] {
-    // First verify that the caller owns the original message or is an admin
     switch (supportMessages.get(messageId)) {
       case (null) { Runtime.trap("Message not found") };
       case (?originalMsg) {
@@ -225,7 +241,7 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Book Catalog Functions (Public - accessible to all including guests)
+  // Book Catalog Functions (Public)
   public query ({ caller }) func getBook(id : Text) : async Book {
     switch (bookStore.get(id)) {
       case (null) { Runtime.trap("Book not found") };
@@ -245,7 +261,15 @@ actor {
   };
 
   // Admin-only Book Management Functions
-  public shared ({ caller }) func addBook(id : Text, title : Text, author : Text, price : Nat, content : ?Text) : async () {
+  public shared ({ caller }) func addBook(
+    id : Text,
+    title : Text,
+    author : Text,
+    price : Nat,
+    content : ?Text,
+    singleCopy : Bool,
+    kycRestricted : Bool,
+  ) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can add books");
     };
@@ -259,12 +283,27 @@ actor {
       price;
       available = true;
       content;
-      pdf = null; // New books default to no PDF
+      media = {
+        pdf = null;
+        images = [];
+        audio = [];
+        video = [];
+      };
+      singleCopy;
+      kycRestricted;
     };
     bookStore.add(id, book);
   };
 
-  public shared ({ caller }) func updateBook(id : Text, title : Text, author : Text, price : Nat, available : Bool) : async () {
+  public shared ({ caller }) func updateBook(
+    id : Text,
+    title : Text,
+    author : Text,
+    price : Nat,
+    available : Bool,
+    singleCopy : Bool,
+    kycRestricted : Bool,
+  ) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can update books");
     };
@@ -279,7 +318,9 @@ actor {
           price;
           available;
           content = existingBook.content;
-          pdf = existingBook.pdf; // Preserve existing PDF
+          media = existingBook.media;
+          singleCopy;
+          kycRestricted;
         };
         bookStore.add(id, updatedBook);
       };
@@ -301,14 +342,16 @@ actor {
           price = existingBook.price;
           available = existingBook.available;
           content = ?content;
-          pdf = existingBook.pdf; // Preserve existing PDF
+          media = existingBook.media;
+          singleCopy = existingBook.singleCopy;
+          kycRestricted = existingBook.kycRestricted;
         };
         bookStore.add(id, updatedBook);
       };
     };
   };
 
-  // New PDF upload function (Admin-only)
+  // Media management functions
   public shared ({ caller }) func uploadBookPdf(bookId : Text, pdfBlob : Storage.ExternalBlob) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can upload PDFs");
@@ -316,15 +359,13 @@ actor {
     switch (bookStore.get(bookId)) {
       case (null) { Runtime.trap("Book not found") };
       case (?book) {
-        let updatedBook : Book = {
-          book with pdf = ?pdfBlob
-        };
+        var newMedia = { book.media with pdf = ?pdfBlob };
+        let updatedBook : Book = { book with media = newMedia };
         bookStore.add(bookId, updatedBook);
       };
     };
   };
 
-  // New PDF removal function (Admin-only)
   public shared ({ caller }) func removeBookPdf(bookId : Text) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can remove PDFs");
@@ -332,15 +373,118 @@ actor {
     switch (bookStore.get(bookId)) {
       case (null) { Runtime.trap("Book not found") };
       case (?book) {
-        let updatedBook : Book = {
-          book with pdf = null
-        };
+        var newMedia = { book.media with pdf = null };
+        let updatedBook : Book = { book with media = newMedia };
         bookStore.add(bookId, updatedBook);
       };
     };
   };
 
-  // Function to check if a user has purchased a specific book
+  public shared ({ caller }) func uploadBookImage(bookId : Text, imageBlob : Storage.ExternalBlob) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can upload images");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let newMedia = { book.media with images = book.media.images.concat([imageBlob]) };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeBookImage(bookId : Text, imageIndex : Nat) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove images");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let images = book.media.images;
+        if (imageIndex >= images.size()) {
+          Runtime.trap("Image index out of bounds");
+        };
+        let newImages = images.sliceToArray(0, imageIndex).concat(
+          images.sliceToArray(imageIndex + 1, images.size())
+        );
+        let newMedia = { book.media with images = newImages };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  public shared ({ caller }) func uploadBookAudio(bookId : Text, audioBlob : Storage.ExternalBlob) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can upload audio");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let newMedia = { book.media with audio = book.media.audio.concat([audioBlob]) };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeBookAudio(bookId : Text, audioIndex : Nat) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove audio");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let audio = book.media.audio;
+        if (audioIndex >= audio.size()) {
+          Runtime.trap("Audio index out of bounds");
+        };
+        let newAudio = audio.sliceToArray(0, audioIndex).concat(
+          audio.sliceToArray(audioIndex + 1, audio.size())
+        );
+        let newMedia = { book.media with audio = newAudio };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  public shared ({ caller }) func uploadBookVideo(bookId : Text, videoBlob : Storage.ExternalBlob) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can upload video");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let newMedia = { book.media with video = book.media.video.concat([videoBlob]) };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeBookVideo(bookId : Text, videoIndex : Nat) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can remove video");
+    };
+    switch (bookStore.get(bookId)) {
+      case (null) { Runtime.trap("Book not found") };
+      case (?book) {
+        let video = book.media.video;
+        if (videoIndex >= video.size()) {
+          Runtime.trap("Video index out of bounds");
+        };
+        let newVideo = video.sliceToArray(0, videoIndex).concat(
+          video.sliceToArray(videoIndex + 1, video.size())
+        );
+        let newMedia = { book.media with video = newVideo };
+        let updatedBook : Book = { book with media = newMedia };
+        bookStore.add(bookId, updatedBook);
+      };
+    };
+  };
+
   func hasPurchasedBook(user : Principal, bookId : Text) : Bool {
     for (order in orderStore.values()) {
       if (order.user == user) {
@@ -352,37 +496,33 @@ actor {
     false;
   };
 
-  // Function with access control check for book PDF purchase
   func hasAccessToBook(user : Principal, bookId : Text) : Bool {
-    // Admins always have access
     if (AccessControl.hasPermission(accessControlState, user, #admin)) {
       return true;
     };
-
-    // Check if the user has purchased the book
     return hasPurchasedBook(user, bookId);
   };
 
-  // Function to check for valid order and access rights
   func hasOrderAccess(caller : Principal, orderId : Text) : Bool {
     switch (orderStore.get(orderId)) {
       case (null) { false };
       case (?order) {
-        // Allow access if the caller is the order owner or an admin
         order.user == caller or AccessControl.hasPermission(accessControlState, caller, #admin)
       };
     };
   };
 
-  public query ({ caller }) func fetchPurchasedBookPdf(orderId : Text, bookId : Text) : async ?Storage.ExternalBlob {
+  public query ({ caller }) func fetchPurchasedBookMedia(
+    orderId : Text,
+    bookId : Text,
+  ) : async MediaContent {
     if (not hasOrderAccess(caller, orderId)) {
-      Runtime.trap("Unauthorized: Only the order owner or admins can access PDF");
+      Runtime.trap("Unauthorized: Only the order owner or admins can access media");
     };
 
     switch (orderStore.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
-        // Check if the order includes the requested book
         let bookPurchased = order.items.any(
           func(item) { item.bookId == bookId }
         );
@@ -392,7 +532,7 @@ actor {
 
         switch (bookStore.get(bookId)) {
           case (null) { Runtime.trap("Book not found") };
-          case (?book) { return book.pdf };
+          case (?book) { return book.media };
         };
       };
     };
@@ -428,7 +568,7 @@ actor {
     balance;
   };
 
-  // Cart Functions (User-only)
+  // Cart Functions
   public shared ({ caller }) func addToCart(bookId : Text, quantity : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add to cart");
@@ -448,6 +588,31 @@ actor {
       case (?book) {
         if (not book.available) {
           Runtime.trap("Book is not available");
+        };
+
+        if (book.kycRestricted) {
+          switch (principalToKycId.get(caller)) {
+            case (null) {
+              Runtime.trap("KYC verification required for this book. Please complete KYC verification before purchasing.");
+            };
+            case (?kycId) {
+              if (permanentlyBlacklisted.containsKey(kycId)) {
+                Runtime.trap("Your account has been blacklisted and cannot make purchases");
+              };
+              if (not validationTimestamps.containsKey(kycId)) {
+                Runtime.trap("KYC verification expired or not validated. Please complete KYC verification.");
+              };
+              for (ownedBook in ownedBooks.values()) {
+                if (ownedBook.bookId == bookId and ownedBook.purchasedBy == kycId) {
+                  Runtime.trap("You have already purchased this KYC-restricted book");
+                };
+              };
+            };
+          };
+        };
+
+        if (book.singleCopy and ownedBooks.containsKey(bookId)) {
+          Runtime.trap("This book is sold out (single copy only)");
         };
 
         let newItem : CartItem = { bookId; quantity };
@@ -489,8 +654,40 @@ actor {
     };
   };
 
-  // Checkout Function (User-only)
-  public shared ({ caller }) func checkout(orderId : Text) : async () {
+  public shared ({ caller }) func submitKycProof(kycIdentifier : Text, kycProofValid : Bool) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can submit KYC proof");
+    };
+
+    if (permanentlyBlacklisted.containsKey(kycIdentifier)) {
+      return "KYC verification failed: This identity has been permanently blacklisted";
+    };
+
+    switch (kycIdToPrincipal.get(kycIdentifier)) {
+      case (?existingPrincipal) {
+        if (existingPrincipal != caller) {
+          return "KYC verification failed: This identity is already associated with another account";
+        };
+      };
+      case (null) {};
+    };
+
+    if (not kycProofValid) {
+      return "KYC verification failed: Invalid or expired proof provided";
+    };
+
+    kycIdToPrincipal.add(kycIdentifier, caller);
+    principalToKycId.add(caller, kycIdentifier);
+    validationTimestamps.add(kycIdentifier, Time.now());
+
+    "KYC verification successful";
+  };
+
+  public shared ({ caller }) func checkout(
+    orderId : Text,
+    kycIdentifier : Text,
+    kycProofValid : Bool,
+  ) : async (Text, ?Order) {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can checkout");
     };
@@ -506,6 +703,43 @@ actor {
           Runtime.trap("Cart is empty");
         };
         items;
+      };
+    };
+
+    var hasKycRestrictedBooks = false;
+    for (item in cart.values()) {
+      switch (bookStore.get(item.bookId)) {
+        case (?book) {
+          if (book.kycRestricted) {
+            hasKycRestrictedBooks := true;
+          };
+        };
+        case (null) {};
+      };
+    };
+
+    if (hasKycRestrictedBooks) {
+      if (permanentlyBlacklisted.containsKey(kycIdentifier)) {
+        return ("KYC verification failed: This identity has been permanently blacklisted", null);
+      };
+
+      switch (kycIdToPrincipal.get(kycIdentifier)) {
+        case (?existingPrincipal) {
+          if (existingPrincipal != caller) {
+            return ("KYC verification failed: This identity is already associated with another account", null);
+          };
+        };
+        case (null) {};
+      };
+
+      if (not kycProofValid) {
+        return ("KYC verification failed: Invalid or expired proof provided", null);
+      };
+
+      if (not validationTimestamps.containsKey(kycIdentifier)) {
+        kycIdToPrincipal.add(kycIdentifier, caller);
+        principalToKycId.add(caller, kycIdentifier);
+        validationTimestamps.add(kycIdentifier, Time.now());
       };
     };
 
@@ -536,6 +770,36 @@ actor {
       Runtime.trap("Insufficient balance");
     };
 
+    let purchasedBooks = cart.toArray().map(
+      func(item) {
+        switch (bookStore.get(item.bookId)) {
+          case (null) { Runtime.trap("Book not found: " # item.bookId) };
+          case (?book) {
+            if (book.kycRestricted) {
+              for (ownedBook in ownedBooks.values()) {
+                if (ownedBook.bookId == item.bookId and ownedBook.purchasedBy == kycIdentifier) {
+                  Runtime.trap("You have already purchased this KYC-restricted book");
+                };
+              };
+            };
+
+            if (book.singleCopy and ownedBooks.containsKey(item.bookId)) {
+              Runtime.trap("This book is sold out (single copy only)");
+            };
+
+            let newOwnedBook : OwnedBook = {
+              bookId = item.bookId;
+              purchasedBy = kycIdentifier;
+            };
+
+            ownedBooks.add(item.bookId, newOwnedBook);
+
+            item.bookId;
+          };
+        };
+      }
+    );
+
     balanceStore.add(caller, currentBalance - totalAmount);
 
     let deliveredBookIds = cart.toArray().map(
@@ -553,6 +817,74 @@ actor {
 
     orderStore.add(orderId, order);
     cartStore.remove(caller);
+
+    if (hasKycRestrictedBooks) {
+      let prevPurchases = switch (purchasesByCustomerId.get(kycIdentifier)) {
+        case (null) { List.empty<Text>().toArray() };
+        case (?p) { p.toArray() };
+      };
+      let newPurchases = prevPurchases.concat(purchasedBooks);
+      purchasesByCustomerId.add(kycIdentifier, List.fromArray(newPurchases));
+    };
+
+    let purchasedCount = purchasedBooks.size();
+    let purchaseMsg = if (hasKycRestrictedBooks) {
+      if (purchasedCount == 1) {
+        "Book purchase successful for KYC verified customer with ID " # kycIdentifier # ". " #
+        purchasedCount.toText() # " book purchased. Order ID: " # orderId;
+      } else {
+        "Book purchase successful for KYC verified customer with ID " # kycIdentifier # ". " #
+        purchasedCount.toText() # " books purchased. Order ID: " # orderId;
+      };
+    } else {
+      if (purchasedCount == 1) {
+        "Book purchase successful. " # purchasedCount.toText() # " book purchased. Order ID: " # orderId;
+      } else {
+        "Book purchase successful. " # purchasedCount.toText() # " books purchased. Order ID: " # orderId;
+      };
+    };
+    (purchaseMsg, ?order);
+  };
+
+  public shared ({ caller }) func getKycProof(kycId : Text) : async KYcState {
+    switch (kycIdToPrincipal.get(kycId)) {
+      case (?owner) {
+        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Can only check your own KYC status");
+        };
+      };
+      case (null) {
+        if (not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Can only check your own KYC status");
+        };
+      };
+    };
+
+    if (permanentlyBlacklisted.containsKey(kycId)) {
+      return #permanentlyBlacklisted;
+    };
+
+    switch (validationTimestamps.get(kycId)) {
+      case (null) { #awaitingProof };
+      case (?_) { #validatedProof };
+    };
+  };
+
+  public shared ({ caller }) func rejectKycProof(kycId : Text) : async KYcState {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can reject KYC proof");
+    };
+    validationTimestamps.remove(kycId);
+    #rejected;
+  };
+
+  public shared ({ caller }) func blacklistKyc(kycId : Text) : async KYcState {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can blacklist KYC identities");
+    };
+    permanentlyBlacklisted.add(kycId, ());
+    validationTimestamps.remove(kycId);
+    #permanentlyBlacklisted;
   };
 
   // Order Functions
@@ -586,7 +918,6 @@ actor {
     userOrdersIter.toArray();
   };
 
-  // Digital Delivery Function
   public query ({ caller }) func getPurchasedBookContent(orderId : Text, bookId : Text) : async ?Text {
     switch (orderStore.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
@@ -620,5 +951,10 @@ actor {
     balanceStore.clear();
     supportMessages.clear();
     nextMessageId := 0;
+    kycIdToPrincipal.clear();
+    principalToKycId.clear();
+    purchasesByCustomerId.clear();
+    permanentlyBlacklisted.clear();
+    validationTimestamps.clear();
   };
 };

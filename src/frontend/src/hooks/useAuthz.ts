@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
 import type { UserProfile } from '@/backend';
@@ -44,13 +44,17 @@ export function useIsAdmin() {
   const { identity } = useInternetIdentity();
 
   return useQuery<boolean>({
-    queryKey: ['isAdmin'],
+    queryKey: ['isAdmin', identity?.getPrincipal().toString()],
     queryFn: async () => {
       if (!actor) return false;
-      return actor.isCallerAdmin();
+      try {
+        return await actor.isCallerAdmin();
+      } catch (error) {
+        console.error('Admin check failed:', error);
+        return false;
+      }
     },
     enabled: !!actor && !isFetching && !!identity,
+    staleTime: 30000, // Cache for 30 seconds
   });
 }
-
-import { useMutation, useQueryClient } from '@tanstack/react-query';

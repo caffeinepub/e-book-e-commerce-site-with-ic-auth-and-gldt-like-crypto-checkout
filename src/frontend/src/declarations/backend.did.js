@@ -24,15 +24,12 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
-export const Book = IDL.Record({
-  'id' : IDL.Text,
-  'pdf' : IDL.Opt(ExternalBlob),
-  'title' : IDL.Text,
-  'content' : IDL.Opt(IDL.Text),
-  'author' : IDL.Text,
-  'available' : IDL.Bool,
-  'price' : IDL.Nat,
+export const KYcState = IDL.Variant({
+  'awaitingProof' : IDL.Null,
+  'validatedProof' : IDL.Null,
+  'permanentlyBlacklisted' : IDL.Null,
+  'rejected' : IDL.Null,
+  'notRequired' : IDL.Null,
 });
 export const Time = IDL.Int;
 export const CartItem = IDL.Record({
@@ -46,6 +43,24 @@ export const Order = IDL.Record({
   'timestamp' : Time,
   'items' : IDL.Vec(CartItem),
   'deliveredBookIds' : IDL.Vec(IDL.Text),
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const MediaContent = IDL.Record({
+  'pdf' : IDL.Opt(ExternalBlob),
+  'audio' : IDL.Vec(ExternalBlob),
+  'video' : IDL.Vec(ExternalBlob),
+  'images' : IDL.Vec(ExternalBlob),
+});
+export const Book = IDL.Record({
+  'id' : IDL.Text,
+  'media' : MediaContent,
+  'title' : IDL.Text,
+  'content' : IDL.Opt(IDL.Text),
+  'author' : IDL.Text,
+  'available' : IDL.Bool,
+  'kycRestricted' : IDL.Bool,
+  'singleCopy' : IDL.Bool,
+  'price' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const CustomerMessage = IDL.Record({
@@ -86,17 +101,30 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addBook' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Nat,
+        IDL.Opt(IDL.Text),
+        IDL.Bool,
+        IDL.Bool,
+      ],
       [],
       [],
     ),
   'addToCart' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'checkout' : IDL.Func([IDL.Text], [], []),
+  'blacklistKyc' : IDL.Func([IDL.Text], [KYcState], []),
+  'checkout' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Bool],
+      [IDL.Text, IDL.Opt(Order)],
+      [],
+    ),
   'deleteBook' : IDL.Func([IDL.Text], [], []),
-  'fetchPurchasedBookPdf' : IDL.Func(
+  'fetchPurchasedBookMedia' : IDL.Func(
       [IDL.Text, IDL.Text],
-      [IDL.Opt(ExternalBlob)],
+      [MediaContent],
       ['query'],
     ),
   'getAllBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
@@ -108,6 +136,7 @@ export const idlService = IDL.Service({
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
   'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
+  'getKycProof' : IDL.Func([IDL.Text], [KYcState], []),
   'getMessageResponses' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(CustomerMessage)],
@@ -133,20 +162,28 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'recoverAdminAccess' : IDL.Func([], [], []),
+  'rejectKycProof' : IDL.Func([IDL.Text], [KYcState], []),
+  'removeBookAudio' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+  'removeBookImage' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   'removeBookPdf' : IDL.Func([IDL.Text], [], []),
+  'removeBookVideo' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   'removeFromCart' : IDL.Func([IDL.Text], [], []),
   'resetStore' : IDL.Func([], [], []),
   'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendSupportMessage' : IDL.Func([IDL.Text], [IDL.Nat], []),
   'setDesignatedOwner' : IDL.Func([IDL.Principal], [], []),
+  'submitKycProof' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Text], []),
   'updateBook' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool, IDL.Bool, IDL.Bool],
       [],
       [],
     ),
   'updateBookContent' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'uploadBookAudio' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+  'uploadBookImage' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   'uploadBookPdf' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+  'uploadBookVideo' : IDL.Func([IDL.Text, ExternalBlob], [], []),
 });
 
 export const idlInitArgs = [];
@@ -168,15 +205,12 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
-  const Book = IDL.Record({
-    'id' : IDL.Text,
-    'pdf' : IDL.Opt(ExternalBlob),
-    'title' : IDL.Text,
-    'content' : IDL.Opt(IDL.Text),
-    'author' : IDL.Text,
-    'available' : IDL.Bool,
-    'price' : IDL.Nat,
+  const KYcState = IDL.Variant({
+    'awaitingProof' : IDL.Null,
+    'validatedProof' : IDL.Null,
+    'permanentlyBlacklisted' : IDL.Null,
+    'rejected' : IDL.Null,
+    'notRequired' : IDL.Null,
   });
   const Time = IDL.Int;
   const CartItem = IDL.Record({ 'bookId' : IDL.Text, 'quantity' : IDL.Nat });
@@ -187,6 +221,24 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
     'items' : IDL.Vec(CartItem),
     'deliveredBookIds' : IDL.Vec(IDL.Text),
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const MediaContent = IDL.Record({
+    'pdf' : IDL.Opt(ExternalBlob),
+    'audio' : IDL.Vec(ExternalBlob),
+    'video' : IDL.Vec(ExternalBlob),
+    'images' : IDL.Vec(ExternalBlob),
+  });
+  const Book = IDL.Record({
+    'id' : IDL.Text,
+    'media' : MediaContent,
+    'title' : IDL.Text,
+    'content' : IDL.Opt(IDL.Text),
+    'author' : IDL.Text,
+    'available' : IDL.Bool,
+    'kycRestricted' : IDL.Bool,
+    'singleCopy' : IDL.Bool,
+    'price' : IDL.Nat,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const CustomerMessage = IDL.Record({
@@ -227,17 +279,30 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addBook' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Nat,
+          IDL.Opt(IDL.Text),
+          IDL.Bool,
+          IDL.Bool,
+        ],
         [],
         [],
       ),
     'addToCart' : IDL.Func([IDL.Text, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'checkout' : IDL.Func([IDL.Text], [], []),
+    'blacklistKyc' : IDL.Func([IDL.Text], [KYcState], []),
+    'checkout' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Bool],
+        [IDL.Text, IDL.Opt(Order)],
+        [],
+      ),
     'deleteBook' : IDL.Func([IDL.Text], [], []),
-    'fetchPurchasedBookPdf' : IDL.Func(
+    'fetchPurchasedBookMedia' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [IDL.Opt(ExternalBlob)],
+        [MediaContent],
         ['query'],
       ),
     'getAllBooks' : IDL.Func([], [IDL.Vec(Book)], ['query']),
@@ -249,6 +314,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
     'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
+    'getKycProof' : IDL.Func([IDL.Text], [KYcState], []),
     'getMessageResponses' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(CustomerMessage)],
@@ -274,20 +340,28 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'recoverAdminAccess' : IDL.Func([], [], []),
+    'rejectKycProof' : IDL.Func([IDL.Text], [KYcState], []),
+    'removeBookAudio' : IDL.Func([IDL.Text, IDL.Nat], [], []),
+    'removeBookImage' : IDL.Func([IDL.Text, IDL.Nat], [], []),
     'removeBookPdf' : IDL.Func([IDL.Text], [], []),
+    'removeBookVideo' : IDL.Func([IDL.Text, IDL.Nat], [], []),
     'removeFromCart' : IDL.Func([IDL.Text], [], []),
     'resetStore' : IDL.Func([], [], []),
     'respondToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendSupportMessage' : IDL.Func([IDL.Text], [IDL.Nat], []),
     'setDesignatedOwner' : IDL.Func([IDL.Principal], [], []),
+    'submitKycProof' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Text], []),
     'updateBook' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Bool, IDL.Bool, IDL.Bool],
         [],
         [],
       ),
     'updateBookContent' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'uploadBookAudio' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+    'uploadBookImage' : IDL.Func([IDL.Text, ExternalBlob], [], []),
     'uploadBookPdf' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+    'uploadBookVideo' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   });
 };
 

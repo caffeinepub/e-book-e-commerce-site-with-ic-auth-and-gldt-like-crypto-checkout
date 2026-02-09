@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useGetUserOrders } from './useOrders';
 import { useGetAllBooks } from './useBooks';
+import type { MediaContent } from '@/backend';
 
 export function useGetUserLibrary() {
   const { data: orders = [], isLoading: ordersLoading } = useGetUserOrders();
@@ -30,6 +31,19 @@ export function useGetBookContent(orderId: string, bookId: string) {
   });
 }
 
+export function useGetPurchasedBookMedia(orderId: string, bookId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<MediaContent>({
+    queryKey: ['bookMedia', orderId, bookId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.fetchPurchasedBookMedia(orderId, bookId);
+    },
+    enabled: !!actor && !isFetching && !!orderId && !!bookId,
+  });
+}
+
 export async function fetchPurchasedBookPdf(
   actor: any,
   orderId: string,
@@ -37,11 +51,11 @@ export async function fetchPurchasedBookPdf(
 ): Promise<Uint8Array | null> {
   if (!actor) throw new Error('Actor not available');
   
-  const pdfBlob = await actor.fetchPurchasedBookPdf(orderId, bookId);
+  const media = await actor.fetchPurchasedBookMedia(orderId, bookId);
   
-  if (!pdfBlob) {
+  if (!media.pdf) {
     return null;
   }
   
-  return await pdfBlob.getBytes();
+  return await media.pdf.getBytes();
 }

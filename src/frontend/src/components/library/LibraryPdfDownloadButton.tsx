@@ -9,20 +9,18 @@ import { toast } from 'sonner';
 interface LibraryPdfDownloadButtonProps {
   orderId: string;
   bookId: string;
-  title: string;
+  bookTitle: string;
 }
 
 export default function LibraryPdfDownloadButton({
   orderId,
   bookId,
-  title,
+  bookTitle,
 }: LibraryPdfDownloadButtonProps) {
   const { actor } = useActor();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
+  const handleDownload = async () => {
     if (!actor) {
       toast.error('Actor not available');
       return;
@@ -37,7 +35,7 @@ export default function LibraryPdfDownloadButton({
         return;
       }
 
-      const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      const filename = `${bookTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
       downloadFile(pdfBytes, filename, 'application/pdf');
       toast.success('PDF downloaded successfully');
     } catch (error: any) {
@@ -58,8 +56,8 @@ export default function LibraryPdfDownloadButton({
       size="icon"
       onClick={handleDownload}
       disabled={isDownloading}
+      className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
       aria-label="Download PDF"
-      className="h-8 w-8"
     >
       {isDownloading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

@@ -23,7 +23,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center gap-3">
+            <img 
+              src="/assets/generated/logo-bookcoin.dim_512x512.png" 
+              alt="BookCoin Logo" 
+              className="h-8 w-8"
+            />
             <span className="text-xl font-bold tracking-tight whitespace-nowrap">Radical Economist Collection</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">

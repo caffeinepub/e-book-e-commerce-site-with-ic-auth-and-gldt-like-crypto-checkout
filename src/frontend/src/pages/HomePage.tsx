@@ -39,11 +39,12 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="relative aspect-[8/3] lg:aspect-auto lg:h-[400px] rounded-lg overflow-hidden shadow-2xl">
+            <div className="relative flex items-center justify-center">
               <img
-                src="/assets/generated/hero-economist-phoenix-cover.dim_1600x600.png"
-                alt="Phoenix rising with a gold chain from the 1988 Economist magazine cover"
-                className="h-full w-full object-cover"
+                src="/assets/generated/phoenix-1988-image-3.dim_564x483.png"
+                alt="Phoenix rising from flames with currency symbolizing the rise of the people's money"
+                className="max-w-full h-auto"
+                style={{ width: '564px', height: '483px' }}
               />
             </div>
           </div>

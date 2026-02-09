@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import CoverImage from '@/components/books/CoverImage';
 import { formatTokenAmount } from '@/utils/format';
-import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, AlertCircle, ShieldCheck, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BookDetailsPage() {
@@ -19,9 +20,16 @@ export default function BookDetailsPage() {
   const { data: book, isLoading } = useGetBook(bookId);
   const addToCart = useAddToCart();
 
+  const isSoldOut = book?.singleCopy && !book?.available;
+
   const handleAddToCart = async () => {
     if (!identity) {
       toast.error('Please log in to add items to your cart');
+      return;
+    }
+
+    if (isSoldOut) {
+      toast.error('This book is sold out');
       return;
     }
 
@@ -30,7 +38,15 @@ export default function BookDetailsPage() {
       toast.success('Added to cart!');
     } catch (error: any) {
       console.error('Failed to add to cart:', error);
-      toast.error(error.message || 'Failed to add to cart');
+      const errorMessage = error.message || 'Failed to add to cart';
+      
+      if (errorMessage.includes('sold out') || errorMessage.includes('single copy')) {
+        toast.error('This book is sold out (single copy only)');
+      } else if (errorMessage.includes('already purchased') || errorMessage.includes('KYC-restricted')) {
+        toast.error('You have already purchased this book');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -75,8 +91,15 @@ export default function BookDetailsPage() {
         </Button>
 
         <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
-          <div>
+          <div className="relative">
             <CoverImage bookId={book.id} title={book.title} className="aspect-[2/3] w-full max-w-md mx-auto" />
+            {isSoldOut && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
+                <Badge variant="destructive" className="text-2xl px-6 py-3">
+                  Sold Out
+                </Badge>
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -85,14 +108,45 @@ export default function BookDetailsPage() {
               <p className="text-xl text-muted-foreground mt-2">by {book.author}</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Badge variant="secondary" className="text-lg font-mono px-4 py-2">
                 {formatTokenAmount(book.price)} GLDT
               </Badge>
-              {!book.available && <Badge variant="destructive">Unavailable</Badge>}
+              {!book.available && !isSoldOut && <Badge variant="destructive">Unavailable</Badge>}
+              {isSoldOut && <Badge variant="destructive">Sold Out</Badge>}
+              {book.singleCopy && book.available && (
+                <Badge variant="outline">
+                  <Copy className="h-4 w-4 mr-1" />
+                  Limited Edition (Single Copy)
+                </Badge>
+              )}
+              {book.kycRestricted && (
+                <Badge variant="outline">
+                  <ShieldCheck className="h-4 w-4 mr-1" />
+                  KYC Required
+                </Badge>
+              )}
             </div>
 
             <Separator />
+
+            {isSoldOut && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  This book was a limited single-copy edition and has been sold out.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {book.kycRestricted && !isSoldOut && (
+              <Alert>
+                <ShieldCheck className="h-4 w-4" />
+                <AlertDescription>
+                  This book requires identity verification. You can only purchase one copy per person.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Card>
               <CardContent className="pt-6">
@@ -108,11 +162,11 @@ export default function BookDetailsPage() {
               <Button
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={!book.available || addToCart.isPending}
+                disabled={!book.available || isSoldOut || addToCart.isPending}
                 className="flex-1"
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
+                {addToCart.isPending ? 'Adding...' : isSoldOut ? 'Sold Out' : 'Add to Cart'}
               </Button>
             </div>
           </div>

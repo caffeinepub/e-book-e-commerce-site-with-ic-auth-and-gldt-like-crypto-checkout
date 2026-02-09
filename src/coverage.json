@@ -1,37 +1,24 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T03:38:17.697Z",
+  "generatedAt": "2026-02-09T01:04:47.230Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a lightweight purchase confirmation screen that is shown immediately after a successful checkout, before the existing full order confirmation/details page.",
+        "summary": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/PurchaseConfirmationPage.tsx"
+          "frontend/src/pages/HomePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/PurchaseConfirmationPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Update routing to include the new confirmation screen route and adjust the checkout success navigation to point to it, while keeping the existing /order/$orderId route functional and reachable.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/HomePage.tsx"
         ]
       }
     ]
@@ -41,9 +28,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/PurchaseConfirmationPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
