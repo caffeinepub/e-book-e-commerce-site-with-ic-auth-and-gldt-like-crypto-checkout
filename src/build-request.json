@@ -1,54 +1,54 @@
 {
   "kind": "build_request",
-  "title": "Fix production deployment failure and re-deploy Version 22 to live",
-  "priority": "high",
+  "title": "Publish Version 25 to Live at radicaleconomist101-h78.caffeine.xyz",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
-      "target": "both",
+      "text": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-3"
         ],
         "quotes": [
-          "re-do deployment to live"
+          "yes everything is correct. Publish to my live link @ radicaleconomist101-h78.caffeine.xyz"
         ]
       },
       "acceptanceCriteria": [
-        "A production/live deployment completes successfully without a deployment error.",
-        "The live deployment serves the latest frontend build and the latest backend canister wasm for Version 22.",
-        "Any required build-time environment configuration for Live (e.g., VITE_APP_ENV) is correctly set so the header environment badge shows \"Live\" on the live site."
+        "The preflight script (frontend/scripts/deployment-preflight.sh) completes successfully (exit code 0).",
+        "The Live publish script completes successfully and deploys the frontend canister to the IC network without reinstalling/wiping backend state.",
+        "Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest build and the UI indicates the environment is Live."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
-      "target": "unknown",
+      "text": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-3"
         ],
         "quotes": [
-          "🙏 Failed to deploy to production: Deployment error",
-          "re-do deployment to live"
+          "Publish to my live link @ radicaleconomist101-h78.caffeine.xyz"
         ]
       },
       "acceptanceCriteria": [
-        "There is a clear, reproducible preflight procedure (documented in-repo) that validates the build succeeds for frontend and backend before initiating a Live deployment.",
-        "If the preflight detects a failure, it reports an actionable error message indicating what to fix before retrying deployment."
+        "frontend/scripts/publish-live.sh console messages refer to Version 25 (not Version 22).",
+        "frontend/docs/publish-live.md references Version 25 (not Version 22) and still targets radicaleconomist101-h78.caffeine.xyz.",
+        "No deployment behavior changes are introduced beyond updating the displayed version text."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths (compose instead).",
-    "Use English for any user-facing text."
+    "Do not wipe or reinstall backend canister state during the Live publish (preserve books, orders, profiles, and KYC data).",
+    "Keep the Live target URL/domain exactly: radicaleconomist101-h78.caffeine.xyz.",
+    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Adding new product features unrelated to deployment.",
-    "Changing the draft-vs-live catalog publishing workflow (export/import) beyond what is required to restore successful Live deployment."
+    "Implementing new application features or UI changes unrelated to publishing.",
+    "Changing backend schemas, data, or access control as part of this publish.",
+    "Adding third-party integrations or alternative deployment mechanisms."
   ],
   "imageRequirements": {
     "required": [],

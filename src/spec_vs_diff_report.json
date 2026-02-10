@@ -1,52 +1,39 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T20:40:19.455Z",
-  "summary": "Diff adds production env config (VITE_APP_ENV=Live), updates frontend environment detection logic, and introduces a deployment preflight doc + script. It does not show any concrete fix to the underlying production deployment failure beyond these frontend/build-time checks, and it includes unrelated repo metadata updates.",
+  "generatedAt": "2026-02-10T21:36:11.917Z",
+  "summary": "REQ-2 appears implemented via updates to publish-live documentation and publish-live.sh console messaging to reference Version 25 and keep the target domain radicaleconomist101-h78.caffeine.xyz. REQ-1 is partially supported by publish-live.sh running the preflight script and deploying the frontend canister, but the diff does not provide evidence that the Live UI will indicate the environment is Live after publish. The diff also includes unrelated project bookkeeping updates and a broad set of UI/app feature descriptions not requested for a publish-only task.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
-      "reason": "The diff does not include any changes to deployment configuration (e.g., dfx.json, CI/CD configs) or backend build/deploy logic, nor does it show the specific root-cause fix for the production deployment error; only frontend env handling and a preflight script are added.",
+      "requirement": "Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest build and the UI indicates the environment is Live.",
+      "reason": "The diff shows deployment scripts and documentation updates, but does not show any concrete frontend code/config change ensuring the deployed Live site will indicate 'Live' in the UI (only a script note telling the operator to verify this).",
       "evidence": [
-        "frontend/.env.production",
-        "frontend/src/config/environment.ts",
-        "frontend/scripts/deployment-preflight.sh",
-        "frontend/docs/deployment-preflight.md"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "A production/live deployment completes successfully without a deployment error, serving the latest frontend build and latest backend canister wasm for Version 22.",
-      "reason": "No diff evidence shows that deployment tooling/config was updated or that backend canister build artifacts/deploy steps were corrected; there are no backend or deployment pipeline changes included to ensure the live deployment succeeds and serves the latest wasm.",
-      "evidence": [
-        "frontend/scripts/deployment-preflight.sh"
+        "frontend/scripts/publish-live.sh"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Repository/project metadata updates unrelated to fixing deployment or adding the preflight procedure (e.g., project_state.json).",
-      "reason": "BuildRequest only asks for deployment fix and a preflight check; updating internal project tracking metadata is not requested.",
-      "evidence": [
-        "project_state.json"
-      ]
-    },
-    {
-      "description": "Updating frontend-file-summaries.txt with extensive app feature descriptions unrelated to deployment fix/preflight.",
-      "reason": "BuildRequest non-goals explicitly avoid new/unrelated product features; this file appears to be a documentation/summary artifact not required by REQ-1 or REQ-2.",
+      "description": "Updated/expanded application UI/features (e.g., new routes like /purchase-confirmation/$orderId, admin dashboard settings tab for store reset, enhanced library content dialog with media handling, hero asset changes, etc.), which are unrelated to publishing Version 25 to Live.",
+      "reason": "The BuildRequest explicitly lists non-goals as implementing new application features or UI changes unrelated to publishing; the diff summary text describes many such additions/changes.",
       "evidence": [
         "frontend-file-summaries.txt"
       ]
+    },
+    {
+      "description": "Project tracking/state metadata changes (project_state.json) marking publish work items and summaries.",
+      "reason": "The BuildRequest did not request adding/updating internal project tracking files; it only requested running preflight/publish and updating publish docs/script messaging.",
+      "evidence": [
+        "project_state.json"
+      ]
     }
   ],
-  "confidence": 0.68,
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/.env.production",
-    "frontend/docs/deployment-preflight.md",
-    "frontend/scripts/deployment-preflight.sh",
-    "frontend/src/config/environment.ts",
+    "frontend/docs/publish-live.md",
+    "frontend/scripts/publish-live.sh",
     "project_state.json"
   ]
 }

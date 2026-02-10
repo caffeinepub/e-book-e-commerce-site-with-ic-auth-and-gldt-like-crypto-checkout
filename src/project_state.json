@@ -1,32 +1,39 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Production/live deployment is failing with a deployment error (Version 22)."
+  "summary": "Deploy/publish Version 25 to the live link radicaleconomist101-h78.caffeine.xyz.",
+  "architectural_notes": [
+    "Deployment target live link: radicaleconomist101-h78.caffeine.xyz"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-investigate-the-current-failed-to-deploy-to-production-deployment-error-for-version-22-and-apply-the-minimal-code-config-changes-required-so-the-project-can-successfully-deploy-to-the-live-production-environment",
-      "title": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
+      "id": "feature-run-the-existing-live-deployment-preflight-checks-and-then-publish-the-current-draft-version-25-to-the-live-link-https-radicaleconomist101-h78-caffeine-xyz-without-wiping-backend-state",
+      "title": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-developer-facing-deployment-preflight-check-documentation-and-or-script-that-can-be-run-before-attempting-a-live-deployment-to-catch-the-specific-class-of-failure-that-caused-the-version-22-production-deployment-error",
-      "title": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
+      "id": "feature-update-live-publish-documentation-and-script-messaging-to-refer-to-version-25-instead-of-version-22-wherever-the-version-number-is-displayed-in-user-facing-console-output-or-docs-while-keeping-the-target-domain-radicaleconomist101-h78-caffeine-xyz-unchanged",
+      "title": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix production deployment failure and re-deploy Version 22 to live",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Publish/deploy Version 25 to the user's live link: radicaleconomist101-h78.caffeine.xyz",
+      "reqIds": [],
+      "status": "in_progress"
+    }
+  ],
+  "projectName": "Publish Version 25 to Live at radicaleconomist101-h78.caffeine.xyz",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

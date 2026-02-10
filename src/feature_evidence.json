@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-investigate-the-current-failed-to-deploy-to-production-deployment-error-for-version-22-and-apply-the-minimal-code-config-changes-required-so-the-project-can-successfully-deploy-to-the-live-production-environment",
-      "featureTitle": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
+      "featureId": "feature-run-the-existing-live-deployment-preflight-checks-and-then-publish-the-current-draft-version-25-to-the-live-link-https-radicaleconomist101-h78-caffeine-xyz-without-wiping-backend-state",
+      "featureTitle": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
       "files": [
-        "frontend/.env.production",
-        "frontend/src/config/environment.ts"
+        "frontend/scripts/publish-live.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,11 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-developer-facing-deployment-preflight-check-documentation-and-or-script-that-can-be-run-before-attempting-a-live-deployment-to-catch-the-specific-class-of-failure-that-caused-the-version-22-production-deployment-error",
-      "featureTitle": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
+      "featureId": "feature-update-live-publish-documentation-and-script-messaging-to-refer-to-version-25-instead-of-version-22-wherever-the-version-number-is-displayed-in-user-facing-console-output-or-docs-while-keeping-the-target-domain-radicaleconomist101-h78-caffeine-xyz-unchanged",
+      "featureTitle": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
       "files": [
-        "frontend/docs/deployment-preflight.md",
-        "frontend/scripts/deployment-preflight.sh"
+        "frontend/docs/publish-live.md",
+        "frontend/scripts/publish-live.sh"
       ],
       "components": [
         "authorization@4.0.0",

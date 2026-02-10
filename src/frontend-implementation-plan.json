@@ -1,51 +1,57 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Restore successful Live deployment for Version 22 (frontend fixes + preflight)",
+  "title": "Publish Draft Version 25 to Live (radicaleconomist101-h78.caffeine.xyz)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Apply minimal frontend build/config changes to unblock Live deployment and ensure the header environment badge shows \"Live\" in production.",
+      "summary": "Ensure Live publish workflow runs preflight then deploys the current Draft (Version 25) to the Live domain without wiping backend state, and that the UI environment indicator shows Live.",
       "acceptanceCriteria": [
-        "A production/live deployment completes successfully without a deployment error.",
-        "The live deployment serves the latest frontend build and the latest backend canister wasm for Version 22.",
-        "Any required build-time environment configuration for Live (e.g., VITE_APP_ENV) is correctly set so the header environment badge shows \"Live\" on the live site."
+        "The preflight script (frontend/scripts/deployment-preflight.sh) completes successfully (exit code 0).",
+        "The Live publish script completes successfully and deploys the frontend canister to the IC network without reinstalling/wiping backend state.",
+        "Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest build and the UI indicates the environment is Live."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/config/environment.ts",
+          "path": "frontend/scripts/publish-live.sh",
           "operation": "modify",
-          "description": "Harden environment detection so Live is reliably derived in production builds (e.g., fall back to production build mode when VITE_APP_ENV is unset/mis-set) while keeping Draft as the safe default for non-production. This ensures the Header environment badge can correctly show \"Live\" on the live site."
+          "description": "Harden the Live publish script so it explicitly deploys ONLY the frontend canister in a non-destructive mode (preserving backend state), and keep the target domain radicaleconomist101-h78.caffeine.xyz unchanged."
+        },
+        {
+          "path": "frontend/scripts/deployment-preflight.sh",
+          "operation": "modify",
+          "description": "Ensure preflight output and checks clearly validate Live build configuration (including VITE_APP_ENV=Live) needed for the UI environment badge to show Live, without changing deployment behavior."
+        },
+        {
+          "path": "frontend/docs/deployment-preflight.md",
+          "operation": "modify",
+          "description": "Update the preflight documentation to align with the current Live publish flow and explicitly call out validation that the app’s environment badge reads 'Live' after a production build."
         },
         {
           "path": "frontend/.env.production",
-          "operation": "create",
-          "description": "Add a production build-time environment file that explicitly sets VITE_APP_ENV to Live so production builds consistently render the Live badge and avoid misconfiguration during deployment."
-        },
-        {
-          "path": "frontend/src/components/layout/Header.tsx",
           "operation": "modify",
-          "description": "Confirm the environment badge renders deterministically from the normalized environment value (APP_ENVIRONMENT) and does not rely on any runtime-only configuration that could differ between build and Live hosting."
+          "description": "Verify production environment configuration remains set to Live (VITE_APP_ENV=Live) so production builds render the Live environment indicator."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add an in-repo deployment preflight procedure (doc and script) to catch the class of failures that broke the Version 22 Live deployment before re-deploying.",
+      "summary": "Update Live publish documentation and script console output to reference Version 25 (not Version 22) while keeping the Live target domain unchanged.",
       "acceptanceCriteria": [
-        "There is a clear, reproducible preflight procedure (documented in-repo) that validates the build succeeds for frontend and backend before initiating a Live deployment.",
-        "If the preflight detects a failure, it reports an actionable error message indicating what to fix before retrying deployment."
+        "frontend/scripts/publish-live.sh console messages refer to Version 25 (not Version 22).",
+        "frontend/docs/publish-live.md references Version 25 (not Version 22) and still targets radicaleconomist101-h78.caffeine.xyz.",
+        "No deployment behavior changes are introduced beyond updating the displayed version text."
       ],
       "file_operations": [
         {
-          "path": "frontend/docs/deployment-preflight.md",
-          "operation": "create",
-          "description": "Document a reproducible preflight checklist tailored to Live deployment: required environment variables (including VITE_APP_ENV), clean install guidance, frontend build verification, and backend build verification steps (run from repo root). Include common failure symptoms and the specific actionable fixes expected for the Version 22 deployment-error class."
+          "path": "frontend/scripts/publish-live.sh",
+          "operation": "modify",
+          "description": "Replace all user-facing console output and comments that say 'Version 22' with 'Version 25' and keep the target domain radicaleconomist101-h78.caffeine.xyz unchanged."
         },
         {
-          "path": "frontend/scripts/deployment-preflight.sh",
-          "operation": "create",
-          "description": "Add a developer-facing preflight script that performs local validation before Live deployment: checks required env configuration for Live (e.g., VITE_APP_ENV=Live), runs the frontend build, and triggers the backend build step (invoked from repo root). The script should exit non-zero on failure and print actionable, targeted error messages describing what to fix before retrying deployment."
+          "path": "frontend/docs/publish-live.md",
+          "operation": "modify",
+          "description": "Update the publish documentation to reference Draft Version 25 (not 22) while preserving the target domain radicaleconomist101-h78.caffeine.xyz; also fix/complete the document content if it is currently truncated so it renders correctly."
         }
       ]
     }

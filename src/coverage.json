@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T20:40:19.459Z",
+  "generatedAt": "2026-02-10T21:36:11.919Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,29 +12,29 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
+        "summary": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/config/environment.ts",
-          "frontend/.env.production",
-          "frontend/src/components/layout/Header.tsx"
+          "frontend/scripts/publish-live.sh",
+          "frontend/scripts/deployment-preflight.sh",
+          "frontend/docs/deployment-preflight.md",
+          "frontend/.env.production"
         ],
         "matchedFiles": [
-          "frontend/src/config/environment.ts",
-          "frontend/.env.production"
+          "frontend/scripts/publish-live.sh"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
+        "summary": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/docs/deployment-preflight.md",
-          "frontend/scripts/deployment-preflight.sh"
+          "frontend/scripts/publish-live.sh",
+          "frontend/docs/publish-live.md"
         ],
         "matchedFiles": [
-          "frontend/docs/deployment-preflight.md",
-          "frontend/scripts/deployment-preflight.sh"
+          "frontend/scripts/publish-live.sh",
+          "frontend/docs/publish-live.md"
         ]
       }
     ]
@@ -44,10 +44,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/.env.production",
-    "frontend/docs/deployment-preflight.md",
-    "frontend/scripts/deployment-preflight.sh",
-    "frontend/src/config/environment.ts",
+    "frontend/docs/publish-live.md",
+    "frontend/scripts/publish-live.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

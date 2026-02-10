@@ -19,7 +19,7 @@
   "frontend/src/pages/OrderConfirmationPage.tsx": "Order confirmation page displaying a thank-you icon with a one-time entrance animation (fade-in + zoom-in), purchase details, and library navigation after successful checkout.",
   "frontend/src/pages/MyLibraryPage.tsx": "User library page showing purchased books with custom library cards featuring read buttons, PDF download icons, and media count badges for images/audio/video.",
   "frontend/src/pages/admin/AdminDashboardPage.tsx": "Admin dashboard with tabs for catalog, orders, token minting, support inbox, and the new settings tab for store reset, all guarded by AdminRoute wrapper.",
-  "frontend/src/pages/admin/AdminCatalogPage.tsx": "Admin catalog management with add/edit/delete book functionality, restriction controls, content editing, and integrated media manager dialog showing media counts in the table.",
+  "frontend/src/pages/admin/AdminCatalogPage.tsx": "Admin catalog management page with tabbed filter to view all books or only available books, showing counts for each view and clearly distinguishing unavailable books with badges; includes add/edit/delete book functionality, restriction controls, content editing, and integrated media manager dialog.",
   "frontend/src/pages/admin/AdminOrdersPage.tsx": "Admin orders view displaying all orders with customer and item details.",
   "frontend/src/pages/admin/AdminMintPage.tsx": "Admin token minting interface for adding GLDT to user balances.",
   "frontend/src/hooks/useQueries.ts": "Empty placeholder file as queries are organized in feature-specific hooks.",
@@ -56,6 +56,8 @@
   "frontend/src/hooks/useCatalogTransfer.ts": "React Query mutation hooks for admin-only catalog export and import operations with automatic cache invalidation on import success.",
   "frontend/src/utils/catalogTransfer.ts": "Client-side utilities for validating, parsing, and applying import modes (overwrite/merge) to catalog JSON files.",
   "frontend/.env.production": "Production environment configuration file that sets VITE_APP_ENV=Live for production builds.",
-  "frontend/docs/deployment-preflight.md": "Comprehensive deployment preflight documentation with step-by-step validation procedures, troubleshooting guides, and common failure resolutions for Live deployments.",
-  "frontend/scripts/deployment-preflight.sh": "Automated bash script that validates environment configuration, checks dependencies, builds backend and frontend, and verifies the Live environment is correctly baked into production builds."
+  "frontend/docs/deployment-preflight.md": "Updated deployment preflight documentation with complete step-by-step validation procedures, automated script usage, troubleshooting guides, and a new \"Publish to Live\" section that references the publish-live.sh script and emphasizes the no-wipe constraint.",
+  "frontend/scripts/deployment-preflight.sh": "Automated bash script that validates environment configuration, checks dependencies, builds backend and frontend, and verifies the Live environment is correctly baked into production builds.",
+  "frontend/scripts/publish-live.sh": "Bash script for publishing Draft Version 25 to Live production at radicaleconomist101-h78.caffeine.xyz, running preflight checks, prompting for confirmation, and deploying only the frontend canister to preserve backend state.",
+  "frontend/docs/publish-live.md": "Comprehensive documentation for the Live publish procedure for Version 25, including automated and manual methods, state preservation guarantees, post-deployment verification steps, troubleshooting guide, and rollback procedures."
 }

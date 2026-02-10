@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, FileText, ShieldCheck, Copy, Image, Music, Video } from 'lucide-react';
 import { formatTokenAmount, parseTokenAmount } from '@/utils/format';
 import { toast } from 'sonner';
@@ -22,6 +23,14 @@ export default function AdminCatalogPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isContentDialogOpen, setIsContentDialogOpen] = useState(false);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
+  const [viewFilter, setViewFilter] = useState<'all' | 'available'>('all');
+
+  const filteredBooks = viewFilter === 'all' 
+    ? books 
+    : books.filter(book => book.available);
+
+  const availableCount = books.filter(book => book.available).length;
+  const unavailableCount = books.length - availableCount;
 
   return (
     <div className="space-y-6">
@@ -43,14 +52,34 @@ export default function AdminCatalogPage() {
         </Dialog>
       </div>
 
+      <div className="flex items-center justify-between">
+        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as 'all' | 'available')}>
+          <TabsList>
+            <TabsTrigger value="all">
+              All Books ({books.length})
+            </TabsTrigger>
+            <TabsTrigger value="available">
+              Available Only ({availableCount})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        {viewFilter === 'all' && unavailableCount > 0 && (
+          <div className="text-sm text-muted-foreground">
+            {unavailableCount} unavailable book{unavailableCount !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading books...</p>
         </div>
-      ) : books.length === 0 ? (
+      ) : filteredBooks.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No books in catalog yet</p>
+            <p className="text-muted-foreground">
+              {viewFilter === 'all' ? 'No books in catalog yet' : 'No available books'}
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -68,7 +97,7 @@ export default function AdminCatalogPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {books.map((book) => (
+              {filteredBooks.map((book) => (
                 <TableRow key={book.id}>
                   <TableCell className="font-medium">{book.title}</TableCell>
                   <TableCell>{book.author}</TableCell>

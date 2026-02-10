@@ -280,6 +280,10 @@ actor {
 
   // Customer Service Chat Functions
   public shared ({ caller }) func sendSupportMessage(content : Text) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can send support messages");
+    };
+
     if (content.size() < 10) {
       Runtime.trap("Message must contain at least 10 characters (counting spaces)");
     };
@@ -324,6 +328,10 @@ actor {
   };
 
   public query ({ caller }) func getUserMessages(includeResponses : Bool) : async [CustomerMessage] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view messages");
+    };
+
     let messages = supportMessages.values().filter(
       func(msg) { msg.author == caller }
     );
@@ -985,6 +993,10 @@ actor {
   };
 
   public shared ({ caller }) func getKycProof(kycId : Text) : async KYcState {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check KYC status");
+    };
+
     let kycIdTrimmed = kycId.trim(#char(' '));
 
     switch (kycIdToPrincipal.get(kycIdTrimmed)) {

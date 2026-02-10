@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Restore successful production (Live) deployment for Version 22 by fixing the underlying deployment failure and adding a preflight check to prevent recurrence.
+**Goal:** Publish the current Draft (Version 25) to the Live deployment at radicaleconomist101-h78.caffeine.xyz after successfully running preflight checks, without wiping backend state.
 
 **Planned changes:**
-- Investigate and fix the minimal code/config issue causing “Failed to deploy to production: Deployment error” for Version 22.
-- Ensure Live build-time environment configuration is correctly set so the deployed site reflects the Live environment (e.g., environment badge shows “Live”).
-- Add an in-repo developer-facing deployment preflight procedure (documentation and/or script) that validates frontend and backend builds before attempting Live deployment and reports actionable errors.
+- Run the existing deployment preflight script and complete a Live publish that deploys the frontend without reinstalling/wiping backend canister state.
+- Update user-facing version references in Live publish documentation and script console output to show Version 25 instead of Version 22, keeping the target domain unchanged.
 
-**User-visible outcome:** Version 22 can be deployed to Live successfully, serving the latest frontend build and backend canister wasm, and the live site correctly indicates it is running in the Live environment.
+**User-visible outcome:** Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest (Version 25) Live build, and the UI indicates the environment is Live.
