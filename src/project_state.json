@@ -1,55 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project involves a KYC-restricted purchasing flow with rules limiting what a verified person (by ID/birth certificate number) can buy over time.",
-  "architectural_notes": [
-    "Enforce KYC restriction based on persistent person identifier (ID number / birth certificate number) across all KYC-restricted items, not per-item purchase history."
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Production/live deployment is failing with a deployment error (Version 22)."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-user-facing-kyc-explanatory-text-in-the-checkout-kyc-ui-to-reflect-the-new-policy-no-longer-claiming-it-enforces-one-copy-per-person-for-a-specific-book",
-      "title": "Update user-facing KYC explanatory text in the checkout KYC UI to reflect the new policy (no longer claiming it enforces \"one copy per person\" for a specific book).",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-frontend-checkout-error-mapping-to-show-a-user-friendly-english-message-that-matches-the-new-backend-restriction-when-the-backend-rejects-checkout-due-to-the-previously-purchased-another-kyc-restricted-item-rule",
-      "title": "Update frontend checkout error mapping to show a user-friendly English message that matches the new backend restriction when the backend rejects checkout due to the \"previously purchased another KYC-restricted item\" rule.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    }
-  ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Change KYC purchase restriction: instead of preventing the same person from buying the same item twice, prevent a person (identified by previously entered ID/birth certificate number) from purchasing any other KYC-restricted items at any time after purchasing one KYC-restricted item.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Replace the current KYC purchase restriction rule (which prevents a person from purchasing the same KYC-restricted item twice) with a new rule: once a person (identified by the previously submitted KYC identifier derived from ID number or birth certificate number) has purchased any KYC-restricted book, that same KYC identifier must be blocked from purchasing any other KYC-restricted books at any time in the future.",
+      "id": "feature-investigate-the-current-failed-to-deploy-to-production-deployment-error-for-version-22-and-apply-the-minimal-code-config-changes-required-so-the-project-can-successfully-deploy-to-the-live-production-environment",
+      "title": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
       "reqIds": [
         "REQ-1"
       ],
-      "status": "pending"
+      "version": 1
     },
     {
-      "id": "AR-3",
-      "summary": "Update any backend-side pre-checks that currently look for \"already purchased this KYC-restricted book\" to instead detect whether the same KYC identifier has previously purchased a different KYC-restricted book, and block accordingly while leaving non-KYC-restricted purchases unaffected.",
+      "id": "feature-add-a-developer-facing-deployment-preflight-check-documentation-and-or-script-that-can-be-run-before-attempting-a-live-deployment-to-catch-the-specific-class-of-failure-that-caused-the-version-22-production-deployment-error",
+      "title": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
       "reqIds": [
         "REQ-2"
       ],
-      "status": "pending"
+      "version": 1
     }
   ],
-  "projectName": "Update KYC purchase restriction to block buying other KYC-restricted items after first KYC-restricted purchase",
+  "new_feature_requests": [],
+  "projectName": "Fix production deployment failure and re-deploy Version 22 to live",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

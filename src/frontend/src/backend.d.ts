@@ -14,6 +14,15 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface CustomerMessage {
+    id: bigint;
+    content: string;
+    author: Principal;
+    timestamp: Time;
+    responseToMsgId?: bigint;
+    isAdminResponse: boolean;
+}
+export type Time = bigint;
 export interface Book {
     id: string;
     media: MediaContent;
@@ -25,15 +34,35 @@ export interface Book {
     singleCopy: boolean;
     price: bigint;
 }
-export interface CustomerMessage {
-    id: bigint;
-    content: string;
-    author: Principal;
+export interface Order {
+    user: Principal;
+    orderId: string;
+    totalAmount: bigint;
     timestamp: Time;
-    responseToMsgId?: bigint;
-    isAdminResponse: boolean;
+    items: Array<CartItem>;
+    deliveredBookIds: Array<string>;
 }
-export type Time = bigint;
+export interface OwnedBook {
+    bookId: string;
+    purchasedBy: string;
+}
+export interface CatalogState {
+    purchasesByCustomerId: Array<[string, Array<string>]>;
+    balanceStore: Array<[Principal, bigint]>;
+    cartStore: Array<[Principal, Array<CartItem>]>;
+    nextMessageId: bigint;
+    principalToKycId: Array<[Principal, string]>;
+    supportMessages: Array<[bigint, CustomerMessage]>;
+    bookStore: Array<[string, Book]>;
+    permanentlyBlacklisted: Array<[string, null]>;
+    userProfiles: Array<[Principal, UserProfile]>;
+    ownedBooks: Array<[string, OwnedBook]>;
+    orderStore: Array<[string, Order]>;
+    kycRestrictedPurchases: Array<[string, string]>;
+    designatedOwner?: Principal;
+    kycIdToPrincipal: Array<[string, Principal]>;
+    validationTimestamps: Array<[string, Time]>;
+}
 export interface CartItem {
     bookId: string;
     quantity: bigint;
@@ -43,14 +72,6 @@ export interface MediaContent {
     audio: Array<ExternalBlob>;
     video: Array<ExternalBlob>;
     images: Array<ExternalBlob>;
-}
-export interface Order {
-    user: Principal;
-    orderId: string;
-    totalAmount: bigint;
-    timestamp: Time;
-    items: Array<CartItem>;
-    deliveredBookIds: Array<string>;
 }
 export interface UserProfile {
     name: string;
@@ -74,6 +95,7 @@ export interface backendInterface {
     blacklistKyc(kycId: string): Promise<KYcState>;
     checkout(orderId: string, kycIdentifier: string, kycProofValid: boolean): Promise<[string, Order | null]>;
     deleteBook(id: string): Promise<void>;
+    exportCatalog(): Promise<CatalogState>;
     fetchPurchasedBookMedia(orderId: string, bookId: string): Promise<MediaContent>;
     getAllBooks(): Promise<Array<Book>>;
     getAllOrders(): Promise<Array<Order>>;
@@ -91,6 +113,7 @@ export interface backendInterface {
     getUserMessages(includeResponses: boolean): Promise<Array<CustomerMessage>>;
     getUserOrders(user: Principal): Promise<Array<Order>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    importCatalog(newCatalog: CatalogState): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
     recoverAdminAccess(): Promise<void>;

@@ -11,9 +11,7 @@ import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -109,6 +107,144 @@ actor {
       };
     };
   };
+
+  // CatalogState type (represents full catalog state)
+  public type CatalogState = {
+    userProfiles : [(Principal, UserProfile)];
+    bookStore : [(Text, Book)];
+    cartStore : [(Principal, [CartItem])];
+    orderStore : [(Text, Order)];
+    balanceStore : [(Principal, Nat)];
+    ownedBooks : [(Text, OwnedBook)];
+    nextMessageId : Nat;
+    supportMessages : [(Nat, CustomerMessage)];
+    designatedOwner : ?Principal;
+    kycIdToPrincipal : [(Text, Principal)];
+    principalToKycId : [(Principal, Text)];
+    purchasesByCustomerId : [(Text, [Text])];
+    permanentlyBlacklisted : [(Text, ())];
+    validationTimestamps : [(Text, Time.Time)];
+    kycRestrictedPurchases : [(Text, Text)];
+  };
+
+  // Admin-only workflow to export catalog content
+  public shared ({ caller }) func exportCatalog() : async CatalogState {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can export catalog");
+    };
+
+    // Build the catalog state from current actor state
+    let catalog : CatalogState = {
+      userProfiles = userProfiles.entries().toArray();
+      bookStore = bookStore.entries().toArray();
+      cartStore = cartStore.entries().map<(Principal, List.List<CartItem>), (Principal, [CartItem])>(
+        func((principal, list) : (Principal, List.List<CartItem>)) : (Principal, [CartItem]) {
+          (principal, list.toArray());
+        }
+      ).toArray();
+      orderStore = orderStore.entries().toArray();
+      balanceStore = balanceStore.entries().toArray();
+      ownedBooks = ownedBooks.entries().toArray();
+      nextMessageId = nextMessageId;
+      supportMessages = supportMessages.entries().toArray();
+      designatedOwner = designatedOwner;
+      kycIdToPrincipal = kycIdToPrincipal.entries().toArray();
+      principalToKycId = principalToKycId.entries().toArray();
+      purchasesByCustomerId = purchasesByCustomerId.entries().map<(Text, List.List<Text>), (Text, [Text])>(
+        func((kycId, list) : (Text, List.List<Text>)) : (Text, [Text]) {
+          (kycId, list.toArray());
+        }
+      ).toArray();
+      permanentlyBlacklisted = permanentlyBlacklisted.entries().toArray();
+      validationTimestamps = validationTimestamps.entries().toArray();
+      kycRestrictedPurchases = kycRestrictedPurchases.entries().toArray();
+    };
+
+    catalog;
+  };
+
+  // Admin-only workflow to import catalog content
+  public shared ({ caller }) func importCatalog(newCatalog : CatalogState) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can import catalog");
+    };
+
+    // Clear existing state
+    userProfiles.clear();
+    bookStore.clear();
+    cartStore.clear();
+    orderStore.clear();
+    balanceStore.clear();
+    ownedBooks.clear();
+    supportMessages.clear();
+    kycIdToPrincipal.clear();
+    principalToKycId.clear();
+    purchasesByCustomerId.clear();
+    permanentlyBlacklisted.clear();
+    validationTimestamps.clear();
+    kycRestrictedPurchases.clear();
+
+    // Import new state
+    for ((principal, profile) in newCatalog.userProfiles.values()) {
+      userProfiles.add(principal, profile);
+    };
+
+    for ((bookId, book) in newCatalog.bookStore.values()) {
+      bookStore.add(bookId, book);
+    };
+
+    for ((principal, items) in newCatalog.cartStore.values()) {
+      let list = List.fromArray<CartItem>(items);
+      cartStore.add(principal, list);
+    };
+
+    for ((orderId, order) in newCatalog.orderStore.values()) {
+      orderStore.add(orderId, order);
+    };
+
+    for ((principal, balance) in newCatalog.balanceStore.values()) {
+      balanceStore.add(principal, balance);
+    };
+
+    for ((bookId, ownedBook) in newCatalog.ownedBooks.values()) {
+      ownedBooks.add(bookId, ownedBook);
+    };
+
+    nextMessageId := newCatalog.nextMessageId;
+
+    for ((msgId, message) in newCatalog.supportMessages.values()) {
+      supportMessages.add(msgId, message);
+    };
+
+    designatedOwner := newCatalog.designatedOwner;
+
+    for ((kycId, principal) in newCatalog.kycIdToPrincipal.values()) {
+      kycIdToPrincipal.add(kycId, principal);
+    };
+
+    for ((principal, kycId) in newCatalog.principalToKycId.values()) {
+      principalToKycId.add(principal, kycId);
+    };
+
+    for ((kycId, purchases) in newCatalog.purchasesByCustomerId.values()) {
+      let list = List.fromArray(purchases);
+      purchasesByCustomerId.add(kycId, list);
+    };
+
+    for ((kycId, unit) in newCatalog.permanentlyBlacklisted.values()) {
+      permanentlyBlacklisted.add(kycId, unit);
+    };
+
+    for ((kycId, timestamp) in newCatalog.validationTimestamps.values()) {
+      validationTimestamps.add(kycId, timestamp);
+    };
+
+    for ((kycId, bookId) in newCatalog.kycRestrictedPurchases.values()) {
+      kycRestrictedPurchases.add(kycId, bookId);
+    };
+  };
+
+  //---------------------------(Rest of the Actor)----------------------------------
 
   // Owner Recovery Functions
   public shared ({ caller }) func setDesignatedOwner(owner : Principal) : async () {
@@ -965,4 +1101,3 @@ actor {
     kycRestrictedPurchases.clear();
   };
 };
-

@@ -1,44 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T01:18:42.084Z",
-  "summary": "Frontend copy and error-mapping utilities for the new KYC restriction were added/updated, but the diff summary does not show the backend enforcement changes required to actually block future KYC-restricted purchases across different books (both at checkout and add-to-cart).",
+  "generatedAt": "2026-02-10T20:40:19.455Z",
+  "summary": "Diff adds production env config (VITE_APP_ENV=Live), updates frontend environment detection logic, and introduces a deployment preflight doc + script. It does not show any concrete fix to the underlying production deployment failure beyond these frontend/build-time checks, and it includes unrelated repo metadata updates.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Replace the per-item KYC restriction with a new rule: once a KYC identifier has purchased any KYC-restricted book, that identifier is blocked from purchasing any other KYC-restricted books in the future, enforced server-side during checkout with a stable English error message.",
-      "reason": "backend/main.mo shows new state variables (e.g., kycRestrictedPurchases) but the diff summary does not include any checkout/ordering logic changes that perform the new cross-book restriction check and return the required consistent English error message.",
+      "requirement": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
+      "reason": "The diff does not include any changes to deployment configuration (e.g., dfx.json, CI/CD configs) or backend build/deploy logic, nor does it show the specific root-cause fix for the production deployment error; only frontend env handling and a preflight script are added.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/.env.production",
+        "frontend/src/config/environment.ts",
+        "frontend/scripts/deployment-preflight.sh",
+        "frontend/docs/deployment-preflight.md"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Update backend-side pre-checks (e.g., add-to-cart validation) to block adding a KYC-restricted book if the same KYC identifier previously purchased a different KYC-restricted book, with an English error message reflecting the new rule, while leaving non-KYC purchases unaffected.",
-      "reason": "No add-to-cart or cart pre-check logic changes are shown in the diff summary; only state declarations are visible, not the updated validation/enforcement behavior or the new error message.",
+      "id": "REQ-1",
+      "requirement": "A production/live deployment completes successfully without a deployment error, serving the latest frontend build and latest backend canister wasm for Version 22.",
+      "reason": "No diff evidence shows that deployment tooling/config was updated or that backend canister build artifacts/deploy steps were corrected; there are no backend or deployment pipeline changes included to ensure the live deployment succeeds and serves the latest wasm.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Update frontend checkout error mapping to show a user-friendly English message matching the new backend restriction when checkout is rejected due to the prior KYC-restricted purchase rule.",
-      "reason": "A new mapper utility is added and CheckoutPage imports mapKycError, but the truncated CheckoutPage error-handling section shown does not include evidence that mapKycError is actually applied to backend checkout errors before displaying them.",
-      "evidence": [
-        "frontend/src/utils/kycRestrictionErrors.ts",
-        "frontend/src/pages/CheckoutPage.tsx"
+        "frontend/scripts/deployment-preflight.sh"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.62,
+  "hallucinated_features": [
+    {
+      "description": "Repository/project metadata updates unrelated to fixing deployment or adding the preflight procedure (e.g., project_state.json).",
+      "reason": "BuildRequest only asks for deployment fix and a preflight check; updating internal project tracking metadata is not requested.",
+      "evidence": [
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Updating frontend-file-summaries.txt with extensive app feature descriptions unrelated to deployment fix/preflight.",
+      "reason": "BuildRequest non-goals explicitly avoid new/unrelated product features; this file appears to be a documentation/summary artifact not required by REQ-1 or REQ-2.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.68,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/checkout/KycVerificationCard.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/utils/kycRestrictionErrors.ts",
+    "frontend/.env.production",
+    "frontend/docs/deployment-preflight.md",
+    "frontend/scripts/deployment-preflight.sh",
+    "frontend/src/config/environment.ts",
     "project_state.json"
   ]
 }

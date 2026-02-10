@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Enforce a stricter KYC purchase restriction so that after a verified identity purchases any KYC-restricted book once, that identity is blocked from purchasing any other KYC-restricted books in the future.
+**Goal:** Restore successful production (Live) deployment for Version 22 by fixing the underlying deployment failure and adding a preflight check to prevent recurrence.
 
 **Planned changes:**
-- Update backend checkout enforcement to block any future purchases of KYC-restricted books when the same KYC identifier has previously purchased a KYC-restricted book (regardless of which title), while allowing non-KYC-restricted purchases.
-- Update backend pre-checks used for cart/checkout validation to detect prior purchases of any KYC-restricted book for the same KYC identifier and reject accordingly with a consistent English error message.
-- Update checkout KYC UI explanatory text to reflect the new policy (not “one copy per person” for a specific book).
-- Update frontend checkout error mapping to display a user-friendly English message when the backend rejects due to the new KYC restriction.
+- Investigate and fix the minimal code/config issue causing “Failed to deploy to production: Deployment error” for Version 22.
+- Ensure Live build-time environment configuration is correctly set so the deployed site reflects the Live environment (e.g., environment badge shows “Live”).
+- Add an in-repo developer-facing deployment preflight procedure (documentation and/or script) that validates frontend and backend builds before attempting Live deployment and reports actionable errors.
 
-**User-visible outcome:** Users who have already purchased one KYC-restricted book will see a clear English message and will be unable to buy any other KYC-restricted books, while they can still purchase non-KYC-restricted books normally.
+**User-visible outcome:** Version 22 can be deployed to Live successfully, serving the latest frontend build and backend canister wasm, and the live site correctly indicates it is running in the Live environment.

@@ -8,6 +8,7 @@ import { useGetCart } from '@/hooks/useCart';
 import { useGetBalance } from '@/hooks/useBalance';
 import { useIsAdmin } from '@/hooks/useAuthz';
 import { formatTokenAmount, shortenPrincipal } from '@/utils/format';
+import { APP_ENVIRONMENT } from '@/config/environment';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -63,6 +64,12 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <Badge 
+            variant={APP_ENVIRONMENT === 'Live' ? 'default' : 'secondary'}
+            className="hidden sm:inline-flex font-medium"
+          >
+            {APP_ENVIRONMENT}
+          </Badge>
           {isAuthenticated && balance !== undefined && (
             <div className="hidden sm:flex items-center gap-2 text-sm">
               <Badge variant="secondary" className="font-mono">

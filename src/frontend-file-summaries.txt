@@ -1,7 +1,7 @@
 {
   "frontend/src/App.tsx": "Main application component with TanStack Router setup including the new /purchase-confirmation/$orderId route, theme provider, and all route definitions for the e-book store.",
   "frontend/src/components/layout/Layout.tsx": "Root layout component that wraps all pages with header, footer, and profile setup dialog.",
-  "frontend/src/components/layout/Header.tsx": "Responsive header with BookCoin logo image, navigation links, authentication state, balance display, cart icon, and admin link visibility based on role.",
+  "frontend/src/components/layout/Header.tsx": "Responsive header with BookCoin logo, navigation links, authentication state, balance display, cart icon, admin link, and environment badge showing Draft/Live status.",
   "frontend/src/components/layout/Footer.tsx": "Footer component with social media links, customer service chat dialog trigger, and caffeine.ai attribution with heart icon.",
   "frontend/src/components/layout/PageLayout.tsx": "Reusable page container component with configurable max-width and consistent spacing.",
   "frontend/src/components/auth/LoginButton.tsx": "Internet Identity login/logout button with loading states and error handling.",
@@ -42,8 +42,8 @@
   "frontend/src/hooks/useAdminRecovery.ts": "React Query mutation hook for admin recovery with clear English error messages explaining when recovery is unavailable, caller not authorized, or other failures.",
   "frontend/src/hooks/useResetStore.ts": "React Query mutation hook for store reset that calls the backend resetStore method and invalidates all relevant query caches (books, orders, cart, messages, balance) on success.",
   "frontend/src/pages/admin/AdminRecoveryPage.tsx": "Admin recovery page with enhanced error messaging, clear instructions about how recovery works, and informative alerts explaining the recovery process and requirements.",
-  "frontend/src/pages/admin/AdminSettingsPage.tsx": "Admin settings page with store reset/relaunch control featuring AlertDialog confirmation, destructive warnings about irreversible data deletion, and success/error feedback.",
-  "frontend/src/utils/download.ts": "Utility functions for triggering browser downloads from both Uint8Array data and direct URLs with proper cleanup.",
+  "frontend/src/pages/admin/AdminSettingsPage.tsx": "Admin settings page with Draft/Live explanation, catalog export/import workflow with file picker and mode selection, store reset control, and comprehensive success/error feedback.",
+  "frontend/src/utils/download.ts": "Utility functions for triggering browser downloads from Uint8Array data, direct URLs, and JSON objects with proper cleanup.",
   "frontend/src/components/library/LibraryPdfDownloadButton.tsx": "Reusable icon-only button for downloading purchased book PDFs using the updated fetchPurchasedBookMedia API with loading state and error handling.",
   "frontend/src/pages/PurchaseConfirmationPage.tsx": "Lightweight post-purchase confirmation page that displays success messaging with a check icon and provides three action buttons: Go to My Library, View Order Details (navigates to /order/$orderId), and Continue Shopping.",
   "frontend/src/components/admin/BookMediaManager.tsx": "Admin-only media manager component for uploading/removing PDF, images, audio, and video files with client-side MIME validation, progress indicators, and per-item removal controls.",
@@ -51,5 +51,11 @@
   "frontend/src/components/checkout/SelfieCapture.tsx": "Selfie capture component using the camera hook with live preview (explicit dimensions), capture button, fallback upload support, and retake functionality for facial verification.",
   "frontend/src/components/checkout/KycVerificationCard.tsx": "Checkout KYC verification component with radio button selection for ID number or birth certificate number, single text input field, client-side validation, and updated AlertDescription copy explaining that after purchasing one KYC-restricted book, the same verified identity cannot purchase other KYC-restricted books in the future.",
   "frontend/src/utils/kyc.ts": "Utility functions for deriving stable KYC identifiers from document type and number, and validating document numbers with minimum length requirements.",
-  "frontend/src/utils/kycRestrictionErrors.ts": "Utility module for detecting and mapping KYC restriction errors from backend to user-friendly messages, specifically handling the new policy where a verified identity cannot purchase additional KYC-restricted books after purchasing one."
+  "frontend/src/utils/kycRestrictionErrors.ts": "Utility module for detecting and mapping KYC restriction errors from backend to user-friendly messages, specifically handling the new policy where a verified identity cannot purchase additional KYC-restricted books after purchasing one.",
+  "frontend/src/config/environment.ts": "Build-time environment configuration that reads VITE_APP_ENV and falls back to Vite's MODE, normalizing to 'Draft' or 'Live' with production builds defaulting to Live.",
+  "frontend/src/hooks/useCatalogTransfer.ts": "React Query mutation hooks for admin-only catalog export and import operations with automatic cache invalidation on import success.",
+  "frontend/src/utils/catalogTransfer.ts": "Client-side utilities for validating, parsing, and applying import modes (overwrite/merge) to catalog JSON files.",
+  "frontend/.env.production": "Production environment configuration file that sets VITE_APP_ENV=Live for production builds.",
+  "frontend/docs/deployment-preflight.md": "Comprehensive deployment preflight documentation with step-by-step validation procedures, troubleshooting guides, and common failure resolutions for Live deployments.",
+  "frontend/scripts/deployment-preflight.sh": "Automated bash script that validates environment configuration, checks dependencies, builds backend and frontend, and verifies the Live environment is correctly baked into production builds."
 }

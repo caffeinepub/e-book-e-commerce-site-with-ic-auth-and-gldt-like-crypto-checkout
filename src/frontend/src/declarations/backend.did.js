@@ -44,6 +44,14 @@ export const Order = IDL.Record({
   'items' : IDL.Vec(CartItem),
   'deliveredBookIds' : IDL.Vec(IDL.Text),
 });
+export const CustomerMessage = IDL.Record({
+  'id' : IDL.Nat,
+  'content' : IDL.Text,
+  'author' : IDL.Principal,
+  'timestamp' : Time,
+  'responseToMsgId' : IDL.Opt(IDL.Nat),
+  'isAdminResponse' : IDL.Bool,
+});
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const MediaContent = IDL.Record({
   'pdf' : IDL.Opt(ExternalBlob),
@@ -63,13 +71,26 @@ export const Book = IDL.Record({
   'price' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
-export const CustomerMessage = IDL.Record({
-  'id' : IDL.Nat,
-  'content' : IDL.Text,
-  'author' : IDL.Principal,
-  'timestamp' : Time,
-  'responseToMsgId' : IDL.Opt(IDL.Nat),
-  'isAdminResponse' : IDL.Bool,
+export const OwnedBook = IDL.Record({
+  'bookId' : IDL.Text,
+  'purchasedBy' : IDL.Text,
+});
+export const CatalogState = IDL.Record({
+  'purchasesByCustomerId' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Text))),
+  'balanceStore' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Nat)),
+  'cartStore' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(CartItem))),
+  'nextMessageId' : IDL.Nat,
+  'principalToKycId' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
+  'supportMessages' : IDL.Vec(IDL.Tuple(IDL.Nat, CustomerMessage)),
+  'bookStore' : IDL.Vec(IDL.Tuple(IDL.Text, Book)),
+  'permanentlyBlacklisted' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Null)),
+  'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+  'ownedBooks' : IDL.Vec(IDL.Tuple(IDL.Text, OwnedBook)),
+  'orderStore' : IDL.Vec(IDL.Tuple(IDL.Text, Order)),
+  'kycRestrictedPurchases' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+  'designatedOwner' : IDL.Opt(IDL.Principal),
+  'kycIdToPrincipal' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal)),
+  'validationTimestamps' : IDL.Vec(IDL.Tuple(IDL.Text, Time)),
 });
 
 export const idlService = IDL.Service({
@@ -122,6 +143,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'deleteBook' : IDL.Func([IDL.Text], [], []),
+  'exportCatalog' : IDL.Func([], [CatalogState], []),
   'fetchPurchasedBookMedia' : IDL.Func(
       [IDL.Text, IDL.Text],
       [MediaContent],
@@ -159,6 +181,7 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'importCatalog' : IDL.Func([CatalogState], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'recoverAdminAccess' : IDL.Func([], [], []),
@@ -222,6 +245,14 @@ export const idlFactory = ({ IDL }) => {
     'items' : IDL.Vec(CartItem),
     'deliveredBookIds' : IDL.Vec(IDL.Text),
   });
+  const CustomerMessage = IDL.Record({
+    'id' : IDL.Nat,
+    'content' : IDL.Text,
+    'author' : IDL.Principal,
+    'timestamp' : Time,
+    'responseToMsgId' : IDL.Opt(IDL.Nat),
+    'isAdminResponse' : IDL.Bool,
+  });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const MediaContent = IDL.Record({
     'pdf' : IDL.Opt(ExternalBlob),
@@ -241,13 +272,26 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
-  const CustomerMessage = IDL.Record({
-    'id' : IDL.Nat,
-    'content' : IDL.Text,
-    'author' : IDL.Principal,
-    'timestamp' : Time,
-    'responseToMsgId' : IDL.Opt(IDL.Nat),
-    'isAdminResponse' : IDL.Bool,
+  const OwnedBook = IDL.Record({
+    'bookId' : IDL.Text,
+    'purchasedBy' : IDL.Text,
+  });
+  const CatalogState = IDL.Record({
+    'purchasesByCustomerId' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Text))),
+    'balanceStore' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Nat)),
+    'cartStore' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(CartItem))),
+    'nextMessageId' : IDL.Nat,
+    'principalToKycId' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
+    'supportMessages' : IDL.Vec(IDL.Tuple(IDL.Nat, CustomerMessage)),
+    'bookStore' : IDL.Vec(IDL.Tuple(IDL.Text, Book)),
+    'permanentlyBlacklisted' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Null)),
+    'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+    'ownedBooks' : IDL.Vec(IDL.Tuple(IDL.Text, OwnedBook)),
+    'orderStore' : IDL.Vec(IDL.Tuple(IDL.Text, Order)),
+    'kycRestrictedPurchases' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'designatedOwner' : IDL.Opt(IDL.Principal),
+    'kycIdToPrincipal' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal)),
+    'validationTimestamps' : IDL.Vec(IDL.Tuple(IDL.Text, Time)),
   });
   
   return IDL.Service({
@@ -300,6 +344,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteBook' : IDL.Func([IDL.Text], [], []),
+    'exportCatalog' : IDL.Func([], [CatalogState], []),
     'fetchPurchasedBookMedia' : IDL.Func(
         [IDL.Text, IDL.Text],
         [MediaContent],
@@ -337,6 +382,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'importCatalog' : IDL.Func([CatalogState], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'recoverAdminAccess' : IDL.Func([], [], []),

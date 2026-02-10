@@ -22,6 +22,23 @@ export interface Book {
   'price' : bigint,
 }
 export interface CartItem { 'bookId' : string, 'quantity' : bigint }
+export interface CatalogState {
+  'purchasesByCustomerId' : Array<[string, Array<string>]>,
+  'balanceStore' : Array<[Principal, bigint]>,
+  'cartStore' : Array<[Principal, Array<CartItem>]>,
+  'nextMessageId' : bigint,
+  'principalToKycId' : Array<[Principal, string]>,
+  'supportMessages' : Array<[bigint, CustomerMessage]>,
+  'bookStore' : Array<[string, Book]>,
+  'permanentlyBlacklisted' : Array<[string, null]>,
+  'userProfiles' : Array<[Principal, UserProfile]>,
+  'ownedBooks' : Array<[string, OwnedBook]>,
+  'orderStore' : Array<[string, Order]>,
+  'kycRestrictedPurchases' : Array<[string, string]>,
+  'designatedOwner' : [] | [Principal],
+  'kycIdToPrincipal' : Array<[string, Principal]>,
+  'validationTimestamps' : Array<[string, Time]>,
+}
 export interface CustomerMessage {
   'id' : bigint,
   'content' : string,
@@ -50,6 +67,7 @@ export interface Order {
   'items' : Array<CartItem>,
   'deliveredBookIds' : Array<string>,
 }
+export interface OwnedBook { 'bookId' : string, 'purchasedBy' : string }
 export type Time = bigint;
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -92,6 +110,7 @@ export interface _SERVICE {
   'blacklistKyc' : ActorMethod<[string], KYcState>,
   'checkout' : ActorMethod<[string, string, boolean], [string, [] | [Order]]>,
   'deleteBook' : ActorMethod<[string], undefined>,
+  'exportCatalog' : ActorMethod<[], CatalogState>,
   'fetchPurchasedBookMedia' : ActorMethod<[string, string], MediaContent>,
   'getAllBooks' : ActorMethod<[], Array<Book>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
@@ -109,6 +128,7 @@ export interface _SERVICE {
   'getUserMessages' : ActorMethod<[boolean], Array<CustomerMessage>>,
   'getUserOrders' : ActorMethod<[Principal], Array<Order>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'importCatalog' : ActorMethod<[CatalogState], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'mintTokens' : ActorMethod<[Principal, bigint], undefined>,
   'recoverAdminAccess' : ActorMethod<[], undefined>,

@@ -1,39 +1,51 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update checkout UI copy and error mapping for new KYC restricted purchase policy",
+  "title": "Restore successful Live deployment for Version 22 (frontend fixes + preflight)",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Update checkout KYC verification UI copy to reflect the new policy (after one KYC-restricted purchase, no future KYC-restricted purchases allowed for that identity).",
+      "id": "REQ-1",
+      "summary": "Apply minimal frontend build/config changes to unblock Live deployment and ensure the header environment badge shows \"Live\" in production.",
       "acceptanceCriteria": [
-        "The KYC info text in the KYC verification step describes that after purchasing one KYC-restricted book, the same verified identity cannot purchase other KYC-restricted books in the future.",
-        "All updated UI copy is in English."
+        "A production/live deployment completes successfully without a deployment error.",
+        "The live deployment serves the latest frontend build and the latest backend canister wasm for Version 22.",
+        "Any required build-time environment configuration for Live (e.g., VITE_APP_ENV) is correctly set so the header environment badge shows \"Live\" on the live site."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/checkout/KycVerificationCard.tsx",
+          "path": "frontend/src/config/environment.ts",
           "operation": "modify",
-          "description": "Replace the current KYC explanatory AlertDescription copy that claims \"one copy per person\" with English text describing the new policy: once an identity has purchased any KYC-restricted book, that same verified identity cannot purchase other KYC-restricted books in the future."
+          "description": "Harden environment detection so Live is reliably derived in production builds (e.g., fall back to production build mode when VITE_APP_ENV is unset/mis-set) while keeping Draft as the safe default for non-production. This ensures the Header environment badge can correctly show \"Live\" on the live site."
+        },
+        {
+          "path": "frontend/.env.production",
+          "operation": "create",
+          "description": "Add a production build-time environment file that explicitly sets VITE_APP_ENV to Live so production builds consistently render the Live badge and avoid misconfiguration during deployment."
+        },
+        {
+          "path": "frontend/src/components/layout/Header.tsx",
+          "operation": "modify",
+          "description": "Confirm the environment badge renders deterministically from the normalized environment value (APP_ENVIRONMENT) and does not rely on any runtime-only configuration that could differ between build and Live hosting."
         }
       ]
     },
     {
-      "id": "REQ-4",
-      "summary": "Update checkout error mapping to show a clear, user-friendly English message when the backend rejects checkout due to the new KYC restriction (previously purchased another KYC-restricted item).",
+      "id": "REQ-2",
+      "summary": "Add an in-repo deployment preflight procedure (doc and script) to catch the class of failures that broke the Version 22 Live deployment before re-deploying.",
       "acceptanceCriteria": [
-        "When the backend rejects checkout due to the new KYC restriction, the checkout page displays an English error message that clearly states the user cannot purchase other KYC-restricted books after already purchasing one."
+        "There is a clear, reproducible preflight procedure (documented in-repo) that validates the build succeeds for frontend and backend before initiating a Live deployment.",
+        "If the preflight detects a failure, it reports an actionable error message indicating what to fix before retrying deployment."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/kycRestrictionErrors.ts",
+          "path": "frontend/docs/deployment-preflight.md",
           "operation": "create",
-          "description": "Add a small helper that takes an arbitrary backend error string and, when it matches the new KYC restriction phrasing (KYC-related + previously/already purchased + other/another KYC-restricted), returns a stable, user-friendly English message explaining that after purchasing one KYC-restricted book, the same verified identity cannot buy other KYC-restricted books in the future."
+          "description": "Document a reproducible preflight checklist tailored to Live deployment: required environment variables (including VITE_APP_ENV), clean install guidance, frontend build verification, and backend build verification steps (run from repo root). Include common failure symptoms and the specific actionable fixes expected for the Version 22 deployment-error class."
         },
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
-          "operation": "modify",
-          "description": "Update the checkout failure error mapping to detect the new KYC restriction (using the new helper) and display the required user-friendly English message; keep existing mappings for expired proof, blacklisted, and sold-out/single-copy behavior intact."
+          "path": "frontend/scripts/deployment-preflight.sh",
+          "operation": "create",
+          "description": "Add a developer-facing preflight script that performs local validation before Live deployment: checks required env configuration for Live (e.g., VITE_APP_ENV=Live), runs the frontend build, and triggers the backend build step (invoked from repo root). The script should exit non-zero on failure and print actionable, targeted error messages describing what to fix before retrying deployment."
         }
       ]
     }

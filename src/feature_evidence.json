@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-user-facing-kyc-explanatory-text-in-the-checkout-kyc-ui-to-reflect-the-new-policy-no-longer-claiming-it-enforces-one-copy-per-person-for-a-specific-book",
-      "featureTitle": "Update user-facing KYC explanatory text in the checkout KYC UI to reflect the new policy (no longer claiming it enforces \"one copy per person\" for a specific book).",
+      "featureId": "feature-investigate-the-current-failed-to-deploy-to-production-deployment-error-for-version-22-and-apply-the-minimal-code-config-changes-required-so-the-project-can-successfully-deploy-to-the-live-production-environment",
+      "featureTitle": "Investigate the current “Failed to deploy to production: Deployment error” for Version 22 and apply the minimal code/config changes required so the project can successfully deploy to the Live (production) environment.",
       "files": [
-        "frontend/src/components/checkout/KycVerificationCard.tsx"
+        "frontend/.env.production",
+        "frontend/src/config/environment.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,16 +19,16 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-frontend-checkout-error-mapping-to-show-a-user-friendly-english-message-that-matches-the-new-backend-restriction-when-the-backend-rejects-checkout-due-to-the-previously-purchased-another-kyc-restricted-item-rule",
-      "featureTitle": "Update frontend checkout error mapping to show a user-friendly English message that matches the new backend restriction when the backend rejects checkout due to the \"previously purchased another KYC-restricted item\" rule.",
+      "featureId": "feature-add-a-developer-facing-deployment-preflight-check-documentation-and-or-script-that-can-be-run-before-attempting-a-live-deployment-to-catch-the-specific-class-of-failure-that-caused-the-version-22-production-deployment-error",
+      "featureTitle": "Add a developer-facing deployment preflight check (documentation and/or script) that can be run before attempting a Live deployment to catch the specific class of failure that caused the Version 22 production deployment error.",
       "files": [
-        "frontend/src/pages/CheckoutPage.tsx",
-        "frontend/src/utils/kycRestrictionErrors.ts"
+        "frontend/docs/deployment-preflight.md",
+        "frontend/scripts/deployment-preflight.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -40,7 +41,7 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-2"
       ],
       "confidence": "high"
     }
