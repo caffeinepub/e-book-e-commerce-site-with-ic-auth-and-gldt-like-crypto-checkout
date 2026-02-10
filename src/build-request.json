@@ -1,35 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Revert homepage hero image to the previous asset",
+  "title": "Update KYC purchase restriction to block buying other KYC-restricted items after first KYC-restricted purchase",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
-      "target": "frontend",
+      "text": "Replace the current KYC purchase restriction rule (which prevents a person from purchasing the same KYC-restricted item twice) with a new rule: once a person (identified by the previously submitted KYC identifier derived from ID number or birth certificate number) has purchased any KYC-restricted book, that same KYC identifier must be blocked from purchasing any other KYC-restricted books at any time in the future.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "recent-messages-4"
         ],
         "quotes": [
-          "just replace the current one with the previous one since clearly the one i'm uploading is being censored"
+          "replace the restriction that the same person cannot buy the same item twice with; the same person ie with an earlier inputted ID number/birth certificate number cannot buy any other kyc restricted items at any time after purchasing one already"
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/pages/HomePage.tsx, the hero <img> src points to /assets/generated/phoenix-1988-image-3.dim_564x483.png.",
-        "The homepage loads successfully and displays the hero image at 564x483 without a missing-asset/broken image icon.",
-        "No other pages (checkout/KYC flow, book covers, admin pages) are changed as part of this update."
+        "Given a KYC identifier that has previously completed a purchase containing a KYC-restricted book A, attempting to purchase a different KYC-restricted book B fails with an English error message.",
+        "Given a KYC identifier that has previously purchased a KYC-restricted book A, attempting to purchase a non-KYC-restricted book succeeds (assuming all other rules pass).",
+        "The restriction is enforced server-side during checkout (not only in add-to-cart), so it cannot be bypassed by manipulating the cart client-side.",
+        "The error message is stable/consistent enough for the frontend to map it to a user-friendly message (i.e., contains clear KYC-related phrasing)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Update any backend-side pre-checks that currently look for \"already purchased this KYC-restricted book\" to instead detect whether the same KYC identifier has previously purchased a different KYC-restricted book, and block accordingly while leaving non-KYC-restricted purchases unaffected.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "recent-messages-4"
+        ],
+        "quotes": [
+          "cannot buy any other kyc restricted items at any time after purchasing one already"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If the user has a validated KYC identifier and is not blacklisted, adding a KYC-restricted book to the cart is allowed only when the user has not previously purchased a different KYC-restricted book.",
+        "If the user has previously purchased a different KYC-restricted book, adding a KYC-restricted book to the cart is rejected with an English error message that reflects the new rule."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update user-facing KYC explanatory text in the checkout KYC UI to reflect the new policy (no longer claiming it enforces \"one copy per person\" for a specific book).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-4"
+        ],
+        "quotes": [
+          "replace the restriction... cannot buy any other kyc restricted items"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The KYC info text in the KYC verification step describes that after purchasing one KYC-restricted book, the same verified identity cannot purchase other KYC-restricted books in the future.",
+        "All updated UI copy is in English."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update frontend checkout error mapping to show a user-friendly English message that matches the new backend restriction when the backend rejects checkout due to the \"previously purchased another KYC-restricted item\" rule.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-4"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When the backend rejects checkout due to the new KYC restriction, the checkout page displays an English error message that clearly states the user cannot purchase other KYC-restricted books after already purchasing one."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (read-only).",
-    "Do not edit any paths listed in frontend.immutablePaths (read-only).",
-    "Keep all backend logic unchanged (no Motoko changes required)."
+    "Backend must remain a single Motoko actor in backend/main.mo.",
+    "Do not edit files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Diagnose or change any image upload/processing/censorship behavior for user-uploaded images beyond reverting the homepage hero asset reference.",
-    "Any changes to the KYC flow or checkout behavior."
+    "Changing KYC verification methods (ID number / birth certificate number) beyond updating copy and purchase restriction enforcement.",
+    "Adding new authentication providers or third-party integrations.",
+    "Changing pricing, inventory rules, or non-KYC purchase behavior beyond what is necessary to enforce the new KYC restriction."
   ],
   "imageRequirements": {
     "required": [],

@@ -11,7 +11,9 @@ import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -89,6 +91,7 @@ actor {
   let purchasesByCustomerId = Map.empty<Text, List.List<Text>>();
   let permanentlyBlacklisted = Map.empty<Text, ()>();
   let validationTimestamps = Map.empty<Text, Time.Time>();
+  let kycRestrictedPurchases = Map.empty<Text, Text>();
 
   public type KYcState = {
     #notRequired;
@@ -204,7 +207,7 @@ actor {
       case (null) { Runtime.trap("Message not found") };
       case (?originalMsg) {
         if (originalMsg.author != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Can only view responses to your own messages");
+          Runtime.trap("Unauthorized: Only can view responses to your own messages");
         };
       };
     };
@@ -602,10 +605,8 @@ actor {
               if (not validationTimestamps.containsKey(kycId)) {
                 Runtime.trap("KYC verification expired or not validated. Please complete KYC verification.");
               };
-              for (ownedBook in ownedBooks.values()) {
-                if (ownedBook.bookId == bookId and ownedBook.purchasedBy == kycId) {
-                  Runtime.trap("You have already purchased this KYC-restricted book");
-                };
+              if (kycRestrictedPurchases.containsKey(kycId)) {
+                Runtime.trap("You have already purchased a KYC-restricted book and cannot purchase additional KYC-restricted books");
               };
             };
           };
@@ -659,11 +660,17 @@ actor {
       Runtime.trap("Unauthorized: Only users can submit KYC proof");
     };
 
-    if (permanentlyBlacklisted.containsKey(kycIdentifier)) {
+    let kycIdTrimmed = kycIdentifier.trim(#char(' '));
+
+    if (kycIdTrimmed.size() <= 4) {
+      return "The entered ID is not valid! A valid KYC ID must contain at least 5 characters.";
+    };
+
+    if (permanentlyBlacklisted.containsKey(kycIdTrimmed)) {
       return "KYC verification failed: This identity has been permanently blacklisted";
     };
 
-    switch (kycIdToPrincipal.get(kycIdentifier)) {
+    switch (kycIdToPrincipal.get(kycIdTrimmed)) {
       case (?existingPrincipal) {
         if (existingPrincipal != caller) {
           return "KYC verification failed: This identity is already associated with another account";
@@ -676,9 +683,9 @@ actor {
       return "KYC verification failed: Invalid or expired proof provided";
     };
 
-    kycIdToPrincipal.add(kycIdentifier, caller);
-    principalToKycId.add(caller, kycIdentifier);
-    validationTimestamps.add(kycIdentifier, Time.now());
+    kycIdToPrincipal.add(kycIdTrimmed, caller);
+    principalToKycId.add(caller, kycIdTrimmed);
+    validationTimestamps.add(kycIdTrimmed, Time.now());
 
     "KYC verification successful";
   };
@@ -718,12 +725,14 @@ actor {
       };
     };
 
+    let kycIdTrimmed = kycIdentifier.trim(#char(' '));
+
     if (hasKycRestrictedBooks) {
-      if (permanentlyBlacklisted.containsKey(kycIdentifier)) {
+      if (permanentlyBlacklisted.containsKey(kycIdTrimmed)) {
         return ("KYC verification failed: This identity has been permanently blacklisted", null);
       };
 
-      switch (kycIdToPrincipal.get(kycIdentifier)) {
+      switch (kycIdToPrincipal.get(kycIdTrimmed)) {
         case (?existingPrincipal) {
           if (existingPrincipal != caller) {
             return ("KYC verification failed: This identity is already associated with another account", null);
@@ -736,10 +745,10 @@ actor {
         return ("KYC verification failed: Invalid or expired proof provided", null);
       };
 
-      if (not validationTimestamps.containsKey(kycIdentifier)) {
-        kycIdToPrincipal.add(kycIdentifier, caller);
-        principalToKycId.add(caller, kycIdentifier);
-        validationTimestamps.add(kycIdentifier, Time.now());
+      if (not validationTimestamps.containsKey(kycIdTrimmed)) {
+        kycIdToPrincipal.add(kycIdTrimmed, caller);
+        principalToKycId.add(caller, kycIdTrimmed);
+        validationTimestamps.add(kycIdTrimmed, Time.now());
       };
     };
 
@@ -776,10 +785,8 @@ actor {
           case (null) { Runtime.trap("Book not found: " # item.bookId) };
           case (?book) {
             if (book.kycRestricted) {
-              for (ownedBook in ownedBooks.values()) {
-                if (ownedBook.bookId == item.bookId and ownedBook.purchasedBy == kycIdentifier) {
-                  Runtime.trap("You have already purchased this KYC-restricted book");
-                };
+              if (kycRestrictedPurchases.containsKey(kycIdTrimmed)) {
+                Runtime.trap("You have already purchased a KYC-restricted book and cannot purchase additional KYC-restricted books");
               };
             };
 
@@ -789,7 +796,7 @@ actor {
 
             let newOwnedBook : OwnedBook = {
               bookId = item.bookId;
-              purchasedBy = kycIdentifier;
+              purchasedBy = kycIdTrimmed;
             };
 
             ownedBooks.add(item.bookId, newOwnedBook);
@@ -818,22 +825,17 @@ actor {
     orderStore.add(orderId, order);
     cartStore.remove(caller);
 
-    if (hasKycRestrictedBooks) {
-      let prevPurchases = switch (purchasesByCustomerId.get(kycIdentifier)) {
-        case (null) { List.empty<Text>().toArray() };
-        case (?p) { p.toArray() };
-      };
-      let newPurchases = prevPurchases.concat(purchasedBooks);
-      purchasesByCustomerId.add(kycIdentifier, List.fromArray(newPurchases));
+    if (hasKycRestrictedBooks and purchasedBooks.size() > 0) {
+      kycRestrictedPurchases.add(kycIdTrimmed, purchasedBooks[0]);
     };
 
     let purchasedCount = purchasedBooks.size();
     let purchaseMsg = if (hasKycRestrictedBooks) {
       if (purchasedCount == 1) {
-        "Book purchase successful for KYC verified customer with ID " # kycIdentifier # ". " #
+        "Book purchase successful for KYC verified customer with ID " # kycIdTrimmed # ". " #
         purchasedCount.toText() # " book purchased. Order ID: " # orderId;
       } else {
-        "Book purchase successful for KYC verified customer with ID " # kycIdentifier # ". " #
+        "Book purchase successful for KYC verified customer with ID " # kycIdTrimmed # ". " #
         purchasedCount.toText() # " books purchased. Order ID: " # orderId;
       };
     } else {
@@ -847,7 +849,9 @@ actor {
   };
 
   public shared ({ caller }) func getKycProof(kycId : Text) : async KYcState {
-    switch (kycIdToPrincipal.get(kycId)) {
+    let kycIdTrimmed = kycId.trim(#char(' '));
+
+    switch (kycIdToPrincipal.get(kycIdTrimmed)) {
       case (?owner) {
         if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: Can only check your own KYC status");
@@ -860,11 +864,11 @@ actor {
       };
     };
 
-    if (permanentlyBlacklisted.containsKey(kycId)) {
+    if (permanentlyBlacklisted.containsKey(kycIdTrimmed)) {
       return #permanentlyBlacklisted;
     };
 
-    switch (validationTimestamps.get(kycId)) {
+    switch (validationTimestamps.get(kycIdTrimmed)) {
       case (null) { #awaitingProof };
       case (?_) { #validatedProof };
     };
@@ -874,7 +878,8 @@ actor {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can reject KYC proof");
     };
-    validationTimestamps.remove(kycId);
+    let kycIdTrimmed = kycId.trim(#char(' '));
+    validationTimestamps.remove(kycIdTrimmed);
     #rejected;
   };
 
@@ -882,8 +887,9 @@ actor {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can blacklist KYC identities");
     };
-    permanentlyBlacklisted.add(kycId, ());
-    validationTimestamps.remove(kycId);
+    let kycIdTrimmed = kycId.trim(#char(' '));
+    permanentlyBlacklisted.add(kycIdTrimmed, ());
+    validationTimestamps.remove(kycIdTrimmed);
     #permanentlyBlacklisted;
   };
 
@@ -956,5 +962,7 @@ actor {
     purchasesByCustomerId.clear();
     permanentlyBlacklisted.clear();
     validationTimestamps.clear();
+    kycRestrictedPurchases.clear();
   };
 };
+

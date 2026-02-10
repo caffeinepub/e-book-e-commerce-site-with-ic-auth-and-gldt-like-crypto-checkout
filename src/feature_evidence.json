@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-homepage-hero-image-to-use-the-previous-static-asset-assets-generated-phoenix-1988-image-3-dim-564x483-png-instead-of-the-current-one-assets-generated-home-hero-replacement-dim-564x483-png-keep-the-image-dimensions-at-564x483-and-ensure-the-page-renders-without-broken-image-errors",
-      "featureTitle": "Update the homepage hero image to use the previous static asset (/assets/generated/phoenix-1988-image-3.dim_564x483.png) instead of the current one (/assets/generated/home-hero-replacement.dim_564x483.png). Keep the image dimensions at 564x483 and ensure the page renders without broken-image errors.",
+      "featureId": "feature-update-user-facing-kyc-explanatory-text-in-the-checkout-kyc-ui-to-reflect-the-new-policy-no-longer-claiming-it-enforces-one-copy-per-person-for-a-specific-book",
+      "featureTitle": "Update user-facing KYC explanatory text in the checkout KYC UI to reflect the new policy (no longer claiming it enforces \"one copy per person\" for a specific book).",
       "files": [
-        "frontend/src/pages/HomePage.tsx"
+        "frontend/src/components/checkout/KycVerificationCard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,7 +18,29 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-frontend-checkout-error-mapping-to-show-a-user-friendly-english-message-that-matches-the-new-backend-restriction-when-the-backend-rejects-checkout-due-to-the-previously-purchased-another-kyc-restricted-item-rule",
+      "featureTitle": "Update frontend checkout error mapping to show a user-friendly English message that matches the new backend restriction when the backend rejects checkout due to the \"previously purchased another KYC-restricted item\" rule.",
+      "files": [
+        "frontend/src/pages/CheckoutPage.tsx",
+        "frontend/src/utils/kycRestrictionErrors.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

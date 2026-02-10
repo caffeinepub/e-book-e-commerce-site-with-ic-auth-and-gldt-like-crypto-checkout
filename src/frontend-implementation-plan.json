@@ -1,21 +1,39 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Revert homepage hero image asset reference",
+  "title": "Update checkout UI copy and error mapping for new KYC restricted purchase policy",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Revert the HomePage hero image src to the previous generated static asset while keeping 564x483 dimensions and avoiding broken-image rendering.",
+      "id": "REQ-3",
+      "summary": "Update checkout KYC verification UI copy to reflect the new policy (after one KYC-restricted purchase, no future KYC-restricted purchases allowed for that identity).",
       "acceptanceCriteria": [
-        "In frontend/src/pages/HomePage.tsx, the hero <img> src points to /assets/generated/phoenix-1988-image-3.dim_564x483.png.",
-        "The homepage loads successfully and displays the hero image at 564x483 without a missing-asset/broken image icon.",
-        "No other pages (checkout/KYC flow, book covers, admin pages) are changed as part of this update."
+        "The KYC info text in the KYC verification step describes that after purchasing one KYC-restricted book, the same verified identity cannot purchase other KYC-restricted books in the future.",
+        "All updated UI copy is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/src/components/checkout/KycVerificationCard.tsx",
           "operation": "modify",
-          "description": "Update the hero <img> to use the previous static asset path /assets/generated/phoenix-1988-image-3.dim_564x483.png (replacing /assets/generated/home-hero-replacement.dim_564x483.png), keeping the existing width/height styling at 564x483 to prevent layout shifts and broken-image issues."
+          "description": "Replace the current KYC explanatory AlertDescription copy that claims \"one copy per person\" with English text describing the new policy: once an identity has purchased any KYC-restricted book, that same verified identity cannot purchase other KYC-restricted books in the future."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Update checkout error mapping to show a clear, user-friendly English message when the backend rejects checkout due to the new KYC restriction (previously purchased another KYC-restricted item).",
+      "acceptanceCriteria": [
+        "When the backend rejects checkout due to the new KYC restriction, the checkout page displays an English error message that clearly states the user cannot purchase other KYC-restricted books after already purchasing one."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/kycRestrictionErrors.ts",
+          "operation": "create",
+          "description": "Add a small helper that takes an arbitrary backend error string and, when it matches the new KYC restriction phrasing (KYC-related + previously/already purchased + other/another KYC-restricted), returns a stable, user-friendly English message explaining that after purchasing one KYC-restricted book, the same verified identity cannot buy other KYC-restricted books in the future."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Update the checkout failure error mapping to detect the new KYC restriction (using the new helper) and display the required user-friendly English message; keep existing mappings for expired proof, blacklisted, and sold-out/single-copy behavior intact."
         }
       ]
     }

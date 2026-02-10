@@ -16,6 +16,7 @@ import EmptyState from '@/components/EmptyState';
 import { ShoppingCart, AlertCircle, CheckCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { formatTokenAmount } from '@/utils/format';
 import { generateOrderId } from '@/utils/orderId';
+import { mapKycError } from '@/utils/kycRestrictionErrors';
 import { toast } from 'sonner';
 
 export default function CheckoutPage() {
@@ -83,16 +84,18 @@ export default function CheckoutPage() {
       console.error('Checkout failed:', error);
       let errorMessage = error.message || 'Checkout failed. Please try again.';
       
+      // Map backend errors to user-friendly messages
       if (errorMessage.includes('expired') || errorMessage.includes('Invalid or expired proof')) {
         errorMessage = 'Your verification has expired. Please complete verification again.';
         setKycVerified(false);
         setKycIdentifier('');
       } else if (errorMessage.includes('blacklisted')) {
         errorMessage = 'Your account has been blacklisted and cannot make purchases. Please contact support.';
-      } else if (errorMessage.includes('already purchased') || errorMessage.includes('KYC-restricted')) {
-        errorMessage = 'You have already purchased one or more KYC-restricted books in your cart with this identity.';
       } else if (errorMessage.includes('sold out') || errorMessage.includes('single copy')) {
         errorMessage = 'One or more books in your cart are sold out. Please remove them and try again.';
+      } else {
+        // Use the KYC restriction error mapper for the new restriction
+        errorMessage = mapKycError(errorMessage);
       }
       
       setCheckoutError(errorMessage);

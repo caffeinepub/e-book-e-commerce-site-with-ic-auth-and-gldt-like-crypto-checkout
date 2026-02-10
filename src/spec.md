@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Revert the homepage hero image to the previously used static asset.
+**Goal:** Enforce a stricter KYC purchase restriction so that after a verified identity purchases any KYC-restricted book once, that identity is blocked from purchasing any other KYC-restricted books in the future.
 
 **Planned changes:**
-- Update `frontend/src/pages/HomePage.tsx` so the hero `<img>` uses `/assets/generated/phoenix-1988-image-3.dim_564x483.png` instead of `/assets/generated/home-hero-replacement.dim_564x483.png`.
-- Keep the hero image rendered at 564x483 and ensure the homepage loads without broken-image/missing-asset errors.
+- Update backend checkout enforcement to block any future purchases of KYC-restricted books when the same KYC identifier has previously purchased a KYC-restricted book (regardless of which title), while allowing non-KYC-restricted purchases.
+- Update backend pre-checks used for cart/checkout validation to detect prior purchases of any KYC-restricted book for the same KYC identifier and reject accordingly with a consistent English error message.
+- Update checkout KYC UI explanatory text to reflect the new policy (not “one copy per person” for a specific book).
+- Update frontend checkout error mapping to display a user-friendly English message when the backend rejects due to the new KYC restriction.
 
-**User-visible outcome:** The homepage displays the previous hero image (564x483) and loads normally without any broken image icon.
+**User-visible outcome:** Users who have already purchased one KYC-restricted book will see a clear English message and will be unable to buy any other KYC-restricted books, while they can still purchase non-KYC-restricted books normally.
