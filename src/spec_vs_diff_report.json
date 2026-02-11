@@ -1,65 +1,73 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T00:35:28.877Z",
-  "summary": "The diff adds Version-29 enforcement scripts and documentation, and updates the footer to display “Version 29”. However, it also includes unrequested backend code changes and additional frontend UI/attribution changes. Evidence is insufficient to confirm that Live publish is truly frontend-only (no backend deploy) and that all Version 30/31/32 artifacts/labels have been fully removed from the deployed output.",
+  "generatedAt": "2026-02-11T00:47:10.186Z",
+  "summary": "Diff includes significant changes beyond a frontend-only Version 29 Live publish workflow, including backend canister code modifications and apparent new/expanded frontend functionality and documentation/scripts. Key REQ-4/REQ-5 acceptance evidence is incomplete or not present in the diff summary (e.g., exact deploy command and proof of completed smoke test).",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 with no Version 30/31/32 artifacts or labels remaining in deployed output.",
-      "reason": "The diff shows adding a visible “Version 29” label and adding checks in scripts/docs, but does not show removal/reversion of any existing Version 30/31/32 labels/artifacts in code or build configuration. There is also no clear evidence in the diff of reverting the actual deployed frontend bundle to the Version 29 codebase (only guards/docs/scripts are shown).",
+      "id": "REQ-4",
+      "requirement": "Publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
+      "reason": "The diff shows new/updated enforcement scripts, but does not show the actual content of frontend/VERSION or any change confirming it contains exactly '29'. The requirement explicitly constrains that file content, and the diff summary does not include it.",
       "evidence": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/docs/deployment-preflight.md",
+        "frontend/scripts/enforce-version-29.sh",
         "frontend/scripts/deployment-preflight.sh",
-        "frontend-file-summaries.txt"
+        "frontend/scripts/publish-live.sh"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
-      "reason": "Although scripts/docs state the workflow is frontend-only, the provided diff for the publish script is truncated before any deploy commands. There is not enough evidence to confirm the Live publish action only deploys the frontend canister and never deploys/reinstalls the backend.",
+      "id": "REQ-4",
+      "requirement": "The publish workflow deploys only the frontend canister to the IC network using `dfx deploy frontend --network ic` and does not deploy/reinstall the backend canister.",
+      "reason": "frontend/scripts/publish-live.sh is truncated before the actual deployment command is shown, so the diff summary does not provide evidence that it runs exactly `dfx deploy frontend --network ic` (and only that).",
       "evidence": [
-        "frontend/scripts/publish-live.sh",
-        "frontend/docs/publish-live.md",
-        "frontend/scripts/deployment-preflight.sh"
+        "frontend/scripts/publish-live.sh (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "After publishing, complete the manual Live smoke test checklist for Version 29 and capture any failures per frontend/docs/live-smoke-test-v29.md.",
+      "reason": "The diff adds/updates the checklist and a report template, but provides no filled-out results/report demonstrating the smoke test was actually completed against the Live URL with pass/fail outcomes and captured issues.",
+      "evidence": [
+        "frontend/docs/live-smoke-test-v29.md (truncated)",
+        "frontend/docs/live-smoke-test-v29-report-template.md (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Backend canister code changes including new/expanded state types and an admin-only exportCatalog workflow.",
-      "reason": "BuildRequest explicitly focuses on reverting/locking the frontend to Version 29 and keeping backend unchanged (no schema changes/migrations unless strictly required). The diff modifies backend/main.mo substantially, which is not requested and risks violating the non-goal of avoiding backend changes.",
+      "description": "Backend canister code changes were made despite the requirement/constraint that the Live publish must be frontend-only and must not deploy/modify/reinstall the backend canister or its state.",
+      "reason": "The diff explicitly modifies backend/main.mo, which constitutes backend code modification and violates the 'frontend-only' constraint for this publish task.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "description": "Footer changes beyond version display: social links (X/OpenChat), customer service chat dialog, and caffeine.ai attribution with UTM tracking using window.location.hostname.",
-      "reason": "These are new/changed user-facing features unrelated to reverting/locking to Version 29. Only a Version 29 report/label is within scope; the additional footer content is not requested.",
+      "description": "Added new/expanded frontend application functionality unrelated to publishing Version 29 (e.g., new route /purchase-confirmation/$orderId, enhanced media rendering, KYC/checkout behaviors, animations).",
+      "reason": "BuildRequest non-goals prohibit adding new application features unrelated to publishing Version 29 to Live; the diff summary (via frontend-file-summaries.txt) describes multiple functional enhancements beyond a publish workflow.",
       "evidence": [
-        "frontend/src/components/layout/Footer.tsx"
+        "frontend-file-summaries.txt (truncated)"
       ]
     },
     {
-      "description": "Creation of project_state.json tracking AR-* requests.",
-      "reason": "Not requested by the BuildRequest; it appears to be meta/project tracking rather than implementing version revert/guards.",
+      "description": "Introduced new helper tooling and documentation artifacts (smoke test helper script, smoke test report template, expanded publish docs) that were not explicitly requested as deliverables.",
+      "reason": "REQ-4/REQ-5 focus on executing an existing publish script and completing a manual checklist; the diff includes new supporting files/scripts/templates not requested by the BuildRequest.",
       "evidence": [
-        "project_state.json"
+        "frontend/scripts/live-smoke-test-v29-helper.sh (truncated)",
+        "frontend/docs/live-smoke-test-v29-report-template.md (truncated)",
+        "frontend/docs/publish-live.md"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.72,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/docs/deployment-preflight.md",
+    "frontend/docs/live-smoke-test-v29-report-template.md",
+    "frontend/docs/live-smoke-test-v29.md",
     "frontend/docs/publish-live.md",
     "frontend/scripts/deployment-preflight.sh",
     "frontend/scripts/enforce-version-29.sh",
+    "frontend/scripts/live-smoke-test-v29-helper.sh",
     "frontend/scripts/publish-live.sh",
-    "frontend/scripts/rebuild-draft-v29.sh",
-    "frontend/src/components/layout/Footer.tsx",
     "project_state.json"
   ]
 }

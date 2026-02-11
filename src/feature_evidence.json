@@ -2,59 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-revert-the-deployed-application-to-frontend-version-29-and-ensure-the-deployed-build-reports-version-29-no-version-30-31-32-artifacts-or-labels-remain-in-the-deployed-output",
-      "featureTitle": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
+      "featureId": "feature-publish-the-existing-frontend-version-29-build-to-the-live-public-site-using-the-project-s-version-29-only-frontend-publish-workflow-ensuring-the-deployment-is-frontend-only-and-does-not-deploy-modify-reinstall-the-backend-canister",
+      "featureTitle": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
       "files": [
-        "frontend/scripts/deployment-preflight.sh",
-        "frontend/scripts/publish-live.sh",
-        "frontend/src/components/layout/Footer.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-hard-guards-to-prevent-creating-building-or-publishing-any-frontend-version-other-than-29-in-this-project-s-build-deploy-workflow-i-e-fail-fast-if-the-version-is-not-exactly-29",
-      "featureTitle": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
-      "files": [
-        "frontend/docs/deployment-preflight.md",
         "frontend/docs/publish-live.md",
         "frontend/scripts/deployment-preflight.sh",
         "frontend/scripts/enforce-version-29.sh",
-        "frontend/scripts/publish-live.sh",
-        "frontend/scripts/rebuild-draft-v29.sh"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-live-publish-remains-frontend-only-and-does-not-modify-or-redeploy-the-backend-canister-while-reverting-publishing-version-29",
-      "featureTitle": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
-      "files": [
-        "frontend/docs/publish-live.md",
         "frontend/scripts/publish-live.sh"
       ],
       "components": [
@@ -68,7 +21,30 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-after-publishing-complete-the-manual-live-smoke-test-checklist-for-version-29-against-https-radicaleconomist101-h78-caffeine-xyz-focusing-on-environment-badge-version-label-catalog-browsing-and-purchase-flow-sanity-checks",
+      "featureTitle": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
+      "files": [
+        "frontend/docs/live-smoke-test-v29-report-template.md",
+        "frontend/docs/live-smoke-test-v29.md",
+        "frontend/scripts/live-smoke-test-v29-helper.sh"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

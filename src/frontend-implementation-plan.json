@@ -1,90 +1,65 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Lock frontend deployment to Version 29 and remove non-29 artifacts",
+  "title": "Frontend-only Live publish workflow for Version 29 + Live smoke test materials",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Ensure the app visibly and verifiably reflects frontend Version 29 only, with no remaining references to Versions 30/31/32.",
+      "id": "REQ-4",
+      "summary": "Harden and validate the existing Version-29-only Live frontend publish workflow to deploy frontend only.",
       "acceptanceCriteria": [
-        "The deployed site is running the frontend corresponding to Version 29.",
-        "No user-visible version indicator, deployment metadata, or build artifact references Version 30/31/32."
+        "The Live publish workflow is executed via the existing script: frontend/scripts/publish-live.sh.",
+        "The publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
+        "The publish workflow deploys only the frontend canister to the IC network (dfx deploy frontend --network ic) and does not deploy or reinstall the backend canister.",
+        "Preflight checks run successfully as part of the publish process (frontend/scripts/deployment-preflight.sh)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/Footer.tsx",
+          "path": "frontend/scripts/publish-live.sh",
           "operation": "modify",
-          "description": "Add a small, user-visible version label that explicitly states \"Version 29\" (English) so the deployed UI clearly reports Version 29."
+          "description": "Tighten safety checks around the Live publish flow: ensure the script fails fast before any deploy action if the Version-29 guard fails; add explicit safeguards that prohibit any backend deploy/reinstall commands during this workflow and keep the deploy action strictly limited to deploying the frontend canister to the IC network."
         },
         {
           "path": "frontend/scripts/deployment-preflight.sh",
           "operation": "modify",
-          "description": "Add build-output validation checks that (1) fail if compiled artifacts include references to Version 30/31/32 and (2) confirm the compiled artifacts include \"Version 29\" so the deployable build can be verified as Version 29."
+          "description": "Align preflight output with the Live publish acceptance criteria by clearly asserting the workflow is frontend-only for deployment purposes, and ensure the Version-29 enforcement remains the first gating step before other preflight actions run."
         },
-        {
-          "path": "frontend/scripts/publish-live.sh",
-          "operation": "modify",
-          "description": "Add a post-build / pre-deploy validation step to scan the deployable build output and fail if any references to Version 30/31/32 exist, ensuring the Live publish output contains only Version 29 labeling."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Fail fast in the build/publish workflow unless frontend/VERSION is exactly 29, preventing any non-29 build or publish.",
-      "acceptanceCriteria": [
-        "If frontend/VERSION is not exactly `29`, any build/publish workflow halts with an English error message stating that only Version 29 is allowed.",
-        "If frontend/VERSION is `29`, Draft rebuild and Live publish workflows proceed normally (no behavior regression)."
-      ],
-      "file_operations": [
         {
           "path": "frontend/scripts/enforce-version-29.sh",
-          "operation": "create",
-          "description": "Create a shared guard script that checks frontend/VERSION is exactly \"29\" and exits non-zero with a clear English error stating only Version 29 is allowed."
-        },
-        {
-          "path": "frontend/scripts/publish-live.sh",
           "operation": "modify",
-          "description": "Refactor version verification to call the shared enforce-version-29.sh guard and ensure the failure message is explicitly \"Only Version 29 is allowed\" (English)."
-        },
-        {
-          "path": "frontend/scripts/rebuild-draft-v29.sh",
-          "operation": "modify",
-          "description": "Call the shared enforce-version-29.sh guard at the start so Draft rebuild fails fast unless frontend/VERSION is exactly 29."
-        },
-        {
-          "path": "frontend/scripts/deployment-preflight.sh",
-          "operation": "modify",
-          "description": "Call the shared enforce-version-29.sh guard early so preflight halts immediately unless frontend/VERSION is exactly 29."
-        },
-        {
-          "path": "frontend/docs/deployment-preflight.md",
-          "operation": "modify",
-          "description": "Update documentation to state that the workflow hard-blocks any version other than 29 and describe the exact failure condition (frontend/VERSION must be exactly 29)."
+          "description": "Confirm the guard blocks immediately when frontend/VERSION is not exactly '29' (including whitespace/newline edge cases), and keep messaging unambiguous that no other version is permitted."
         },
         {
           "path": "frontend/docs/publish-live.md",
           "operation": "modify",
-          "description": "Update documentation to reflect the hard guard: publishing halts unless frontend/VERSION is exactly 29 and no other version may be created/published."
+          "description": "Update Live publish documentation to reflect the exact required workflow: running frontend/scripts/publish-live.sh, strict Version 29 enforcement via frontend/VERSION, and explicitly frontend-only deployment that must not deploy/modify/reinstall the backend canister."
         }
       ]
     },
     {
-      "id": "REQ-3",
-      "summary": "Keep Live publish frontend-only and ensure the workflow cannot modify or redeploy the backend while reverting/publishing Version 29.",
+      "id": "REQ-5",
+      "summary": "Update the Version 29 Live smoke test checklist and helper materials to support manual post-publish verification on the Live site.",
       "acceptanceCriteria": [
-        "Live publish actions only deploy the frontend canister; backend canister is not deployed/reinstalled/reset.",
-        "Existing backend state (books, orders, users, KYC) is preserved after the revert to Version 29."
+        "The Live homepage shows the environment badge as 'Live' (not 'Draft').",
+        "The footer displays 'Version 29'.",
+        "Catalog page (/catalog) loads and shows books with cover images rendering.",
+        "A basic cart/checkout navigation path can be exercised without runtime errors (console checked).",
+        "Any failures are captured with URL, expected vs observed, and relevant console errors per the checklist in frontend/docs/live-smoke-test-v29.md."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/publish-live.sh",
+          "path": "frontend/docs/live-smoke-test-v29.md",
           "operation": "modify",
-          "description": "Add an explicit safety assertion (and matching English error) that the Live publish procedure performs frontend-only deployment and does not run any command that deploys/reinstalls/resets the backend, keeping the publish command scoped to the frontend canister only."
+          "description": "Revise the checklist to be explicitly for Live Version 29 (not 'Draft 29'), and ensure it prominently covers the required smoke test focus areas: environment badge 'Live', footer 'Version 29', catalog browsing with cover images rendering, and cart/checkout navigation sanity checks with explicit instructions to check the browser console and record failures (URL, expected vs observed, console errors)."
         },
         {
-          "path": "frontend/docs/publish-live.md",
+          "path": "frontend/scripts/live-smoke-test-v29-helper.sh",
           "operation": "modify",
-          "description": "Strengthen the written guardrails to clearly state that Live publish is frontend-only and must not deploy/reinstall/reset the backend, and that backend state must remain preserved during the Version 29 revert/publish."
+          "description": "Update helper script headings and printed steps to match the Live Version 29 smoke test focus (environment badge, version label, catalog covers, checkout navigation without runtime errors) and ensure it points testers to frontend/docs/live-smoke-test-v29.md and the Live URL."
+        },
+        {
+          "path": "frontend/docs/live-smoke-test-v29-report-template.md",
+          "operation": "modify",
+          "description": "Update report template naming and prompts to match Live Version 29 (remove 'Draft 29' wording where it causes confusion) and ensure it includes fields for capturing failures with URL, expected vs observed, and relevant console errors consistent with frontend/docs/live-smoke-test-v29.md."
         }
       ]
     }

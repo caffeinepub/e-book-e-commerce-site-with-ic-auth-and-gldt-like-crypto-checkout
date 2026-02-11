@@ -3,11 +3,11 @@ import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Time "mo:core/Time";
 import List "mo:core/List";
-import Order "mo:core/Order";
 import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
+import Order "mo:core/Order";
 import Array "mo:core/Array";
 import Storage "blob-storage/Storage";
+import Runtime "mo:core/Runtime";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
@@ -43,7 +43,7 @@ actor {
 
   type OwnedBook = {
     bookId : Text;
-    purchasedBy : Text; // KYC identifier
+    purchasedBy : Text;
   };
 
   type CartItem = {
@@ -79,11 +79,8 @@ actor {
   var nextMessageId = 0;
   let supportMessages = Map.empty<Nat, CustomerMessage>();
 
-  // Owner recovery state - stores the designated owner principal
   var designatedOwner : ?Principal = null;
 
-  // KYC customer record database (in-canister "database")
-  // Persistent storage for verified KYC identities and their associated data
   let kycIdToPrincipal = Map.empty<Text, Principal>();
   let principalToKycId = Map.empty<Principal, Text>();
   let purchasesByCustomerId = Map.empty<Text, List.List<Text>>();
@@ -108,7 +105,6 @@ actor {
     };
   };
 
-  // CatalogState type (represents full catalog state)
   public type CatalogState = {
     userProfiles : [(Principal, UserProfile)];
     bookStore : [(Text, Book)];
@@ -127,18 +123,16 @@ actor {
     kycRestrictedPurchases : [(Text, Text)];
   };
 
-  // Admin-only workflow to export catalog content
   public shared ({ caller }) func exportCatalog() : async CatalogState {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can export catalog");
     };
 
-    // Build the catalog state from current actor state
     let catalog : CatalogState = {
       userProfiles = userProfiles.entries().toArray();
       bookStore = bookStore.entries().toArray();
-      cartStore = cartStore.entries().map<(Principal, List.List<CartItem>), (Principal, [CartItem])>(
-        func((principal, list) : (Principal, List.List<CartItem>)) : (Principal, [CartItem]) {
+      cartStore = cartStore.entries().map(
+        func((principal, list)) {
           (principal, list.toArray());
         }
       ).toArray();
@@ -150,8 +144,8 @@ actor {
       designatedOwner = designatedOwner;
       kycIdToPrincipal = kycIdToPrincipal.entries().toArray();
       principalToKycId = principalToKycId.entries().toArray();
-      purchasesByCustomerId = purchasesByCustomerId.entries().map<(Text, List.List<Text>), (Text, [Text])>(
-        func((kycId, list) : (Text, List.List<Text>)) : (Text, [Text]) {
+      purchasesByCustomerId = purchasesByCustomerId.entries().map(
+        func((kycId, list)) {
           (kycId, list.toArray());
         }
       ).toArray();
@@ -163,13 +157,11 @@ actor {
     catalog;
   };
 
-  // Admin-only workflow to import catalog content
   public shared ({ caller }) func importCatalog(newCatalog : CatalogState) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can import catalog");
     };
 
-    // Clear existing state
     userProfiles.clear();
     bookStore.clear();
     cartStore.clear();
@@ -184,7 +176,6 @@ actor {
     validationTimestamps.clear();
     kycRestrictedPurchases.clear();
 
-    // Import new state
     for ((principal, profile) in newCatalog.userProfiles.values()) {
       userProfiles.add(principal, profile);
     };
@@ -244,9 +235,6 @@ actor {
     };
   };
 
-  //---------------------------(Rest of the Actor)----------------------------------
-
-  // Owner Recovery Functions
   public shared ({ caller }) func setDesignatedOwner(owner : Principal) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can set designated owner");
@@ -278,7 +266,6 @@ actor {
     };
   };
 
-  // Customer Service Chat Functions
   public shared ({ caller }) func sendSupportMessage(content : Text) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can send support messages");
@@ -366,7 +353,6 @@ actor {
     ).toArray();
   };
 
-  // User Profile Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
@@ -388,26 +374,53 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Book Catalog Functions (Public)
   public query ({ caller }) func getBook(id : Text) : async Book {
     switch (bookStore.get(id)) {
       case (null) { Runtime.trap("Book not found") };
-      case (?book) { book };
+      case (?book) {
+        // Return book with content stripped for non-purchasers
+        if (not hasAccessToBook(caller, id)) {
+          return {
+            book with
+            content = null;
+          };
+        };
+        book;
+      };
     };
   };
 
   public query ({ caller }) func getAllBooks() : async [Book] {
-    bookStore.values().toArray().sort(Book.compareByTitle);
+    let books = bookStore.values().toArray().sort(Book.compareByTitle);
+    // Strip content from books user hasn't purchased
+    books.map(func(book) {
+      if (not hasAccessToBook(caller, book.id)) {
+        return {
+          book with
+          content = null;
+        };
+      };
+      book;
+    });
   };
 
   public query ({ caller }) func getAvailableBooks() : async [Book] {
     let availableBooksIter = bookStore.values().filter(
       func(book) { book.available }
     );
-    availableBooksIter.toArray().sort(Book.compareByTitle);
+    let books = availableBooksIter.toArray().sort(Book.compareByTitle);
+    // Strip content from books user hasn't purchased
+    books.map(func(book) {
+      if (not hasAccessToBook(caller, book.id)) {
+        return {
+          book with
+          content = null;
+        };
+      };
+      book;
+    });
   };
 
-  // Admin-only Book Management Functions
   public shared ({ caller }) func addBook(
     id : Text,
     title : Text,
@@ -498,7 +511,6 @@ actor {
     };
   };
 
-  // Media management functions
   public shared ({ caller }) func uploadBookPdf(bookId : Text, pdfBlob : Storage.ExternalBlob) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can upload PDFs");
@@ -692,7 +704,6 @@ actor {
     bookStore.remove(id);
   };
 
-  // Token Ledger Functions
   public shared ({ caller }) func mintTokens(to : Principal, amount : Nat) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can mint tokens");
@@ -715,7 +726,6 @@ actor {
     balance;
   };
 
-  // Cart Functions
   public shared ({ caller }) func addToCart(bookId : Text, quantity : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add to cart");
@@ -999,17 +1009,14 @@ actor {
 
     let kycIdTrimmed = kycId.trim(#char(' '));
 
-    switch (kycIdToPrincipal.get(kycIdTrimmed)) {
-      case (?owner) {
-        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Can only check your own KYC status");
-        };
-      };
-      case (null) {
-        if (not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Can only check your own KYC status");
-        };
-      };
+    // Check if caller owns this KYC ID or is admin
+    let isOwner = switch (principalToKycId.get(caller)) {
+      case (?callerKycId) { callerKycId == kycIdTrimmed };
+      case (null) { false };
+    };
+
+    if (not isOwner and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only check your own KYC status");
     };
 
     if (permanentlyBlacklisted.containsKey(kycIdTrimmed)) {
@@ -1041,7 +1048,6 @@ actor {
     #permanentlyBlacklisted;
   };
 
-  // Order Functions
   public query ({ caller }) func getOrder(orderId : Text) : async Order {
     switch (orderStore.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
@@ -1094,7 +1100,6 @@ actor {
     };
   };
 
-  // Admin-only Reset Function
   public shared ({ caller }) func resetStore() : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can reset store");
@@ -1113,4 +1118,3 @@ actor {
     kycRestrictedPurchases.clear();
   };
 };
-

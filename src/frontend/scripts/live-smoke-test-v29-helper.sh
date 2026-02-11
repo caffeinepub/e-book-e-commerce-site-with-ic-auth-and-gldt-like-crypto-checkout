@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Live Smoke Test Helper - Draft 29
+# Live Smoke Test Helper - Version 29
 # Prints the smoke test checklist and key URLs for manual verification
 # Does NOT automate any destructive actions or require backend changes
 
@@ -8,7 +8,7 @@ LIVE_URL="https://radicaleconomist101-h78.caffeine.xyz"
 
 echo ""
 echo "=========================================="
-echo "Live Smoke Test Helper - Draft 29"
+echo "Live Smoke Test Helper - Version 29"
 echo "=========================================="
 echo ""
 echo "This helper provides the smoke test checklist and key URLs."
@@ -46,10 +46,10 @@ echo "   - Visit: $LIVE_URL"
 echo "   - Check: Header shows 'Live' badge (not 'Draft')"
 echo "   - Expected: Badge displays 'Live'"
 echo ""
-echo -e "${YELLOW}2. GLDT Wallet Address Verification${NC}"
-echo "   - Navigate to checkout or wallet info section"
-echo "   - Check: Wallet address matches Draft 29"
-echo "   - Expected: Address matches Draft 29 exactly"
+echo -e "${YELLOW}2. Version Label Verification${NC}"
+echo "   - Scroll to footer"
+echo "   - Check: Footer displays 'Version 29'"
+echo "   - Expected: Version label shows 'Version 29'"
 echo ""
 echo -e "${YELLOW}3. Catalog Verification${NC}"
 echo "   - Visit: $LIVE_URL/catalog"
@@ -67,7 +67,8 @@ echo -e "${YELLOW}5. Purchase Flow Verification${NC}"
 echo "   - Add book to cart → View cart → Checkout → Confirm"
 echo "   - Check: Cart total calculates correctly"
 echo "   - Check: KYC verification for restricted books"
-echo "   - Expected: Purchase completes successfully"
+echo "   - Check: No runtime errors in browser console"
+echo "   - Expected: Purchase completes successfully without errors"
 echo ""
 echo -e "${YELLOW}6. Library Verification${NC}"
 echo "   - Visit: $LIVE_URL/library"

@@ -1,69 +1,65 @@
 {
   "kind": "build_request",
-  "title": "Revert deployment to Version 29 only (block any other version)",
-  "priority": "high",
+  "title": "Publish frontend Version 29 to Live (public site)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
+      "id": "REQ-4",
+      "text": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
       "target": "frontend",
       "source": {
         "messageIds": [
+          "msg-1",
+          "msg-2",
+          "msg-3",
           "msg-4"
         ],
         "quotes": [
-          "REVERT TO VERSION 29. DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
+          "Version 33 is ready — would you like it published to your public site now?",
+          "yes"
         ]
       },
       "acceptanceCriteria": [
-        "The deployed site is running the frontend corresponding to Version 29.",
-        "No user-visible version indicator, deployment metadata, or build artifact references Version 30/31/32."
+        "The Live publish workflow is executed via the existing script: frontend/scripts/publish-live.sh.",
+        "The publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
+        "The publish workflow deploys only the frontend canister to the IC network (dfx deploy frontend --network ic) and does not deploy or reinstall the backend canister.",
+        "Preflight checks run successfully as part of the publish process (frontend/scripts/deployment-preflight.sh)."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
-      "target": "frontend",
+      "id": "REQ-5",
+      "text": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
+      "target": "unknown",
       "source": {
         "messageIds": [
+          "msg-1",
+          "msg-2",
+          "msg-3",
           "msg-4"
         ],
         "quotes": [
-          "DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
+          "yes"
         ]
       },
       "acceptanceCriteria": [
-        "If frontend/VERSION is not exactly `29`, any build/publish workflow halts with an English error message stating that only Version 29 is allowed.",
-        "If frontend/VERSION is `29`, Draft rebuild and Live publish workflows proceed normally (no behavior regression)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "REVERT TO VERSION 29. DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Live publish actions only deploy the frontend canister; backend canister is not deployed/reinstalled/reset.",
-        "Existing backend state (books, orders, users, KYC) is preserved after the revert to Version 29."
+        "The Live homepage shows the environment badge as 'Live' (not 'Draft').",
+        "The footer displays 'Version 29'.",
+        "Catalog page (/catalog) loads and shows books with cover images rendering.",
+        "A basic cart/checkout navigation path can be exercised without runtime errors (console checked).",
+        "Any failures are captured with URL, expected vs observed, and relevant console errors per the checklist in frontend/docs/live-smoke-test-v29.md."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Do not create or publish any version other than Version 29.",
-    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui (compose only).",
-    "Backend must remain single-actor; only add migration.mo if an existing stable state schema must change."
+    "Frontend version is locked to Version 29 only; frontend/VERSION must contain exactly '29' and any other version must fail fast.",
+    "Live publish must be frontend-only; do not deploy, reinstall, reset, or otherwise modify the backend canister or its state.",
+    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding new product features unrelated to reverting/locking to Version 29.",
-    "Backend schema changes or data migrations (unless strictly required to preserve state during revert)."
+    "Adding new application features unrelated to publishing Version 29 to Live.",
+    "Changing backend schemas, performing migrations, or wiping/modifying existing backend state (books, orders, users, KYC).",
+    "Introducing or supporting any frontend version other than 29."
   ],
   "imageRequirements": {
     "required": [],

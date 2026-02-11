@@ -2,8 +2,8 @@
 
 # Deployment Preflight Script
 # Validates build configuration and runs builds before Live deployment
-# ⚠️  IMPORTANT: This script does NOT deploy or modify the backend canister
-# It only validates that builds work correctly before a Live publish
+# ⚠️  IMPORTANT: This script validates builds for FRONTEND-ONLY deployment
+# It does NOT deploy or modify the backend canister
 
 set -e  # Exit on first error
 
@@ -15,9 +15,9 @@ echo "=========================================="
 echo "Deployment Preflight Check"
 echo "=========================================="
 echo ""
-echo "⚠️  NOTE: This script validates builds only"
-echo "   It does NOT deploy or modify the backend"
-echo "   It does NOT modify any canister state"
+echo "⚠️  NOTE: This validates builds for FRONTEND-ONLY deployment"
+echo "   Backend canister will NOT be deployed or modified"
+echo "   This workflow is for Live publish of Version 29 only"
 echo ""
 
 # Color codes for output
@@ -48,15 +48,25 @@ print_section() {
     echo "=========================================="
 }
 
-# 0. Enforce Version 29 only
-print_section "0. Version 29 Enforcement"
+# 0. Enforce Version 29 only (FIRST - fail fast)
+print_section "0. Version 29 Enforcement (CRITICAL)"
+
+echo "Verifying Version 29 lock before any other checks..."
+echo ""
 
 if bash "$SCRIPT_DIR/enforce-version-29.sh"; then
-    print_status 0 "Version 29 verified"
+    print_status 0 "Version 29 verified - deployment allowed"
+    echo "   ✓ This preflight is for Version 29 Live publish"
+    echo "   ✓ Frontend-only deployment workflow"
 else
     print_status 1 "Version check failed - Only Version 29 is allowed"
     echo ""
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}PREFLIGHT BLOCKED${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
     echo "Cannot proceed with preflight."
+    echo "Only Version 29 may be published to Live."
     exit 1
 fi
 
@@ -124,12 +134,16 @@ fi
 print_section "3. Backend Build Verification"
 
 echo "Building backend canister (validation only, NOT deploying)..."
+echo "⚠️  This is a validation-only build for frontend deployment"
+echo "⚠️  Backend canister will NOT be deployed or modified"
+echo ""
 cd "$REPO_ROOT"
 
 if dfx build backend 2>&1 | tee /tmp/backend-build.log; then
-    print_status 0 "Backend build successful"
+    print_status 0 "Backend build successful (validation only)"
     echo "   ⚠️  Backend was NOT deployed or modified"
     echo "   ⚠️  This is a validation-only build"
+    echo "   ✓ Frontend deployment will NOT touch backend"
 else
     print_status 1 "Backend build failed"
     echo "   Check build log above for errors"
@@ -276,62 +290,28 @@ else
     echo "   Check build log above for errors"
     echo "   Common issues:"
     echo "   - TypeScript type errors"
-    echo "   - Missing imports or modules"
-    echo "   - Build configuration issues in vite.config.js"
-    echo "   - Missing environment variables"
+    echo "   - Missing dependencies"
+    echo "   - Vite configuration issues"
 fi
 
 # Final summary
 print_section "Preflight Summary"
 
 if [ "$PREFLIGHT_PASSED" = true ]; then
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${GREEN}✓ All preflight checks passed!${NC}"
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}✓ All preflight checks passed${NC}"
     echo ""
-    echo "✓ Version 29 verified and enforced"
-    echo "✓ Production build embeds VITE_APP_ENV=Live (confirmed)"
-    echo "✓ Environment badge will display 'Live' on production"
-    echo "✓ Version 29 label present in build output"
-    echo "✓ No prohibited version references (30/31/32) found"
+    echo "Ready to proceed with Live publish:"
+    echo "  bash frontend/scripts/publish-live.sh"
     echo ""
-    echo "You are ready to deploy Version 29 to Live."
-    echo ""
-    echo -e "${YELLOW}⚠️  CRITICAL REMINDERS FOR LIVE DEPLOYMENT:${NC}"
-    echo ""
-    echo -e "${GREEN}✓ DO use these commands:${NC}"
-    echo "   - bash frontend/scripts/publish-live.sh (recommended)"
-    echo "   - dfx deploy frontend --network ic (manual, frontend only)"
-    echo ""
-    echo -e "${RED}✗ DO NOT use these commands (they WIPE data):${NC}"
-    echo "   - dfx deploy --reinstall"
-    echo "   - dfx deploy backend --mode reinstall"
-    echo "   - dfx canister install --mode reinstall"
-    echo "   - dfx deploy (without specifying 'frontend')"
-    echo ""
-    echo -e "${BLUE}📋 Post-Deploy Verification Checklist:${NC}"
-    echo "   1. Visit https://radicaleconomist101-h78.caffeine.xyz"
-    echo "   2. Check environment badge shows 'Live' (not 'Draft')"
-    echo "   3. Verify footer displays 'Version 29'"
-    echo "   4. Verify GLDT wallet address matches Draft 29"
-    echo "   5. Follow frontend/docs/live-smoke-test-v29.md for full verification"
-    echo ""
-    echo -e "${BLUE}Next step: Run the publish script${NC}"
-    echo "   bash frontend/scripts/publish-live.sh"
-    echo ""
+    echo "⚠️  REMINDER: This will deploy FRONTEND ONLY"
+    echo "   Backend canister will NOT be deployed or modified"
     exit 0
 else
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${RED}✗ Preflight checks failed${NC}"
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}✗ Some preflight checks failed${NC}"
     echo ""
-    echo "Cannot proceed with Live deployment until all checks pass."
+    echo "Cannot proceed with Live publish until all checks pass."
+    echo "Review the failures above and fix them."
     echo ""
-    echo "Review the failures above and fix them before retrying."
-    echo "See frontend/docs/deployment-preflight.md for detailed troubleshooting."
-    echo ""
-    echo "After fixing issues, rerun preflight:"
-    echo "  bash frontend/scripts/deployment-preflight.sh"
-    echo ""
+    echo "See frontend/docs/deployment-preflight.md for troubleshooting."
     exit 1
 fi

@@ -1,10 +1,12 @@
-# Live Smoke Test Report - Draft 29
+# Live Smoke Test Report - Version 29
 
 **Test Date:** ___________________________  
 **Tested By:** ___________________________  
 **Test Start Time:** ___________________________  
 **Test End Time:** ___________________________  
 **Target URL:** https://radicaleconomist101-h78.caffeine.xyz
+**Environment:** Live
+**Version:** 29
 
 ---
 
@@ -38,19 +40,15 @@
 
 ---
 
-### 2. GLDT Wallet Address Verification
+### 2. Version Label Verification
 
 **Status:** [ ] PASS  [ ] FAIL
 
-**URL Tested:** ___________________________
+**URL Tested:** https://radicaleconomist101-h78.caffeine.xyz
 
-**Expected:** Wallet address matches Draft 29
+**Expected:** Footer displays "Version 29"
 
-**Draft 29 Address:** ___________________________
-
-**Live Address:** ___________________________
-
-**Match:** [ ] YES  [ ] NO
+**Observed:** ___________________________
 
 **Notes:** ___________________________
 
@@ -106,7 +104,7 @@
 - [ ] Complete purchase
 - [ ] View confirmation
 
-**Expected:** Complete purchase flow works end-to-end
+**Expected:** Complete purchase flow works end-to-end without runtime errors
 
 **Observed:**
 - Add to cart: [ ] SUCCESS  [ ] FAIL
@@ -116,6 +114,7 @@
 - Purchase completed: [ ] YES  [ ] NO
 - Confirmation displayed: [ ] YES  [ ] NO
 - Order ID received: ___________________________
+- Console errors: [ ] NONE  [ ] PRESENT (describe below)
 
 **Notes:** ___________________________
 

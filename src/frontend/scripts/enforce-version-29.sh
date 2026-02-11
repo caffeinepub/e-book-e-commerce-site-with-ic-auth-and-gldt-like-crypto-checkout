@@ -21,12 +21,12 @@ if [ ! -f "$VERSION_FILE" ]; then
     echo ""
     echo "Expected location: $VERSION_FILE"
     echo ""
-    echo "Only Version 29 is allowed."
+    echo -e "${RED}Only Version 29 is allowed.${NC}"
     echo "Cannot proceed."
     exit 1
 fi
 
-# Read and trim version
+# Read and trim version (remove all whitespace including newlines)
 CURRENT_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
 
 # Enforce Version 29 only
@@ -36,14 +36,18 @@ if [ "$CURRENT_VERSION" != "29" ]; then
     echo "Expected version: 29"
     echo "Current version:  $CURRENT_VERSION"
     echo ""
-    echo -e "${RED}Only Version 29 is allowed.${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}DEPLOYMENT BLOCKED${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
+    echo "Only Version 29 is allowed."
     echo "This deployment workflow is locked to Version 29."
     echo "No other version may be created or published."
     echo ""
     echo "To fix this:"
     echo "  1. Ensure frontend/VERSION contains exactly '29'"
-    echo "  2. Do not create or publish any other version"
+    echo "  2. Remove any whitespace or newlines"
+    echo "  3. Do not create or publish any other version"
     echo ""
     echo "Cannot proceed."
     exit 1

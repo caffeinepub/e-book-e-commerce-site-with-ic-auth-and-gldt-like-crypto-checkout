@@ -1,8 +1,14 @@
-# Live Smoke Test Checklist - Draft 29
+# Live Smoke Test Checklist - Version 29
 
-This document provides a comprehensive manual verification checklist for Draft 29 after publishing to Live production.
+This document provides a comprehensive manual verification checklist for Version 29 after publishing to Live production.
 
 **Target URL:** https://radicaleconomist101-h78.caffeine.xyz
+
+**Environment:** Live (not Draft)
+
+**Version:** 29
+
+---
 
 ## Pre-Test Setup
 
@@ -12,6 +18,8 @@ Before starting the smoke tests:
 2. **Open browser developer tools** (F12) to monitor console for errors
 3. **Prepare test accounts** (if needed for purchase testing)
 4. **Have this checklist ready** to record results
+
+---
 
 ## Critical Verification Steps
 
@@ -37,31 +45,42 @@ Before starting the smoke tests:
 - [ ] PASS - Badge shows "Live"
 - [ ] FAIL - Badge shows "Draft" or missing
 
+**Failure Capture:**
+- URL: https://radicaleconomist101-h78.caffeine.xyz
+- Step: Environment badge check
+- Expected: Badge displays "Live"
+- Observed: ___________________________
+- Console Errors: ___________________________
+
 ---
 
-### 2. GLDT Wallet Address Verification
+### 2. Version Label Verification
 
-**Purpose:** Confirm the wallet address matches Draft 29 (where customer funds will go)
+**Purpose:** Confirm the footer displays "Version 29"
 
 **Steps:**
-1. Navigate to the checkout page or wallet info section
-2. Locate the GLDT wallet address display
-3. Compare with the Draft 29 wallet address
+1. Scroll to the bottom of the page
+2. Locate the footer
+3. Check the version label
 
 **Expected Result:**
-- ✅ Wallet address matches Draft 29 exactly
-- ✅ Address is displayed correctly (no truncation errors)
+- ✅ Footer displays "Version 29"
+- ✅ Version label is clearly visible
 
 **If Failed:**
-- ❌ Address doesn't match → Wrong version deployed
-- ❌ Address missing → Configuration error
-- **Action:** Verify correct version deployed, check configuration
+- ❌ Wrong version shown → Wrong version deployed
+- ❌ No version label → Footer component issue
+- **Action:** Verify correct version deployed
 
 **Record Result:**
-- [ ] PASS - Wallet address matches Draft 29
-- [ ] FAIL - Wallet address mismatch or missing
-- **Draft 29 Address:** ___________________________
-- **Live Address:** ___________________________
+- [ ] PASS - Footer shows "Version 29"
+- [ ] FAIL - Wrong version or missing
+
+**Failure Capture:**
+- URL: https://radicaleconomist101-h78.caffeine.xyz
+- Step: Version label check
+- Expected: "Version 29"
+- Observed: ___________________________
 
 ---
 
@@ -93,11 +112,12 @@ Before starting the smoke tests:
 - [ ] PASS - All books display correctly
 - [ ] FAIL - Issues found (describe below)
 
-**Failure Details:**
+**Failure Capture:**
 - URL: /catalog
 - Step: ___________________________
-- Expected: ___________________________
+- Expected: Books display with covers, titles, authors, prices
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -127,17 +147,18 @@ Before starting the smoke tests:
 - [ ] PASS - Book details display correctly
 - [ ] FAIL - Issues found (describe below)
 
-**Failure Details:**
+**Failure Capture:**
 - URL: /book/:id
 - Step: ___________________________
-- Expected: ___________________________
+- Expected: Complete book details with functional Add to Cart
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
 ### 5. Purchase Flow Verification
 
-**Purpose:** Verify the complete purchase workflow
+**Purpose:** Verify the complete purchase workflow without runtime errors
 
 **Steps:**
 1. Add a book to cart
@@ -155,6 +176,7 @@ Before starting the smoke tests:
 - ✅ Purchase completes successfully
 - ✅ Order confirmation displays with order ID
 - ✅ Thank-you icon animates on confirmation page
+- ✅ No runtime errors in console
 
 **If Failed:**
 - ❌ Add to cart fails → Backend connection issue
@@ -163,14 +185,15 @@ Before starting the smoke tests:
 - **Action:** Check browser console, verify backend connection
 
 **Record Result:**
-- [ ] PASS - Purchase flow works end-to-end
+- [ ] PASS - Purchase flow works end-to-end without errors
 - [ ] FAIL - Issues found (describe below)
 
-**Failure Details:**
+**Failure Capture:**
 - URL: ___________________________
 - Step: ___________________________
-- Expected: ___________________________
+- Expected: Smooth purchase flow without runtime errors
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -199,11 +222,12 @@ Before starting the smoke tests:
 - [ ] PASS - Library displays purchased books correctly
 - [ ] FAIL - Issues found (describe below)
 
-**Failure Details:**
+**Failure Capture:**
 - URL: /library
 - Step: ___________________________
-- Expected: ___________________________
+- Expected: Purchased books with covers and download options
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -231,11 +255,12 @@ Before starting the smoke tests:
 - [ ] PASS - PDF downloads successfully
 - [ ] FAIL - Issues found (describe below)
 
-**Failure Details:**
+**Failure Capture:**
 - URL: /library
 - Step: PDF download
-- Expected: Successful download
+- Expected: Successful download and PDF opens
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -266,11 +291,12 @@ Before starting the smoke tests:
 - [ ] FAIL - Issues found (describe below)
 - [ ] N/A - Not an admin user
 
-**Failure Details:**
+**Failure Capture:**
 - URL: /admin
 - Step: ___________________________
-- Expected: ___________________________
+- Expected: All admin tabs functional
 - Observed: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -330,6 +356,7 @@ Before starting the smoke tests:
 **Browser-Specific Issues:**
 - Browser: ___________________________
 - Issue: ___________________________
+- Console Errors: ___________________________
 
 ---
 
@@ -459,6 +486,6 @@ Use this template to record any failures:
 
 **Expected Environment Badge:** "Live" (not "Draft")
 
-**Expected GLDT Wallet:** (Match Draft 29 address)
+**Expected Version Label:** "Version 29"
 
 **Helper Script:**

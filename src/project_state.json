@@ -2,46 +2,31 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Deployment process created Version 32 despite user instruction; user requests revert to Version 29 only."
+  "architectural_notes": [
+    "User approved publishing/deploying the current build (Version 33) to the public site."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-revert-the-deployed-application-to-frontend-version-29-and-ensure-the-deployed-build-reports-version-29-no-version-30-31-32-artifacts-or-labels-remain-in-the-deployed-output",
-      "title": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
+      "id": "feature-publish-the-existing-frontend-version-29-build-to-the-live-public-site-using-the-project-s-version-29-only-frontend-publish-workflow-ensuring-the-deployment-is-frontend-only-and-does-not-deploy-modify-reinstall-the-backend-canister",
+      "title": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
       "reqIds": [
-        "REQ-1"
+        "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-hard-guards-to-prevent-creating-building-or-publishing-any-frontend-version-other-than-29-in-this-project-s-build-deploy-workflow-i-e-fail-fast-if-the-version-is-not-exactly-29",
-      "title": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
+      "id": "feature-after-publishing-complete-the-manual-live-smoke-test-checklist-for-version-29-against-https-radicaleconomist101-h78-caffeine-xyz-focusing-on-environment-badge-version-label-catalog-browsing-and-purchase-flow-sanity-checks",
+      "title": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
       "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-live-publish-remains-frontend-only-and-does-not-modify-or-redeploy-the-backend-canister-while-reverting-publishing-version-29",
-      "title": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
-      "reqIds": [
-        "REQ-3"
+        "REQ-5"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Revert deployment to Version 29 and do not create/publish any versions other than 29",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Revert deployment to Version 29 only (block any other version)",
+  "new_feature_requests": [],
+  "projectName": "Publish frontend Version 29 to Live (public site)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
