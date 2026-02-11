@@ -1,26 +1,34 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Deploy/publish Version 25 to the live link radicaleconomist101-h78.caffeine.xyz.",
-  "architectural_notes": [
-    "Deployment target live link: radicaleconomist101-h78.caffeine.xyz"
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Deployment process created Version 32 despite user instruction; user requests revert to Version 29 only."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-run-the-existing-live-deployment-preflight-checks-and-then-publish-the-current-draft-version-25-to-the-live-link-https-radicaleconomist101-h78-caffeine-xyz-without-wiping-backend-state",
-      "title": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
+      "id": "feature-revert-the-deployed-application-to-frontend-version-29-and-ensure-the-deployed-build-reports-version-29-no-version-30-31-32-artifacts-or-labels-remain-in-the-deployed-output",
+      "title": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-live-publish-documentation-and-script-messaging-to-refer-to-version-25-instead-of-version-22-wherever-the-version-number-is-displayed-in-user-facing-console-output-or-docs-while-keeping-the-target-domain-radicaleconomist101-h78-caffeine-xyz-unchanged",
-      "title": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
+      "id": "feature-add-hard-guards-to-prevent-creating-building-or-publishing-any-frontend-version-other-than-29-in-this-project-s-build-deploy-workflow-i-e-fail-fast-if-the-version-is-not-exactly-29",
+      "title": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-live-publish-remains-frontend-only-and-does-not-modify-or-redeploy-the-backend-canister-while-reverting-publishing-version-29",
+      "title": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -28,12 +36,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Publish/deploy Version 25 to the user's live link: radicaleconomist101-h78.caffeine.xyz",
+      "summary": "Revert deployment to Version 29 and do not create/publish any versions other than 29",
       "reqIds": [],
-      "status": "in_progress"
+      "status": "pending"
     }
   ],
-  "projectName": "Publish Version 25 to Live at radicaleconomist101-h78.caffeine.xyz",
+  "projectName": "Revert deployment to Version 29 only (block any other version)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

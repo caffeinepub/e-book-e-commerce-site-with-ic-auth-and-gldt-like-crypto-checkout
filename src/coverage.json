@@ -1,32 +1,54 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T21:36:11.919Z",
+  "generatedAt": "2026-02-11T00:35:28.881Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
+        "summary": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/publish-live.sh",
+          "frontend/src/components/layout/Footer.tsx",
           "frontend/scripts/deployment-preflight.sh",
-          "frontend/docs/deployment-preflight.md",
-          "frontend/.env.production"
+          "frontend/scripts/publish-live.sh"
         ],
         "matchedFiles": [
+          "frontend/src/components/layout/Footer.tsx",
+          "frontend/scripts/deployment-preflight.sh",
           "frontend/scripts/publish-live.sh"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
+        "summary": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/scripts/enforce-version-29.sh",
+          "frontend/scripts/publish-live.sh",
+          "frontend/scripts/rebuild-draft-v29.sh",
+          "frontend/scripts/deployment-preflight.sh",
+          "frontend/docs/deployment-preflight.md",
+          "frontend/docs/publish-live.md"
+        ],
+        "matchedFiles": [
+          "frontend/scripts/enforce-version-29.sh",
+          "frontend/scripts/publish-live.sh",
+          "frontend/scripts/rebuild-draft-v29.sh",
+          "frontend/scripts/deployment-preflight.sh",
+          "frontend/docs/deployment-preflight.md",
+          "frontend/docs/publish-live.md"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/scripts/publish-live.sh",
@@ -40,12 +62,18 @@
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/docs/deployment-preflight.md",
     "frontend/docs/publish-live.md",
+    "frontend/scripts/deployment-preflight.sh",
+    "frontend/scripts/enforce-version-29.sh",
     "frontend/scripts/publish-live.sh",
+    "frontend/scripts/rebuild-draft-v29.sh",
+    "frontend/src/components/layout/Footer.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

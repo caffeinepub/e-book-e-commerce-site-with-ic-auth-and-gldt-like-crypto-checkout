@@ -65,12 +65,18 @@ export default function MyLibraryPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {libraryBooks.map(({ book, order }) => {
             const hasMedia = book.media.pdf || book.media.images.length > 0 || book.media.audio.length > 0 || book.media.video.length > 0;
+            const uploadedCover = book.media.images.length > 0 ? book.media.images[0] : undefined;
             
             return (
               <div key={`${order.orderId}-${book.id}`} className="relative">
                 <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
                   <div className="relative">
-                    <CoverImage bookId={book.id} title={book.title} className="aspect-[2/3] w-full" />
+                    <CoverImage 
+                      bookId={book.id} 
+                      title={book.title} 
+                      uploadedCover={uploadedCover}
+                      className="aspect-[2/3] w-full" 
+                    />
                     {book.media.pdf && (
                       <LibraryPdfDownloadButton
                         orderId={order.orderId}

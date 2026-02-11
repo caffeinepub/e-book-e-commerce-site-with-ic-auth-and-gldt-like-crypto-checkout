@@ -1,57 +1,90 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Publish Draft Version 25 to Live (radicaleconomist101-h78.caffeine.xyz)",
+  "title": "Lock frontend deployment to Version 29 and remove non-29 artifacts",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure Live publish workflow runs preflight then deploys the current Draft (Version 25) to the Live domain without wiping backend state, and that the UI environment indicator shows Live.",
+      "summary": "Ensure the app visibly and verifiably reflects frontend Version 29 only, with no remaining references to Versions 30/31/32.",
       "acceptanceCriteria": [
-        "The preflight script (frontend/scripts/deployment-preflight.sh) completes successfully (exit code 0).",
-        "The Live publish script completes successfully and deploys the frontend canister to the IC network without reinstalling/wiping backend state.",
-        "Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest build and the UI indicates the environment is Live."
+        "The deployed site is running the frontend corresponding to Version 29.",
+        "No user-visible version indicator, deployment metadata, or build artifact references Version 30/31/32."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/publish-live.sh",
+          "path": "frontend/src/components/layout/Footer.tsx",
           "operation": "modify",
-          "description": "Harden the Live publish script so it explicitly deploys ONLY the frontend canister in a non-destructive mode (preserving backend state), and keep the target domain radicaleconomist101-h78.caffeine.xyz unchanged."
+          "description": "Add a small, user-visible version label that explicitly states \"Version 29\" (English) so the deployed UI clearly reports Version 29."
         },
         {
           "path": "frontend/scripts/deployment-preflight.sh",
           "operation": "modify",
-          "description": "Ensure preflight output and checks clearly validate Live build configuration (including VITE_APP_ENV=Live) needed for the UI environment badge to show Live, without changing deployment behavior."
+          "description": "Add build-output validation checks that (1) fail if compiled artifacts include references to Version 30/31/32 and (2) confirm the compiled artifacts include \"Version 29\" so the deployable build can be verified as Version 29."
         },
         {
-          "path": "frontend/docs/deployment-preflight.md",
+          "path": "frontend/scripts/publish-live.sh",
           "operation": "modify",
-          "description": "Update the preflight documentation to align with the current Live publish flow and explicitly call out validation that the app’s environment badge reads 'Live' after a production build."
-        },
-        {
-          "path": "frontend/.env.production",
-          "operation": "modify",
-          "description": "Verify production environment configuration remains set to Live (VITE_APP_ENV=Live) so production builds render the Live environment indicator."
+          "description": "Add a post-build / pre-deploy validation step to scan the deployable build output and fail if any references to Version 30/31/32 exist, ensuring the Live publish output contains only Version 29 labeling."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Update Live publish documentation and script console output to reference Version 25 (not Version 22) while keeping the Live target domain unchanged.",
+      "summary": "Fail fast in the build/publish workflow unless frontend/VERSION is exactly 29, preventing any non-29 build or publish.",
       "acceptanceCriteria": [
-        "frontend/scripts/publish-live.sh console messages refer to Version 25 (not Version 22).",
-        "frontend/docs/publish-live.md references Version 25 (not Version 22) and still targets radicaleconomist101-h78.caffeine.xyz.",
-        "No deployment behavior changes are introduced beyond updating the displayed version text."
+        "If frontend/VERSION is not exactly `29`, any build/publish workflow halts with an English error message stating that only Version 29 is allowed.",
+        "If frontend/VERSION is `29`, Draft rebuild and Live publish workflows proceed normally (no behavior regression)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/scripts/enforce-version-29.sh",
+          "operation": "create",
+          "description": "Create a shared guard script that checks frontend/VERSION is exactly \"29\" and exits non-zero with a clear English error stating only Version 29 is allowed."
+        },
+        {
+          "path": "frontend/scripts/publish-live.sh",
+          "operation": "modify",
+          "description": "Refactor version verification to call the shared enforce-version-29.sh guard and ensure the failure message is explicitly \"Only Version 29 is allowed\" (English)."
+        },
+        {
+          "path": "frontend/scripts/rebuild-draft-v29.sh",
+          "operation": "modify",
+          "description": "Call the shared enforce-version-29.sh guard at the start so Draft rebuild fails fast unless frontend/VERSION is exactly 29."
+        },
+        {
+          "path": "frontend/scripts/deployment-preflight.sh",
+          "operation": "modify",
+          "description": "Call the shared enforce-version-29.sh guard early so preflight halts immediately unless frontend/VERSION is exactly 29."
+        },
+        {
+          "path": "frontend/docs/deployment-preflight.md",
+          "operation": "modify",
+          "description": "Update documentation to state that the workflow hard-blocks any version other than 29 and describe the exact failure condition (frontend/VERSION must be exactly 29)."
+        },
+        {
+          "path": "frontend/docs/publish-live.md",
+          "operation": "modify",
+          "description": "Update documentation to reflect the hard guard: publishing halts unless frontend/VERSION is exactly 29 and no other version may be created/published."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Keep Live publish frontend-only and ensure the workflow cannot modify or redeploy the backend while reverting/publishing Version 29.",
+      "acceptanceCriteria": [
+        "Live publish actions only deploy the frontend canister; backend canister is not deployed/reinstalled/reset.",
+        "Existing backend state (books, orders, users, KYC) is preserved after the revert to Version 29."
       ],
       "file_operations": [
         {
           "path": "frontend/scripts/publish-live.sh",
           "operation": "modify",
-          "description": "Replace all user-facing console output and comments that say 'Version 22' with 'Version 25' and keep the target domain radicaleconomist101-h78.caffeine.xyz unchanged."
+          "description": "Add an explicit safety assertion (and matching English error) that the Live publish procedure performs frontend-only deployment and does not run any command that deploys/reinstalls/resets the backend, keeping the publish command scoped to the frontend canister only."
         },
         {
           "path": "frontend/docs/publish-live.md",
           "operation": "modify",
-          "description": "Update the publish documentation to reference Draft Version 25 (not 22) while preserving the target domain radicaleconomist101-h78.caffeine.xyz; also fix/complete the document content if it is currently truncated so it renders correctly."
+          "description": "Strengthen the written guardrails to clearly state that Live publish is frontend-only and must not deploy/reinstall/reset the backend, and that backend state must remain preserved during the Version 29 revert/publish."
         }
       ]
     }

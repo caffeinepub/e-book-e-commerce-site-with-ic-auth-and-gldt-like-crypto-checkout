@@ -1,23 +1,31 @@
-# Live Publish Procedure
+# Live Publish Documentation - Version 29 ONLY
 
-This document describes the procedure for publishing Draft Version 25 to the Live production environment at `radicaleconomist101-h78.caffeine.xyz`.
+This document describes how to publish Version 29 to the Live production site at `https://radicaleconomist101-h78.caffeine.xyz`.
 
-## Overview
+**🔒 VERSION LOCK**: This workflow is locked to Version 29 only. Any attempt to publish a different version will be blocked immediately.
 
-The Live publish workflow promotes a validated draft version to production without wiping backend state. All existing books, orders, user profiles, and KYC data are preserved.
+## ⚠️ CRITICAL SAFETY NOTICE
 
-## Prerequisites
+**This is a FRONTEND-ONLY deployment workflow.**
 
-Before publishing to Live, ensure:
+### ✅ What This Workflow Does:
+- Deploys the frontend canister to Live
+- Updates the UI to Version 29
+- Changes environment badge from "Draft" to "Live"
+- Displays "Version 29" in footer
+- Preserves all backend state (books, orders, users, KYC)
 
-1. **Preflight checks pass**: Run `bash frontend/scripts/deployment-preflight.sh` and verify all checks pass
-2. **Draft version validated**: Test Draft Version 25 thoroughly in the draft environment
-3. **DFX configured**: Ensure `dfx` is configured with the correct identity and network settings for IC deployment
-4. **Sufficient cycles**: Verify the frontend canister has sufficient cycles for deployment
+### ❌ What This Workflow Does NOT Do:
+- Does NOT deploy or modify the backend canister
+- Does NOT reset or wipe any data
+- Does NOT reinstall canisters
+- Does NOT publish Version 30/31/32 (only Version 29)
 
-## Publishing to Live
+### 🔒 Version Enforcement:
+- Only Version 29 can be published
+- `frontend/VERSION` must contain exactly `29`
+- Any other version will fail immediately
+- No bypass or override mechanism
 
-### Automated Method (Recommended)
-
-Use the dedicated publish script:
+### 🚫 Commands to NEVER Run on Live:
 

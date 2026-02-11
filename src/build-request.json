@@ -1,57 +1,82 @@
 {
   "kind": "build_request",
-  "title": "Publish Version 25 to Live at radicaleconomist101-h78.caffeine.xyz",
-  "priority": "normal",
+  "title": "Revert deployment to Version 29 only (block any other version)",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
-      "target": "unknown",
+      "text": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "yes everything is correct. Publish to my live link @ radicaleconomist101-h78.caffeine.xyz"
+          "REVERT TO VERSION 29. DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
         ]
       },
       "acceptanceCriteria": [
-        "The preflight script (frontend/scripts/deployment-preflight.sh) completes successfully (exit code 0).",
-        "The Live publish script completes successfully and deploys the frontend canister to the IC network without reinstalling/wiping backend state.",
-        "Visiting https://radicaleconomist101-h78.caffeine.xyz loads the latest build and the UI indicates the environment is Live."
+        "The deployed site is running the frontend corresponding to Version 29.",
+        "No user-visible version indicator, deployment metadata, or build artifact references Version 30/31/32."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
+      "text": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Publish to my live link @ radicaleconomist101-h78.caffeine.xyz"
+          "DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/scripts/publish-live.sh console messages refer to Version 25 (not Version 22).",
-        "frontend/docs/publish-live.md references Version 25 (not Version 22) and still targets radicaleconomist101-h78.caffeine.xyz.",
-        "No deployment behavior changes are introduced beyond updating the displayed version text."
+        "If frontend/VERSION is not exactly `29`, any build/publish workflow halts with an English error message stating that only Version 29 is allowed.",
+        "If frontend/VERSION is `29`, Draft rebuild and Live publish workflows proceed normally (no behavior regression)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "REVERT TO VERSION 29. DON'T CREATE ANOTHER VERSION OTHER THAN VERSION 29"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Live publish actions only deploy the frontend canister; backend canister is not deployed/reinstalled/reset.",
+        "Existing backend state (books, orders, users, KYC) is preserved after the revert to Version 29."
       ]
     }
   ],
   "constraints": [
-    "Do not wipe or reinstall backend canister state during the Live publish (preserve books, orders, profiles, and KYC data).",
-    "Keep the Live target URL/domain exactly: radicaleconomist101-h78.caffeine.xyz.",
-    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT."
+    "Use English for any user-facing text.",
+    "Do not create or publish any version other than Version 29.",
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui (compose only).",
+    "Backend must remain single-actor; only add migration.mo if an existing stable state schema must change."
   ],
   "nonGoals": [
-    "Implementing new application features or UI changes unrelated to publishing.",
-    "Changing backend schemas, data, or access control as part of this publish.",
-    "Adding third-party integrations or alternative deployment mechanisms."
+    "Adding new product features unrelated to reverting/locking to Version 29.",
+    "Backend schema changes or data migrations (unless strictly required to preserve state during revert)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

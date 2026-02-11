@@ -64,53 +64,56 @@ export async function parseCatalogFile(file: File): Promise<CatalogState> {
 }
 
 /**
- * Applies import mode to merge or overwrite catalog data
+ * Applies import mode to catalog data
+ * Note: The backend importCatalog method always performs a full overwrite.
+ * For merge mode, the client must first export the current catalog, merge it with the imported data,
+ * and then import the merged result.
  */
 export function applyCatalogImportMode(
   existingCatalog: CatalogState,
-  newCatalog: CatalogState,
+  importedCatalog: CatalogState,
   mode: ImportMode
 ): CatalogState {
   if (mode === 'overwrite') {
-    // Complete replacement
-    return newCatalog;
+    return importedCatalog;
   }
 
-  // Merge mode: combine data, with new catalog taking precedence for conflicts
-  const mergeArrays = <T extends [any, any]>(existing: T[], incoming: T[]): T[] => {
-    const map = new Map<string, T>();
+  // Merge mode: combine existing and imported data
+  // For arrays of tuples, we merge by key (first element of tuple)
+  const mergeArrays = <K, V>(existing: Array<[K, V]>, imported: Array<[K, V]>): Array<[K, V]> => {
+    const map = new Map<K, V>();
     
     // Add existing entries
-    for (const entry of existing) {
-      const key = String(entry[0]);
-      map.set(key, entry);
+    for (const [key, value] of existing) {
+      map.set(key, value);
     }
     
-    // Overwrite/add with incoming entries
-    for (const entry of incoming) {
-      const key = String(entry[0]);
-      map.set(key, entry);
+    // Overwrite with imported entries (imported takes precedence)
+    for (const [key, value] of imported) {
+      map.set(key, value);
     }
     
-    return Array.from(map.values());
+    return Array.from(map.entries());
   };
 
   return {
-    userProfiles: mergeArrays(existingCatalog.userProfiles, newCatalog.userProfiles),
-    bookStore: mergeArrays(existingCatalog.bookStore, newCatalog.bookStore),
-    cartStore: mergeArrays(existingCatalog.cartStore, newCatalog.cartStore),
-    orderStore: mergeArrays(existingCatalog.orderStore, newCatalog.orderStore),
-    balanceStore: mergeArrays(existingCatalog.balanceStore, newCatalog.balanceStore),
-    ownedBooks: mergeArrays(existingCatalog.ownedBooks, newCatalog.ownedBooks),
-    supportMessages: mergeArrays(existingCatalog.supportMessages, newCatalog.supportMessages),
-    kycIdToPrincipal: mergeArrays(existingCatalog.kycIdToPrincipal, newCatalog.kycIdToPrincipal),
-    principalToKycId: mergeArrays(existingCatalog.principalToKycId, newCatalog.principalToKycId),
-    purchasesByCustomerId: mergeArrays(existingCatalog.purchasesByCustomerId, newCatalog.purchasesByCustomerId),
-    permanentlyBlacklisted: mergeArrays(existingCatalog.permanentlyBlacklisted, newCatalog.permanentlyBlacklisted),
-    validationTimestamps: mergeArrays(existingCatalog.validationTimestamps, newCatalog.validationTimestamps),
-    kycRestrictedPurchases: mergeArrays(existingCatalog.kycRestrictedPurchases, newCatalog.kycRestrictedPurchases),
-    // Use incoming value for scalar fields
-    nextMessageId: newCatalog.nextMessageId,
-    designatedOwner: newCatalog.designatedOwner,
+    userProfiles: mergeArrays(existingCatalog.userProfiles, importedCatalog.userProfiles),
+    bookStore: mergeArrays(existingCatalog.bookStore, importedCatalog.bookStore),
+    cartStore: mergeArrays(existingCatalog.cartStore, importedCatalog.cartStore),
+    orderStore: mergeArrays(existingCatalog.orderStore, importedCatalog.orderStore),
+    balanceStore: mergeArrays(existingCatalog.balanceStore, importedCatalog.balanceStore),
+    ownedBooks: mergeArrays(existingCatalog.ownedBooks, importedCatalog.ownedBooks),
+    supportMessages: mergeArrays(existingCatalog.supportMessages, importedCatalog.supportMessages),
+    kycIdToPrincipal: mergeArrays(existingCatalog.kycIdToPrincipal, importedCatalog.kycIdToPrincipal),
+    principalToKycId: mergeArrays(existingCatalog.principalToKycId, importedCatalog.principalToKycId),
+    purchasesByCustomerId: mergeArrays(existingCatalog.purchasesByCustomerId, importedCatalog.purchasesByCustomerId),
+    permanentlyBlacklisted: mergeArrays(existingCatalog.permanentlyBlacklisted, importedCatalog.permanentlyBlacklisted),
+    validationTimestamps: mergeArrays(existingCatalog.validationTimestamps, importedCatalog.validationTimestamps),
+    kycRestrictedPurchases: mergeArrays(existingCatalog.kycRestrictedPurchases, importedCatalog.kycRestrictedPurchases),
+    nextMessageId: Math.max(
+      Number(existingCatalog.nextMessageId),
+      Number(importedCatalog.nextMessageId)
+    ) as any,
+    designatedOwner: importedCatalog.designatedOwner || existingCatalog.designatedOwner,
   };
 }

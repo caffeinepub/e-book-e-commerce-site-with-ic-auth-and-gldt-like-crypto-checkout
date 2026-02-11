@@ -13,11 +13,17 @@ interface BookCardProps {
 
 export default function BookCard({ book }: BookCardProps) {
   const isSoldOut = book.singleCopy && !book.available;
+  const uploadedCover = book.media.images.length > 0 ? book.media.images[0] : undefined;
 
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
       <Link to="/book/$bookId" params={{ bookId: book.id }} className="block relative">
-        <CoverImage bookId={book.id} title={book.title} className="aspect-[2/3] w-full" />
+        <CoverImage 
+          bookId={book.id} 
+          title={book.title} 
+          uploadedCover={uploadedCover}
+          className="aspect-[2/3] w-full" 
+        />
         {isSoldOut && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <Badge variant="destructive" className="text-lg px-4 py-2">

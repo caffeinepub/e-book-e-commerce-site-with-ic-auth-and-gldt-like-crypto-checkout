@@ -3,6 +3,7 @@ import { useResetStore } from '@/hooks/useResetStore';
 import { useExportCatalog, useImportCatalog } from '@/hooks/useCatalogTransfer';
 import { parseCatalogFile, applyCatalogImportMode, type ImportMode } from '@/utils/catalogTransfer';
 import { downloadJson } from '@/utils/download';
+import { useActor } from '@/hooks/useActor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,6 +24,7 @@ import { RotateCcw, AlertTriangle, CheckCircle2, Download, Upload, Info } from '
 import type { CatalogState } from '@/backend';
 
 export default function AdminSettingsPage() {
+  const { actor } = useActor();
   const resetMutation = useResetStore();
   const exportMutation = useExportCatalog();
   const importMutation = useImportCatalog();
@@ -85,13 +87,18 @@ export default function AdminSettingsPage() {
   };
 
   const handleImport = async () => {
-    if (!parsedCatalog) return;
+    if (!parsedCatalog || !actor) return;
 
     try {
-      // For overwrite mode, use the parsed catalog directly
-      // For merge mode, we would need the existing catalog first
-      // Since backend importCatalog replaces everything, we'll use overwrite semantics
-      await importMutation.mutateAsync(parsedCatalog);
+      let catalogToImport = parsedCatalog;
+
+      // For merge mode, fetch current catalog and merge
+      if (importMode === 'merge') {
+        const currentCatalog = await actor.exportCatalog();
+        catalogToImport = applyCatalogImportMode(currentCatalog, parsedCatalog, 'merge');
+      }
+
+      await importMutation.mutateAsync(catalogToImport);
       setImportSuccess(true);
       setSelectedFile(null);
       setParsedCatalog(null);
@@ -116,6 +123,28 @@ export default function AdminSettingsPage() {
         </AlertDescription>
       </Alert>
 
+      {/* Version 22 Recovery Instructions */}
+      <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
+        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <AlertTitle className="text-blue-800 dark:text-blue-200">Recovering Version 22 Uploads</AlertTitle>
+        <AlertDescription className="text-blue-700 dark:text-blue-300 space-y-2">
+          <p>
+            To restore your Version 22 uploads to Live (radicaleconomist101-h78.caffeine.xyz):
+          </p>
+          <ol className="list-decimal list-inside space-y-1 ml-2">
+            <li>You need a catalog export file from Version 22 (if you exported one before)</li>
+            <li>Log into Live as admin at radicaleconomist101-h78.caffeine.xyz</li>
+            <li>Navigate to Admin → Settings (this page)</li>
+            <li>Use the Import Catalog section below to upload your Version 22 export file</li>
+            <li>Select your preferred import mode (Overwrite or Merge)</li>
+            <li>Click Import Catalog to restore your books and media</li>
+          </ol>
+          <p className="font-semibold pt-2">
+            ⚠️ Recovery is only possible if you have a Version 22 export file. If no export exists, the data cannot be recovered.
+          </p>
+        </AlertDescription>
+      </Alert>
+
       {/* Export Catalog */}
       <Card>
         <CardHeader>
@@ -124,7 +153,7 @@ export default function AdminSettingsPage() {
             Export Catalog
           </CardTitle>
           <CardDescription>
-            Download your complete catalog as a JSON file
+            Download your complete catalog as a JSON file (includes all books, media references, orders, and user data)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -133,7 +162,7 @@ export default function AdminSettingsPage() {
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
               <AlertTitle className="text-green-800 dark:text-green-200">Export Complete</AlertTitle>
               <AlertDescription className="text-green-700 dark:text-green-300">
-                Your catalog has been downloaded successfully.
+                Your catalog has been downloaded successfully. Save this file to restore your content later.
               </AlertDescription>
             </Alert>
           )}
@@ -168,7 +197,7 @@ export default function AdminSettingsPage() {
             Import Catalog
           </CardTitle>
           <CardDescription>
-            Upload a catalog JSON file to publish content from Draft to Live
+            Upload a catalog JSON file to restore content (e.g., from Version 22 or publish Draft to Live)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,7 +206,7 @@ export default function AdminSettingsPage() {
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
               <AlertTitle className="text-green-800 dark:text-green-200">Import Complete</AlertTitle>
               <AlertDescription className="text-green-700 dark:text-green-300">
-                Your catalog has been imported successfully. The catalog view will update automatically.
+                Your catalog has been imported successfully. All book covers and media should now be visible. The catalog view will update automatically.
               </AlertDescription>
             </Alert>
           )}

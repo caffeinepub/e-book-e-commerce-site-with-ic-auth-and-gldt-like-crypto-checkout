@@ -21,6 +21,7 @@ export default function BookDetailsPage() {
   const addToCart = useAddToCart();
 
   const isSoldOut = book?.singleCopy && !book?.available;
+  const uploadedCover = book && book.media.images.length > 0 ? book.media.images[0] : undefined;
 
   const handleAddToCart = async () => {
     if (!identity) {
@@ -92,7 +93,12 @@ export default function BookDetailsPage() {
 
         <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
           <div className="relative">
-            <CoverImage bookId={book.id} title={book.title} className="aspect-[2/3] w-full max-w-md mx-auto" />
+            <CoverImage 
+              bookId={book.id} 
+              title={book.title} 
+              uploadedCover={uploadedCover}
+              className="aspect-[2/3] w-full max-w-md mx-auto" 
+            />
             {isSoldOut && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
                 <Badge variant="destructive" className="text-2xl px-6 py-3">

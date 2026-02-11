@@ -22,7 +22,7 @@ export default function LibraryPdfDownloadButton({
 
   const handleDownload = async () => {
     if (!actor) {
-      toast.error('Actor not available');
+      toast.error('Unable to download. Please try again.');
       return;
     }
 
@@ -40,10 +40,16 @@ export default function LibraryPdfDownloadButton({
       toast.success('PDF downloaded successfully');
     } catch (error: any) {
       console.error('PDF download error:', error);
-      if (error.message?.includes('Unauthorized') || error.message?.includes('not included')) {
-        toast.error('You do not have permission to download this PDF');
+      
+      // Provide clear, user-friendly error messages in English
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('You do not have permission to download this PDF. Please contact support if you believe this is an error.');
+      } else if (error.message?.includes('not included')) {
+        toast.error('This book is not included in your order. Please verify your purchase.');
+      } else if (error.message?.includes('Order not found')) {
+        toast.error('Order not found. Please contact support for assistance.');
       } else {
-        toast.error('Failed to download PDF. Please try again.');
+        toast.error('Failed to download PDF. Please try again or contact support if the issue persists.');
       }
     } finally {
       setIsDownloading(false);

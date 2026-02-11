@@ -28,10 +28,14 @@ export function useImportCatalog() {
       queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
       queryClient.invalidateQueries({ queryKey: ['book'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order'] });
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] });
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
       queryClient.invalidateQueries({ queryKey: ['supportMessages'] });
       queryClient.invalidateQueries({ queryKey: ['userMessages'] });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+      queryClient.invalidateQueries({ queryKey: ['bookContent'] });
     },
   });
 }

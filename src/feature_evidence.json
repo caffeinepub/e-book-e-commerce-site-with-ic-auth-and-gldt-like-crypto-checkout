@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-run-the-existing-live-deployment-preflight-checks-and-then-publish-the-current-draft-version-25-to-the-live-link-https-radicaleconomist101-h78-caffeine-xyz-without-wiping-backend-state",
-      "featureTitle": "Run the existing Live deployment preflight checks and then publish the current Draft (Version 25) to the Live link https://radicaleconomist101-h78.caffeine.xyz without wiping backend state.",
+      "featureId": "feature-revert-the-deployed-application-to-frontend-version-29-and-ensure-the-deployed-build-reports-version-29-no-version-30-31-32-artifacts-or-labels-remain-in-the-deployed-output",
+      "featureTitle": "Revert the deployed application to frontend Version 29 and ensure the deployed build reports Version 29 (no Version 30/31/32 artifacts or labels remain in the deployed output).",
       "files": [
-        "frontend/scripts/publish-live.sh"
+        "frontend/scripts/deployment-preflight.sh",
+        "frontend/scripts/publish-live.sh",
+        "frontend/src/components/layout/Footer.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,8 +25,34 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-live-publish-documentation-and-script-messaging-to-refer-to-version-25-instead-of-version-22-wherever-the-version-number-is-displayed-in-user-facing-console-output-or-docs-while-keeping-the-target-domain-radicaleconomist101-h78-caffeine-xyz-unchanged",
-      "featureTitle": "Update Live publish documentation and script messaging to refer to Version 25 (instead of Version 22) wherever the version number is displayed in user-facing console output or docs, while keeping the target domain radicaleconomist101-h78.caffeine.xyz unchanged.",
+      "featureId": "feature-add-hard-guards-to-prevent-creating-building-or-publishing-any-frontend-version-other-than-29-in-this-project-s-build-deploy-workflow-i-e-fail-fast-if-the-version-is-not-exactly-29",
+      "featureTitle": "Add hard guards to prevent creating, building, or publishing any frontend version other than 29 in this project’s build/deploy workflow (i.e., fail fast if the version is not exactly 29).",
+      "files": [
+        "frontend/docs/deployment-preflight.md",
+        "frontend/docs/publish-live.md",
+        "frontend/scripts/deployment-preflight.sh",
+        "frontend/scripts/enforce-version-29.sh",
+        "frontend/scripts/publish-live.sh",
+        "frontend/scripts/rebuild-draft-v29.sh"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-live-publish-remains-frontend-only-and-does-not-modify-or-redeploy-the-backend-canister-while-reverting-publishing-version-29",
+      "featureTitle": "Ensure Live publish remains frontend-only and does not modify or redeploy the backend canister while reverting/publishing Version 29.",
       "files": [
         "frontend/docs/publish-live.md",
         "frontend/scripts/publish-live.sh"
@@ -40,7 +68,7 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-3"
       ],
       "confidence": "high"
     }
