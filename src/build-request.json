@@ -1,86 +1,90 @@
 {
   "kind": "build_request",
-  "title": "Rollback to Version 35 and restore visibility of previously uploaded books",
-  "priority": "high",
+  "title": "Revert (Draft) frontend deployment to Version 35 (frontend-only rollback)",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
-      "target": "frontend",
+      "text": "Implement a frontend-only rollback workflow that deploys Draft Version 35 of the app without modifying or deploying the backend canister.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-3"
         ],
         "quotes": [
-          "Revert to version 35 I can't see the books i uploaded"
+          "revert to draft version 35 then since 29 is too much for you"
         ]
       },
       "acceptanceCriteria": [
-        "A documented, repeatable rollback procedure exists to deploy the Version 35 frontend build to the target environment.",
-        "Rollback workflow performs frontend-only deployment and does not run any backend deploy/reinstall/reset commands.",
-        "After rollback to Version 35, the Catalog page renders previously uploaded books for the same backend state (no data migration required)."
+        "A documented and executable procedure exists to deploy frontend Version 35 in Draft mode.",
+        "The procedure explicitly does not run any backend deploy/install/reinstall/stop/delete commands.",
+        "Rollback deploy updates only the frontend canister and preserves all backend state."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
+      "text": "Update the user-visible version indicator in the UI footer so that it displays Version 35 after the Draft rollback to Version 35.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-3"
         ],
         "quotes": [
-          "Revert to version 35 I can't see the books i uploaded"
+          "revert to draft version 35"
         ]
       },
       "acceptanceCriteria": [
-        "Existing Live publish workflow remains blocked unless the approved Live version condition is met (no accidental Live publish of arbitrary versions).",
-        "A separate rollback/testing flow can deploy a specified older frontend version without requiring edits that weaken the Live publish safeguards.",
-        "Documentation clearly states when to use Live publish vs rollback/testing, including safety warnings about preserving backend state."
+        "After rolling back to Version 35, the footer displays \"Version 35\" (not \"Version 29\").",
+        "No other UI locations display a conflicting version label."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
-      "target": "both",
+      "text": "Ensure the Draft Version 35 rollback build displays the environment as Draft (not Live) in the UI environment badge by setting the build-time environment configuration appropriately for the rollback workflow.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-3"
         ],
         "quotes": [
-          "I can't see the books i uploaded"
+          "revert to draft version 35"
         ]
       },
       "acceptanceCriteria": [
-        "With the latest Draft build (post-fix), the Catalog page shows books that exist in backend state (including those uploaded previously).",
-        "Failure states are user-visible (English) and actionable (e.g., if fetching books fails, the UI shows an error instead of silently showing an empty catalog).",
-        "A documented manual verification step (or checklist update) is added to confirm: (1) catalog loads, (2) previously uploaded books appear, (3) book details pages open successfully."
+        "After deploying the rollback build, the app’s environment badge shows \"Draft\".",
+        "The Live environment configuration and its Version 29 enforcement workflow remain unchanged and continue to require Version 29 for Live publish."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Extend the existing Version 35 rollback preflight checks to validate that the displayed UI version label matches the rollback target (Version 35) before deploying the frontend canister.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "revert to draft version 35"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Running the rollback preflight fails with an English error message if the UI contains a hardcoded version label that is not \"Version 35\".",
+        "Running the rollback preflight passes when VERSION is exactly 35 and the UI version label is \"Version 35\"."
       ]
     }
   ],
   "constraints": [
-    "Do not deploy, reinstall, reset, stop, or otherwise modify the backend canister/state as part of rollback or publish workflows.",
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo). Only add backend/migration.mo if an upgrade requires state migration.",
-    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything in frontend/src/components/ui; compose around them instead.",
-    "Use English for any user-facing text."
+    "Do not deploy, reinstall, stop, delete, or migrate the backend canister as part of the rollback to Draft Version 35.",
+    "Do not modify files under frontend/src/components/ui (read-only UI component sources).",
+    "Do not change the Live publish guardrails that enforce Version 29 for Live deployments."
   ],
   "nonGoals": [
-    "Implementing a new database or any external storage system.",
-    "Adding third-party authentication providers (anything beyond Internet Identity).",
-    "Adding real-time features (WebSockets/Socket.io)."
+    "Adding new product features unrelated to the rollback request.",
+    "Changing backend data models, authorization, or persisted state.",
+    "Publishing Version 35 to Live (this request is specifically for Draft rollback)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

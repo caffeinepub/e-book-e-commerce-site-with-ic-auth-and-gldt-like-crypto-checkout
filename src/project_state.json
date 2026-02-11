@@ -2,35 +2,39 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [
-    "Track and support deployment versioning/rollback so users can revert to a prior stable release when regressions occur."
-  ],
-  "known_issues": [
-    "Regression after deploying Draft Version 36: user cannot see previously uploaded books; user requests revert to version 35."
-  ],
+  "architectural_notes": [],
+  "known_issues": [],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-provide-an-emergency-rollback-workflow-that-deploys-the-previously-known-good-frontend-build-version-35-so-the-user-can-see-the-books-they-already-uploaded-without-deploying-reinstalling-modifying-the-backend-canister-or-backend-state",
-      "title": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
+      "id": "feature-implement-a-frontend-only-rollback-workflow-that-deploys-draft-version-35-of-the-app-without-modifying-or-deploying-the-backend-canister",
+      "title": "Implement a frontend-only rollback workflow that deploys Draft Version 35 of the app without modifying or deploying the backend canister.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-deployment-guardrails-so-that-live-publishing-remains-strictly-locked-as-currently-enforced-while-allowing-controlled-rollback-testing-of-older-frontend-versions-e-g-v35-in-draft-or-an-explicitly-designated-rollback-flow",
-      "title": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
+      "id": "feature-update-the-user-visible-version-indicator-in-the-ui-footer-so-that-it-displays-version-35-after-the-draft-rollback-to-version-35",
+      "title": "Update the user-visible version indicator in the UI footer so that it displays Version 35 after the Draft rollback to Version 35.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-identify-and-fix-the-regression-introduced-in-draft-version-36-that-prevents-previously-uploaded-books-from-being-visible-in-the-catalog-library-ui-and-add-a-minimal-regression-check-so-future-drafts-cannot-ship-with-the-same-failure",
-      "title": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+      "id": "feature-ensure-the-draft-version-35-rollback-build-displays-the-environment-as-draft-not-live-in-the-ui-environment-badge-by-setting-the-build-time-environment-configuration-appropriately-for-the-rollback-workflow",
+      "title": "Ensure the Draft Version 35 rollback build displays the environment as Draft (not Live) in the UI environment badge by setting the build-time environment configuration appropriately for the rollback workflow.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-version-35-rollback-preflight-checks-to-validate-that-the-displayed-ui-version-label-matches-the-rollback-target-version-35-before-deploying-the-frontend-canister",
+      "title": "Extend the existing Version 35 rollback preflight checks to validate that the displayed UI version label matches the rollback target (Version 35) before deploying the frontend canister.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -38,12 +42,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Provide a reliable rollback mechanism to revert deployments to a prior version (e.g., revert from v36 to v35)",
+      "summary": "Revert/build and deploy draft version 35 (rollback from current live version)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Rollback to Version 35 and restore visibility of previously uploaded books",
+  "projectName": "Revert (Draft) frontend deployment to Version 35 (frontend-only rollback)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -68,8 +68,20 @@ done
 echo "  ✅ All critical source files present"
 echo ""
 
-# Check 6: Validate no backend deploy commands in scripts
-echo "✓ Check 6: Safety check - no backend modifications..."
+# Check 6: Validate displayed version alignment
+echo "✓ Check 6: Validating displayed version alignment..."
+if [ -f "scripts/check-displayed-version-35.sh" ]; then
+  chmod +x scripts/check-displayed-version-35.sh
+  ./scripts/check-displayed-version-35.sh
+  echo "  ✅ Displayed version validation passed"
+else
+  echo "⚠️  WARNING: check-displayed-version-35.sh not found"
+  echo "  Skipping displayed version validation"
+fi
+echo ""
+
+# Check 7: Validate no backend deploy commands in scripts
+echo "✓ Check 7: Safety check - no backend modifications..."
 echo "  ⚠️  REMINDER: This rollback is FRONTEND ONLY"
 echo "  ⚠️  Do NOT run: dfx deploy backend"
 echo "  ⚠️  Do NOT run: dfx canister reinstall backend"
@@ -77,8 +89,8 @@ echo "  ⚠️  Do NOT run: dfx canister stop backend"
 echo "  ✅ Safety reminder displayed"
 echo ""
 
-# Check 7: Validate dfx is available
-echo "✓ Check 7: Validating dfx availability..."
+# Check 8: Validate dfx is available
+echo "✓ Check 8: Validating dfx availability..."
 if ! command -v dfx &> /dev/null; then
   echo "❌ FAIL: dfx command not found"
   echo "  Install dfx: https://internetcomputer.org/docs/current/developer-docs/setup/install/"

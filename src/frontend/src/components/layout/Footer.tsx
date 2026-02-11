@@ -3,6 +3,9 @@ import { SiX } from 'react-icons/si';
 import CustomerServiceChatDialog from '../support/CustomerServiceChatDialog';
 
 export default function Footer() {
+  // Read version from build-time environment variable
+  const version = import.meta.env.VITE_APP_VERSION || '29';
+  
   return (
     <footer className="border-t bg-muted/30">
       <div className="container py-8">
@@ -46,7 +49,7 @@ export default function Footer() {
 
           {/* Version indicator */}
           <p className="text-xs text-muted-foreground/70">
-            Version 35
+            Version {version}
           </p>
         </div>
       </div>

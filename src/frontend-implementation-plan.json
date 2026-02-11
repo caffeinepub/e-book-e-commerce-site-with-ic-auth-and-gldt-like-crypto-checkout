@@ -1,108 +1,91 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend rollback to v35, deployment guardrails, and catalog visibility regression fix",
+  "title": "Draft frontend rollback to Version 35 (frontend-only)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a documented, repeatable frontend-only rollback workflow to deploy Version 35 so previously uploaded books are visible again without touching backend state.",
+      "summary": "Provide an executable, documented Draft rollback procedure that deploys frontend Version 35 without touching the backend canister.",
       "acceptanceCriteria": [
-        "A documented, repeatable rollback procedure exists to deploy the Version 35 frontend build to the target environment.",
-        "Rollback workflow performs frontend-only deployment and does not run any backend deploy/reinstall/reset commands.",
-        "After rollback to Version 35, the Catalog page renders previously uploaded books for the same backend state (no data migration required)."
+        "A documented and executable procedure exists to deploy frontend Version 35 in Draft mode.",
+        "The procedure explicitly does not run any backend deploy/install/reinstall/stop/delete commands.",
+        "Rollback deploy updates only the frontend canister and preserves all backend state."
       ],
       "file_operations": [
         {
           "path": "frontend/docs/rollback-to-v35.md",
-          "operation": "create",
-          "description": "Create rollback documentation for deploying the Version 35 frontend build using a frontend-only procedure (explicitly warn against any backend deploy/reinstall/reset/stop). Include a repeatable sequence that uses the dedicated rollback script and a manual verification checklist focused on catalog visibility and book details navigation."
+          "operation": "modify",
+          "description": "Update the rollback documentation to explicitly describe a Draft-only (not Live) Version 35 rollback, including the exact command(s) to run, an explicit list of forbidden backend commands, and explicit confirmation that only the frontend canister is deployed and backend state is preserved."
         },
         {
           "path": "frontend/scripts/rollback-frontend-v35.sh",
-          "operation": "create",
-          "description": "Create an emergency rollback script that deploys the frontend canister only (no backend commands) and requires explicit confirmation before proceeding. The script must validate that frontend/VERSION is exactly 35 and must print post-deploy verification steps (catalog + book details)."
-        },
-        {
-          "path": "frontend/VERSION",
           "operation": "modify",
-          "description": "Update the tracked frontend version to 35 as part of the rollback-to-v35 workflow so builds and UI version labeling align with the deployed rollback build."
-        },
-        {
-          "path": "frontend/src/config/version.ts",
-          "operation": "create",
-          "description": "Add a small version helper that reads the frontend/VERSION value at build time and exposes a trimmed string for UI display, so the app reflects the rollback version consistently."
-        },
-        {
-          "path": "frontend/src/components/layout/Footer.tsx",
-          "operation": "modify",
-          "description": "Update the footer version indicator to render the version from the new version helper instead of a hard-coded value, so Version 35 displays correctly after rollback."
+          "description": "Ensure the rollback script performs a Draft build for Version 35 (set build-time environment to Draft and version to 35 for the build) and deploys only the frontend canister; keep the script free of any backend deploy/install/reinstall/stop/delete actions."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Keep Live publish strictly version-locked while adding a separate, safe rollback/testing flow for older frontend versions (e.g., v35) with clear documentation and warnings.",
+      "summary": "Update the footer version indicator to display Version 35 after the Draft rollback build.",
       "acceptanceCriteria": [
-        "Existing Live publish workflow remains blocked unless the approved Live version condition is met (no accidental Live publish of arbitrary versions).",
-        "A separate rollback/testing flow can deploy a specified older frontend version without requiring edits that weaken the Live publish safeguards.",
-        "Documentation clearly states when to use Live publish vs rollback/testing, including safety warnings about preserving backend state."
+        "After rolling back to Version 35, the footer displays \"Version 35\" (not \"Version 29\").",
+        "No other UI locations display a conflicting version label."
       ],
       "file_operations": [
         {
-          "path": "frontend/docs/publish-live.md",
+          "path": "frontend/src/components/layout/Footer.tsx",
           "operation": "modify",
-          "description": "Update documentation to explicitly distinguish Live publish (strict version lock) vs rollback/testing (separate flow). Add safety warnings that rollback/testing is frontend-only and must never run backend deploy/reinstall/reset/stop commands."
+          "description": "Replace the hardcoded footer version text with a build-time version value (e.g., from a Vite env var) so Draft rollback builds can show \"Version 35\" while Live builds continue to show their enforced version."
         },
         {
-          "path": "frontend/docs/deployment-preflight.md",
+          "path": "frontend/.env.production",
           "operation": "modify",
-          "description": "Update preflight documentation to clarify which checks apply to Live publishing vs rollback/testing, and to point to the rollback/testing documentation and script as the only supported emergency rollback path (frontend-only)."
-        },
-        {
-          "path": "frontend/scripts/enforce-version-29.sh",
-          "operation": "modify",
-          "description": "Preserve Live publish strict locking by making the script messaging more explicit that it is the Live-publish guardrail only, and add guidance in output directing users to the separate rollback/testing flow for older versions (without adding any bypass)."
-        },
-        {
-          "path": "frontend/scripts/rollback-preflight.sh",
-          "operation": "create",
-          "description": "Create a rollback/testing preflight script that validates the rollback version (e.g., 35) and performs frontend-only build checks relevant to rollback without invoking any backend deploy/reinstall/reset commands."
-        },
-        {
-          "path": "frontend/scripts/rollback-frontend-v35.sh",
-          "operation": "modify",
-          "description": "Integrate the new rollback-preflight script into the rollback flow, ensure it remains frontend-only, and ensure it cannot be mistaken for the Live publish script (distinct prompts + warnings)."
+          "description": "Add a production build-time version value for Live builds (e.g., VITE_APP_VERSION=29) to keep Live footer output consistent with existing Version 29 guardrails."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Fix Draft v36 regression by ensuring the catalog shows previously uploaded books (not silently empty) and add a minimal regression check via user-visible error states and a manual verification checklist update.",
+      "summary": "Make the rollback build show the environment badge as Draft via build-time environment configuration, without changing Live guardrails.",
       "acceptanceCriteria": [
-        "With the latest Draft build (post-fix), the Catalog page shows books that exist in backend state (including those uploaded previously).",
-        "Failure states are user-visible (English) and actionable (e.g., if fetching books fails, the UI shows an error instead of silently showing an empty catalog).",
-        "A documented manual verification step (or checklist update) is added to confirm: (1) catalog loads, (2) previously uploaded books appear, (3) book details pages open successfully."
+        "After deploying the rollback build, the app’s environment badge shows \"Draft\".",
+        "The Live environment configuration and its Version 29 enforcement workflow remain unchanged and continue to require Version 29 for Live publish."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CatalogPage.tsx",
+          "path": "frontend/scripts/rollback-frontend-v35.sh",
           "operation": "modify",
-          "description": "Fix the catalog visibility regression by switching the catalog query to a books source that includes previously uploaded entries (not only currently-available items), and add explicit error-state rendering (English) so fetch failures do not appear as an empty catalog."
+          "description": "Set build-time configuration for the rollback build so the UI environment badge resolves to Draft (e.g., ensure VITE_APP_ENV is set to Draft for the build step), while leaving Live publish scripts and .env.production behavior unchanged."
         },
         {
-          "path": "frontend/src/hooks/useBooks.ts",
+          "path": "frontend/docs/rollback-to-v35.md",
           "operation": "modify",
-          "description": "Add a dedicated catalog query hook that fetches all books intended to be visible in the catalog UI (including unavailable/sold-out), and ensure errors propagate in a way the UI can render actionable messages (avoid silently returning an empty array on failures)."
-        },
+          "description": "Document that the rollback build must be produced with Draft environment settings so the header badge displays \"Draft\", and reiterate that Live publish remains locked to Version 29 and unchanged."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Extend the Version 35 rollback preflight to verify the UI version label is aligned to the rollback target (35) before deploying the frontend canister.",
+      "acceptanceCriteria": [
+        "Running the rollback preflight fails with an English error message if the UI contains a hardcoded version label that is not \"Version 35\".",
+        "Running the rollback preflight passes when VERSION is exactly 35 and the UI version label is \"Version 35\"."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/docs/live-smoke-test-v29.md",
-          "operation": "modify",
-          "description": "Add/update the manual verification checklist items to explicitly confirm: (1) catalog loads, (2) previously uploaded books are visible, (3) at least one book details page opens successfully, and note what to check if the catalog is empty (console errors, connectivity)."
-        },
-        {
-          "path": "frontend/docs/draft-regression-checks.md",
+          "path": "frontend/scripts/check-displayed-version-35.sh",
           "operation": "create",
-          "description": "Create a minimal draft regression checklist documenting a manual verification step to prevent shipping drafts with a blank/incorrect catalog: catalog loads, previously uploaded books appear, and book details pages open successfully."
+          "description": "Create a rollback-only displayed-version validation script that (1) reads frontend/VERSION and expects 35, and (2) scans frontend/src for any hardcoded \"Version <number>\" labels that are not \"Version 35\" and fails with a clear English error message; additionally validate that the footer’s version label is driven by the build-time version value used by the rollback workflow."
+        },
+        {
+          "path": "frontend/scripts/rollback-preflight.sh",
+          "operation": "modify",
+          "description": "Invoke the new Version 35 displayed-version validation during rollback preflight so the preflight fails before deployment when the UI version label would not be \"Version 35\"."
+        },
+        {
+          "path": "frontend/scripts/rollback-frontend-v35.sh",
+          "operation": "modify",
+          "description": "Ensure rollback execution runs the updated rollback preflight (including the displayed-version validation) before performing the frontend canister deploy step."
         }
       ]
     }

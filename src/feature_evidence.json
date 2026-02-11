@@ -2,13 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-provide-an-emergency-rollback-workflow-that-deploys-the-previously-known-good-frontend-build-version-35-so-the-user-can-see-the-books-they-already-uploaded-without-deploying-reinstalling-modifying-the-backend-canister-or-backend-state",
-      "featureTitle": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
+      "featureId": "feature-implement-a-frontend-only-rollback-workflow-that-deploys-draft-version-35-of-the-app-without-modifying-or-deploying-the-backend-canister",
+      "featureTitle": "Implement a frontend-only rollback workflow that deploys Draft Version 35 of the app without modifying or deploying the backend canister.",
       "files": [
-        "frontend/VERSION",
         "frontend/docs/rollback-to-v35.md",
-        "frontend/scripts/rollback-frontend-v35.sh",
-        "frontend/src/components/layout/Footer.tsx"
+        "frontend/scripts/rollback-frontend-v35.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -26,14 +24,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-deployment-guardrails-so-that-live-publishing-remains-strictly-locked-as-currently-enforced-while-allowing-controlled-rollback-testing-of-older-frontend-versions-e-g-v35-in-draft-or-an-explicitly-designated-rollback-flow",
-      "featureTitle": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
+      "featureId": "feature-update-the-user-visible-version-indicator-in-the-ui-footer-so-that-it-displays-version-35-after-the-draft-rollback-to-version-35",
+      "featureTitle": "Update the user-visible version indicator in the UI footer so that it displays Version 35 after the Draft rollback to Version 35.",
       "files": [
-        "frontend/docs/deployment-preflight.md",
-        "frontend/docs/publish-live.md",
-        "frontend/scripts/enforce-version-29.sh",
-        "frontend/scripts/rollback-frontend-v35.sh",
-        "frontend/scripts/rollback-preflight.sh"
+        "frontend/.env.production",
+        "frontend/src/components/layout/Footer.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -51,12 +46,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-identify-and-fix-the-regression-introduced-in-draft-version-36-that-prevents-previously-uploaded-books-from-being-visible-in-the-catalog-library-ui-and-add-a-minimal-regression-check-so-future-drafts-cannot-ship-with-the-same-failure",
-      "featureTitle": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+      "featureId": "feature-ensure-the-draft-version-35-rollback-build-displays-the-environment-as-draft-not-live-in-the-ui-environment-badge-by-setting-the-build-time-environment-configuration-appropriately-for-the-rollback-workflow",
+      "featureTitle": "Ensure the Draft Version 35 rollback build displays the environment as Draft (not Live) in the UI environment badge by setting the build-time environment configuration appropriately for the rollback workflow.",
       "files": [
-        "frontend/docs/draft-regression-checks.md",
-        "frontend/docs/live-smoke-test-v29.md",
-        "frontend/src/pages/CatalogPage.tsx"
+        "frontend/docs/rollback-to-v35.md",
+        "frontend/scripts/rollback-frontend-v35.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -70,6 +64,29 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-extend-the-existing-version-35-rollback-preflight-checks-to-validate-that-the-displayed-ui-version-label-matches-the-rollback-target-version-35-before-deploying-the-frontend-canister",
+      "featureTitle": "Extend the existing Version 35 rollback preflight checks to validate that the displayed UI version label matches the rollback target (Version 35) before deploying the frontend canister.",
+      "files": [
+        "frontend/scripts/check-displayed-version-35.sh",
+        "frontend/scripts/rollback-frontend-v35.sh",
+        "frontend/scripts/rollback-preflight.sh"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

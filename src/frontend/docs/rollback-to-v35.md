@@ -1,7 +1,7 @@
-# Rollback to Version 35 - Emergency Procedure
+# Rollback to Version 35 (Draft) - Emergency Procedure
 
 ## Overview
-This document provides a repeatable, frontend-only rollback procedure to deploy Version 35 of the BookCoin application. This rollback is designed to restore catalog visibility for previously uploaded books without modifying backend state.
+This document provides a repeatable, frontend-only rollback procedure to deploy Version 35 of the BookCoin application in **Draft mode**. This rollback is designed to restore catalog visibility for previously uploaded books without modifying backend state.
 
 ## ⚠️ Critical Safety Warnings
 
@@ -15,12 +15,15 @@ This document provides a repeatable, frontend-only rollback procedure to deploy 
 
 **This is a FRONTEND-ONLY rollback.** The backend canister must remain untouched to preserve all uploaded books and user data.
 
+**This is a DRAFT rollback.** The environment badge will display "Draft" after deployment. Live publish remains locked to Version 29 and requires the separate Live publish workflow.
+
 ## When to Use This Rollback
 
 Use this rollback procedure when:
 - Previously uploaded books are not visible in the catalog
 - Version 36 (or later) introduced a regression affecting catalog display
 - You need to restore the last known working version (35) quickly
+- You want to test Version 35 in Draft mode before considering a Live publish
 
 ## Prerequisites
 
@@ -36,7 +39,14 @@ Use this rollback procedure when:
    git stash save "backup-before-v35-rollback-$(date +%Y%m%d-%H%M%S)"
    ```
 
+4. Ensure you are in the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
+
 ## Rollback Procedure
 
-### Step 1: Run the Rollback Script
+### Automated Method (Recommended)
+
+Run the rollback script from the `frontend/` directory:
 

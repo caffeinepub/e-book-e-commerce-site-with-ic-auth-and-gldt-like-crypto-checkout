@@ -70,6 +70,26 @@ else
     exit 1
 fi
 
+# 0b. Check displayed version strings in source files
+echo ""
+echo "Verifying displayed version strings in source files..."
+echo ""
+
+if bash "$SCRIPT_DIR/check-displayed-version-29.sh"; then
+    print_status 0 "All displayed version strings are Version 29"
+    echo "   ✓ Source files contain only Version 29 labels"
+else
+    print_status 1 "Found non-29 displayed version strings in source files"
+    echo ""
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}PREFLIGHT BLOCKED${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo "Cannot proceed with preflight."
+    echo "All displayed version strings must be Version 29."
+    exit 1
+fi
+
 # 1. Check environment configuration
 print_section "1. Environment Configuration Check"
 
@@ -261,12 +281,12 @@ if pnpm run build:skip-bindings 2>&1 | tee /tmp/frontend-build.log; then
             PREFLIGHT_PASSED=false
         fi
         
-        # Check for any Version 30/31/32 references
+        # Check for any prohibited version references (35, 36, 37, etc.)
         echo ""
-        echo "Checking for prohibited version references (30/31/32)..."
+        echo "Checking for prohibited version references (35/36/37)..."
         
-        if grep -rE "Version (30|31|32)" dist/ > /dev/null 2>&1; then
-            print_status 1 "Found references to Version 30/31/32 in build output"
+        if grep -rE "Version (3[5-9]|[4-9][0-9])" dist/ > /dev/null 2>&1; then
+            print_status 1 "Found references to Version 35+ in build output"
             echo "   ✗ Build contains prohibited version references"
             echo "   ✗ Only Version 29 is allowed"
             PREFLIGHT_PASSED=false

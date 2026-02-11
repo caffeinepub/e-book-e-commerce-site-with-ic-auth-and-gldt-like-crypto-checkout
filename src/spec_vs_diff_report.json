@@ -1,41 +1,28 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T01:19:54.639Z",
-  "summary": "The diff implements a documented, frontend-only rollback-to-v35 workflow (docs + scripts), preserves Live publish guardrails via strict Version 29 enforcement while adding a separate rollback/testing path, and fixes the Draft v36 catalog regression by switching Catalog to use `useGetAllBooks()` plus explicit user-visible error rendering. A minimal manual regression checklist document is also added. However, the request mentions catalog/library UI; only the Catalog page change is evidenced in the diff. The diff also includes unrequested UI/footer marketing/support additions.",
-  "missing_requirements": [
-    {
-      "id": "REQ-3",
-      "requirement": "Fix the regression that prevents previously uploaded books from being visible in the catalog/library UI (not just catalog).",
-      "reason": "The diff shows a fix on `frontend/src/pages/CatalogPage.tsx` (switch to `useGetAllBooks()` and add error UI), but provides no evidence of any corresponding fix in the Library/MyLibrary UI components/pages. Since the requirement explicitly calls out catalog/library UI, coverage for the library side is not evidenced.",
-      "evidence": [
-        "frontend/src/pages/CatalogPage.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-11T01:38:33.383Z",
+  "summary": "Diff adds a documented, executable Draft rollback procedure and scripts that deploy only the frontend canister, sets build-time env/version for Draft v35, updates the footer to display a build-time version, and adds preflight validation to fail if UI version labels don’t match v35. One unrequested backend file appears in the modified list despite the snippet claiming no changes.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Footer changes adding social/contact links, a customer service chat dialog entry point, and caffeine.ai attribution/UTM tracking (beyond a version indicator).",
-      "reason": "BuildRequest focuses on rollback workflow, deployment guardrails, and fixing catalog/library visibility regression. These footer marketing/support/attribution elements are not requested.",
+      "description": "Backend source file marked as modified even though the request is frontend-only rollback and explicitly constrains avoiding backend changes/deploys.",
+      "reason": "BuildRequest is for a frontend-only rollback workflow; any backend code changes are out of scope. Diff summary lists a backend file under MODIFIED FILES.",
       "evidence": [
-        "frontend/src/components/layout/Footer.tsx"
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.72,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/VERSION",
-    "frontend/docs/deployment-preflight.md",
-    "frontend/docs/draft-regression-checks.md",
-    "frontend/docs/live-smoke-test-v29.md",
-    "frontend/docs/publish-live.md",
+    "frontend/.env.production",
     "frontend/docs/rollback-to-v35.md",
-    "frontend/scripts/enforce-version-29.sh",
+    "frontend/scripts/check-displayed-version-35.sh",
     "frontend/scripts/rollback-frontend-v35.sh",
     "frontend/scripts/rollback-preflight.sh",
     "frontend/src/components/layout/Footer.tsx",
-    "frontend/src/pages/CatalogPage.tsx",
     "project_state.json"
   ]
 }
