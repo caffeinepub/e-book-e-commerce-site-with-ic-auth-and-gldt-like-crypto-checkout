@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useGetAllBooks } from '@/hooks/useBooks';
+import { useGetAvailableBooks } from '@/hooks/useBooks';
 import BookCard from '@/components/books/BookCard';
 import PageLayout from '@/components/layout/PageLayout';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import EmptyState from '@/components/EmptyState';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function CatalogPage() {
-  const { data: books = [], isLoading, isError, error } = useGetAllBooks();
+  const { data: books = [], isLoading, isError, error } = useGetAvailableBooks();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBooks = useMemo(() => {

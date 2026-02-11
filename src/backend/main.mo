@@ -1,4 +1,3 @@
-// NO CHANGES
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
@@ -12,7 +11,9 @@ import Runtime "mo:core/Runtime";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -1120,6 +1121,58 @@ actor {
     };
   };
 
+  // New admin-only method to re-enable public books by identifier and return result
+  public type ReEnableBooksResult = {
+    updatedCount : Nat;
+    updatedBooks : [Text];
+    skippedBooks : [Text];
+  };
+
+  public shared ({ caller }) func reEnableBooksByIdentifier(identifier : Text) : async ReEnableBooksResult {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can re-enable books");
+    };
+
+    let normalizedIdentifier = identifier.toLower();
+
+    let updatedBooks = List.empty<Text>();
+    let skippedBooks = List.empty<Text>();
+    var updatedCount = 0;
+
+    for ((bookId, book) in bookStore.entries()) {
+      let normalizedTitle = book.title.toLower();
+
+      if (normalizedTitle == normalizedIdentifier and not book.available) {
+        if (book.singleCopy) {
+          switch (ownedBooks.get(bookId)) {
+            case (?_) {
+              skippedBooks.add(bookId);
+            };
+            case (null) {
+              let updatedBook : Book = { book with available = true };
+              bookStore.add(bookId, updatedBook);
+              updatedBooks.add(bookId);
+              updatedCount += 1;
+            };
+          };
+        } else {
+          let updatedBook : Book = { book with available = true };
+          bookStore.add(bookId, updatedBook);
+          updatedBooks.add(bookId);
+          updatedCount += 1;
+        };
+      };
+    };
+
+    let result : ReEnableBooksResult = {
+      updatedCount;
+      updatedBooks = updatedBooks.toArray();
+      skippedBooks = skippedBooks.toArray();
+    };
+
+    result;
+  };
+
   public shared ({ caller }) func resetStore() : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can reset store");
@@ -1138,3 +1191,4 @@ actor {
     kycRestrictedPurchases.clear();
   };
 };
+

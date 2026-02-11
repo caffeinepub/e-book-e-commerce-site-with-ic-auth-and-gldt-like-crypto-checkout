@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { ExternalBlob } from '@/backend';
-import type { Book } from '@/backend';
+import type { Book, ReEnableBooksResult } from '@/backend';
 
 export function useGetAvailableBooks() {
   const { actor, isFetching } = useActor();
@@ -302,6 +302,22 @@ export function useDeleteBook() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allBooks'] });
       queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+    },
+  });
+}
+
+export function useReEnableBooksByIdentifier() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<ReEnableBooksResult, Error, string>({
+    mutationFn: async (identifier: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.reEnableBooksByIdentifier(identifier);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['availableBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['allBooks'] });
     },
   });
 }

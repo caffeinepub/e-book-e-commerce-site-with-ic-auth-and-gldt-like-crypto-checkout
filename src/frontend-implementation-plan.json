@@ -1,91 +1,66 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Draft frontend rollback to Version 35 (frontend-only)",
+  "title": "Restore public catalog visibility and add admin re-enable-by-identifier controls",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Provide an executable, documented Draft rollback procedure that deploys frontend Version 35 without touching the backend canister.",
-      "acceptanceCriteria": [
-        "A documented and executable procedure exists to deploy frontend Version 35 in Draft mode.",
-        "The procedure explicitly does not run any backend deploy/install/reinstall/stop/delete commands.",
-        "Rollback deploy updates only the frontend canister and preserves all backend state."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/docs/rollback-to-v35.md",
-          "operation": "modify",
-          "description": "Update the rollback documentation to explicitly describe a Draft-only (not Live) Version 35 rollback, including the exact command(s) to run, an explicit list of forbidden backend commands, and explicit confirmation that only the frontend canister is deployed and backend state is preserved."
-        },
-        {
-          "path": "frontend/scripts/rollback-frontend-v35.sh",
-          "operation": "modify",
-          "description": "Ensure the rollback script performs a Draft build for Version 35 (set build-time environment to Draft and version to 35 for the build) and deploys only the frontend canister; keep the script free of any backend deploy/install/reinstall/stop/delete actions."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Update the footer version indicator to display Version 35 after the Draft rollback build.",
-      "acceptanceCriteria": [
-        "After rolling back to Version 35, the footer displays \"Version 35\" (not \"Version 29\").",
-        "No other UI locations display a conflicting version label."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/layout/Footer.tsx",
-          "operation": "modify",
-          "description": "Replace the hardcoded footer version text with a build-time version value (e.g., from a Vite env var) so Draft rollback builds can show \"Version 35\" while Live builds continue to show their enforced version."
-        },
-        {
-          "path": "frontend/.env.production",
-          "operation": "modify",
-          "description": "Add a production build-time version value for Live builds (e.g., VITE_APP_VERSION=29) to keep Live footer output consistent with existing Version 29 guardrails."
-        }
-      ]
-    },
-    {
       "id": "REQ-3",
-      "summary": "Make the rollback build show the environment badge as Draft via build-time environment configuration, without changing Live guardrails.",
+      "summary": "Add an Admin Settings UI control to re-enable books by pasted identifier and display updated/skipped results with clear success/failure messaging.",
       "acceptanceCriteria": [
-        "After deploying the rollback build, the app’s environment badge shows \"Draft\".",
-        "The Live environment configuration and its Version 29 enforcement workflow remain unchanged and continue to require Version 29 for Live publish."
+        "Admin can paste the identifier text and click a button to run the operation.",
+        "On success, the UI displays counts and the matched book IDs/titles that were updated and those skipped (if any).",
+        "On failure, the UI shows an error message in English without crashing."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/rollback-frontend-v35.sh",
+          "path": "frontend/src/hooks/useBooks.ts",
           "operation": "modify",
-          "description": "Set build-time configuration for the rollback build so the UI environment badge resolves to Draft (e.g., ensure VITE_APP_ENV is set to Draft for the build step), while leaving Live publish scripts and .env.production behavior unchanged."
+          "description": "Add a React Query mutation hook (e.g., useReEnableBooksByIdentifier) that calls the backend capability reEnableBooksByIdentifier(identifier) and returns ReEnableBooksResult; invalidate available-books/all-books queries on success so the catalog refreshes. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/docs/rollback-to-v35.md",
+          "path": "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+          "operation": "create",
+          "description": "Create an admin-only card UI that accepts an identifier string input, calls the new useReEnableBooksByIdentifier mutation, and renders a success summary (updatedCount, updatedBooks list, skippedBooks list) and an English error alert on failure. Use existing AdminRoute authorization gating (from the authorization component’s RBAC flow) via the existing admin dashboard wiring so only admins can access. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminSettingsPage.tsx",
           "operation": "modify",
-          "description": "Document that the rollback build must be produced with Draft environment settings so the header badge displays \"Draft\", and reiterate that Live publish remains locked to Version 29 and unchanged."
+          "description": "Wire the new ReEnableBooksByIdentifierCard into the Admin Settings page as a new section/card, matching existing Settings page styling (Card/Header/Content, Alerts, Button sizing). Keep all new user-facing text in English. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Extend the Version 35 rollback preflight to verify the UI version label is aligned to the rollback target (35) before deploying the frontend canister.",
+      "summary": "Fix public catalog visibility by querying only available books using the existing available-books React Query hook.",
       "acceptanceCriteria": [
-        "Running the rollback preflight fails with an English error message if the UI contains a hardcoded version label that is not \"Version 35\".",
-        "Running the rollback preflight passes when VERSION is exactly 35 and the UI version label is \"Version 35\"."
+        "Catalog page uses the available-books query (not the all-books query) for the public browsing experience.",
+        "After running re-enable for a book that becomes available=true, refreshing the public catalog shows that book in the list."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/check-displayed-version-35.sh",
+          "path": "frontend/src/pages/CatalogPage.tsx",
+          "operation": "modify",
+          "description": "Switch the catalog data source from useGetAllBooks() to useGetAvailableBooks() so the public catalog only displays books marked available=true; keep existing search, loading, and error UI behavior intact."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Ensure new admin settings controls match existing Admin Settings styling and all text is in English.",
+      "acceptanceCriteria": [
+        "New UI elements visually match existing Admin Settings cards/alerts/buttons (no inconsistent styling).",
+        "All new labels, helper text, and messages are in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
           "operation": "create",
-          "description": "Create a rollback-only displayed-version validation script that (1) reads frontend/VERSION and expects 35, and (2) scans frontend/src for any hardcoded \"Version <number>\" labels that are not \"Version 35\" and fails with a clear English error message; additionally validate that the footer’s version label is driven by the build-time version value used by the rollback workflow."
+          "description": "Implement the identifier re-enable UI using the same shadcn/ui building blocks already used on AdminSettingsPage (Card, Alert, Label, Input, Button) with consistent spacing/typography/button hierarchy, and ensure all labels/helper text/status messages are English. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/scripts/rollback-preflight.sh",
+          "path": "frontend/src/pages/admin/AdminSettingsPage.tsx",
           "operation": "modify",
-          "description": "Invoke the new Version 35 displayed-version validation during rollback preflight so the preflight fails before deployment when the UI version label would not be \"Version 35\"."
-        },
-        {
-          "path": "frontend/scripts/rollback-frontend-v35.sh",
-          "operation": "modify",
-          "description": "Ensure rollback execution runs the updated rollback preflight (including the displayed-version validation) before performing the frontend canister deploy step."
+          "description": "Align the new section’s layout and variants with the existing Admin Settings cards/alerts/buttons (matching className patterns like space-y-4/6, Alert variants, Button size='lg'). Ensure all newly added strings remain English."
         }
       ]
     }

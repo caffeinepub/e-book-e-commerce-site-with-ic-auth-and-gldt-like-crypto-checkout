@@ -1,83 +1,85 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T01:38:33.386Z",
+  "generatedAt": "2026-02-11T02:21:26.117Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 5,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement a frontend-only rollback workflow that deploys Draft Version 35 of the app without modifying or deploying the backend canister.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/docs/rollback-to-v35.md",
-          "frontend/scripts/rollback-frontend-v35.sh"
-        ],
-        "matchedFiles": [
-          "frontend/docs/rollback-to-v35.md",
-          "frontend/scripts/rollback-frontend-v35.sh"
-        ]
+        "summary": "Add an admin-only backend method that sets `available=true` for books matching an admin-provided identifier (exact title/filename text match, case-insensitive), and returns a result containing (a) the number of books updated and (b) the list of updated book IDs/titles. The identifier to support immediately is: \"CRYPTO BEGINNER'S GUIDE: HOW TO BUY GOLD TOKENS / GLDT AND MORE FROM SCRATCH\".",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Update the user-visible version indicator in the UI footer so that it displays Version 35 after the Draft rollback to Version 35.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/layout/Footer.tsx",
-          "frontend/.env.production"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/layout/Footer.tsx",
-          "frontend/.env.production"
-        ]
+        "summary": "Ensure the backend re-enable-by-identifier operation does not re-list sold-out single-copy books: if a matching book has `singleCopy=true` and there is evidence it has already been sold (ownership/purchase record exists for that book), keep `available=false` for that book and report it as skipped in the returned result.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Ensure the Draft Version 35 rollback build displays the environment as Draft (not Live) in the UI environment badge by setting the build-time environment configuration appropriately for the rollback workflow.",
+        "summary": "Add an Admin Settings UI section that lets an admin paste a book identifier (title/filename text) and run the new backend re-enable-by-identifier operation, showing a clear success/failure summary and the list of updated/skipped matches.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/rollback-frontend-v35.sh",
-          "frontend/docs/rollback-to-v35.md"
+          "frontend/src/hooks/useBooks.ts",
+          "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/rollback-frontend-v35.sh",
-          "frontend/docs/rollback-to-v35.md"
+          "frontend/src/hooks/useBooks.ts",
+          "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Extend the existing Version 35 rollback preflight checks to validate that the displayed UI version label matches the rollback target (Version 35) before deploying the frontend canister.",
+        "summary": "Fix public catalog visibility by making the public-facing catalog page query only available books (use `getAvailableBooks` via the existing React Query hook), so books marked `available=true` are what appear on the public site.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/check-displayed-version-35.sh",
-          "frontend/scripts/rollback-preflight.sh",
-          "frontend/scripts/rollback-frontend-v35.sh"
+          "frontend/src/pages/CatalogPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/check-displayed-version-35.sh",
-          "frontend/scripts/rollback-preflight.sh",
-          "frontend/scripts/rollback-frontend-v35.sh"
+          "frontend/src/pages/CatalogPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Apply a consistent visual theme for the new admin settings controls (spacing, typography, button hierarchy, alerts) that matches the existing admin settings page styling and keeps user-facing text in English.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+          "frontend/src/pages/admin/AdminSettingsPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/.env.production",
-    "frontend/docs/rollback-to-v35.md",
-    "frontend/scripts/check-displayed-version-35.sh",
-    "frontend/scripts/rollback-frontend-v35.sh",
-    "frontend/scripts/rollback-preflight.sh",
-    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useBooks.ts",
+    "frontend/src/pages/CatalogPage.tsx",
+    "frontend/src/pages/admin/AdminSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

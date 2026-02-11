@@ -1,28 +1,55 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T01:38:33.383Z",
-  "summary": "Diff adds a documented, executable Draft rollback procedure and scripts that deploy only the frontend canister, sets build-time env/version for Draft v35, updates the footer to display a build-time version, and adds preflight validation to fail if UI version labels don’t match v35. One unrequested backend file appears in the modified list despite the snippet claiming no changes.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-11T02:21:26.114Z",
+  "summary": "Frontend changes clearly switch the public catalog to query available books and add an Admin Settings card to trigger a re-enable-by-identifier action, but the diff summary does not provide evidence that the required backend admin method (including sold-out single-copy skip logic and structured result) was implemented. One unrequested backend migration module was added.",
+  "missing_requirements": [
     {
-      "description": "Backend source file marked as modified even though the request is frontend-only rollback and explicitly constrains avoiding backend changes/deploys.",
-      "reason": "BuildRequest is for a frontend-only rollback workflow; any backend code changes are out of scope. Diff summary lists a backend file under MODIFIED FILES.",
+      "id": "REQ-1",
+      "requirement": "Add an admin-only backend method that sets `available=true` for books matching an admin-provided identifier (exact title/filename text match, case-insensitive), returning count and list of updated book IDs/titles; traps if caller not admin; returns 0 updates if no matches.",
+      "reason": "The backend diff snippet for backend/main.mo shows types and existing methods like exportCatalog, but does not show any new admin-only re-enable-by-identifier method, its authorization trap, case-insensitive matching, or its return payload structure.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Ensure re-enable-by-identifier does not re-list sold-out single-copy books; leave them unavailable and report them as skipped, distinguishing updated vs skipped in the result.",
+      "reason": "No backend logic is shown that checks `singleCopy` plus an ownership/purchase record and conditionally skips setting `available=true`, nor a result that distinguishes updated vs skipped.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Add an Admin Settings UI section to paste an identifier and run the backend operation, showing success/failure summary plus updated/skipped IDs/titles, with English error messaging.",
+      "reason": "While the new card UI exists and references `useReEnableBooksByIdentifier`, the diff summary does not include the completed error-message rendering (file is truncated) nor evidence that the hook/mutation exists and is wired to an actor method.",
+      "evidence": [
+        "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx (truncated)",
+        "frontend/src/hooks/useBooks.ts (truncated)",
+        "frontend/src/pages/admin/AdminSettingsPage.tsx (truncated)"
       ]
     }
   ],
-  "confidence": 0.72,
+  "hallucinated_features": [
+    {
+      "description": "Added a backend migration module (migration.mo) and wired migration run into the main actor.",
+      "reason": "The BuildRequest does not request any migration functionality; it only constrains the backend to remain a single Motoko actor in backend/main.mo and asks for a new admin method.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo (truncated) (\"import Migration \\\"migration\\\"\" and \"with migration = Migration.run\")"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/.env.production",
-    "frontend/docs/rollback-to-v35.md",
-    "frontend/scripts/check-displayed-version-35.sh",
-    "frontend/scripts/rollback-frontend-v35.sh",
-    "frontend/scripts/rollback-preflight.sh",
-    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx",
+    "frontend/src/hooks/useBooks.ts",
+    "frontend/src/pages/CatalogPage.tsx",
+    "frontend/src/pages/admin/AdminSettingsPage.tsx",
     "project_state.json"
   ]
 }

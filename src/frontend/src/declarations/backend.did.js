@@ -92,6 +92,11 @@ export const CatalogState = IDL.Record({
   'kycIdToPrincipal' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal)),
   'validationTimestamps' : IDL.Vec(IDL.Tuple(IDL.Text, Time)),
 });
+export const ReEnableBooksResult = IDL.Record({
+  'updatedBooks' : IDL.Vec(IDL.Text),
+  'skippedBooks' : IDL.Vec(IDL.Text),
+  'updatedCount' : IDL.Nat,
+});
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -184,6 +189,7 @@ export const idlService = IDL.Service({
   'importCatalog' : IDL.Func([CatalogState], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'reEnableBooksByIdentifier' : IDL.Func([IDL.Text], [ReEnableBooksResult], []),
   'recoverAdminAccess' : IDL.Func([], [], []),
   'rejectKycProof' : IDL.Func([IDL.Text], [KYcState], []),
   'removeBookAudio' : IDL.Func([IDL.Text, IDL.Nat], [], []),
@@ -293,6 +299,11 @@ export const idlFactory = ({ IDL }) => {
     'kycIdToPrincipal' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal)),
     'validationTimestamps' : IDL.Vec(IDL.Tuple(IDL.Text, Time)),
   });
+  const ReEnableBooksResult = IDL.Record({
+    'updatedBooks' : IDL.Vec(IDL.Text),
+    'skippedBooks' : IDL.Vec(IDL.Text),
+    'updatedCount' : IDL.Nat,
+  });
   
   return IDL.Service({
     '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -385,6 +396,11 @@ export const idlFactory = ({ IDL }) => {
     'importCatalog' : IDL.Func([CatalogState], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'mintTokens' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'reEnableBooksByIdentifier' : IDL.Func(
+        [IDL.Text],
+        [ReEnableBooksResult],
+        [],
+      ),
     'recoverAdminAccess' : IDL.Func([], [], []),
     'rejectKycProof' : IDL.Func([IDL.Text], [KYcState], []),
     'removeBookAudio' : IDL.Func([IDL.Text, IDL.Nat], [], []),

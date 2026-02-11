@@ -12,7 +12,7 @@
   "frontend/src/components/library/BookContentDialog.tsx": "Modal dialog for viewing purchased e-book content with inline image previews (expandable, no cropping), HTML5 audio/video players, download actions for all media types, and proper authorization error handling.",
   "frontend/src/components/ui-kit/EmptyState.tsx": "Reusable empty state component for displaying placeholder content with optional icon, title, description, and action button.",
   "frontend/src/pages/HomePage.tsx": "Landing page with hero section featuring the phoenix-1988-image-3 asset at 564x483 dimensions, BookCoin branding, and featured books grid.",
-  "frontend/src/pages/CatalogPage.tsx": "Book catalog page with search/filter functionality, responsive grid layout, explicit error state rendering using Alert component, and uses useGetAllBooks to show all previously uploaded books regardless of availability status.",
+  "frontend/src/pages/CatalogPage.tsx": "Book catalog page with search/filter functionality, responsive grid layout, explicit error state rendering using Alert component, and uses useGetAvailableBooks to show only available books for the public browsing experience.",
   "frontend/src/pages/BookDetailsPage.tsx": "Individual book details page displaying uploaded cover images when available, with single-copy sold-out detection, KYC restriction alerts, restriction badges, and appropriate error handling for cart operations.",
   "frontend/src/pages/CartPage.tsx": "Shopping cart page with validation for single-copy books with invalid quantities, clear error messaging, and checkout prevention until cart issues are resolved.",
   "frontend/src/pages/CheckoutPage.tsx": "Checkout page with KYC verification card for restricted books, document-based identity verification requirement, enhanced error handling using the new KYC restriction error mapper for clear user-friendly messages, and disabled checkout until verification completes.",
@@ -24,7 +24,7 @@
   "frontend/src/pages/admin/AdminMintPage.tsx": "Admin token minting interface for adding GLDT to user balances.",
   "frontend/src/hooks/useQueries.ts": "Empty placeholder file as queries are organized in feature-specific hooks.",
   "frontend/src/hooks/useAuthz.ts": "Authentication and authorization hooks for profile management and admin checks with improved caching and error handling for admin status queries.",
-  "frontend/src/hooks/useBooks.ts": "React Query hooks for all book operations including CRUD, PDF/image/audio/video upload with progress tracking, and media removal with cache invalidation.",
+  "frontend/src/hooks/useBooks.ts": "React Query hooks for all book operations including CRUD, PDF/image/audio/video upload with progress tracking, media removal with cache invalidation, and the new useReEnableBooksByIdentifier hook for making specific books visible by identifier with detailed result reporting.",
   "frontend/src/hooks/useBalance.ts": "React Query hooks for balance queries and token minting.",
   "frontend/src/hooks/useCart.ts": "React Query hooks for cart operations including checkout with kycIdentifier and kycProofValid parameters, cart management, and cart-with-books aggregation that calculates total based on quantity.",
   "frontend/src/hooks/useOrders.ts": "React Query hooks for fetching orders (single, user-specific, and all).",
@@ -42,7 +42,7 @@
   "frontend/src/hooks/useAdminRecovery.ts": "React Query mutation hook for admin recovery with clear English error messages explaining when recovery is unavailable, caller not authorized, or other failures.",
   "frontend/src/hooks/useResetStore.ts": "React Query mutation hook for store reset that calls the backend resetStore method and invalidates all relevant query caches (books, orders, cart, messages, balance) on success.",
   "frontend/src/pages/admin/AdminRecoveryPage.tsx": "Admin recovery page with enhanced error messaging, clear instructions about how recovery works, and informative alerts explaining the recovery process and requirements.",
-  "frontend/src/pages/admin/AdminSettingsPage.tsx": "Admin settings page with Draft/Live explanation, Version 22 recovery instructions, catalog export/import workflow with merge mode support, file picker, mode selection, store reset control, and comprehensive success/error feedback.",
+  "frontend/src/pages/admin/AdminSettingsPage.tsx": "Admin settings page with tabs for catalog export/import, the new re-enable books by identifier control, and store reset, all guarded by AdminRoute wrapper with comprehensive success/error feedback.",
   "frontend/src/utils/download.ts": "Utility functions for triggering browser downloads from Uint8Array data, direct URLs, and JSON objects with proper cleanup.",
   "frontend/src/components/library/LibraryPdfDownloadButton.tsx": "Reusable icon-only button for downloading purchased book PDFs using fetchPurchasedBookMedia API with loading state, enhanced error handling with clear user-friendly English messages, and proper authorization error feedback.",
   "frontend/src/pages/PurchaseConfirmationPage.tsx": "Lightweight post-purchase confirmation page that displays success messaging with a check icon and provides three action buttons: Go to My Library, View Order Details (navigates to /order/$orderId), and Continue Shopping.",
@@ -76,5 +76,6 @@
   "frontend/scripts/rollback-preflight.sh": "Rollback-specific preflight validation script that checks VERSION is 35, validates critical source files, runs displayed version validation, ensures frontend-only safety, and confirms dfx availability without any backend modification commands.",
   "frontend/docs/draft-regression-checks.md": "Minimal draft regression checklist documenting manual verification steps to prevent shipping drafts with catalog visibility issues, including catalog loading, book details access, error state rendering, and console error checks.",
   "frontend/scripts/check-displayed-version-29.sh": "Guard script that scans frontend source files for hardcoded displayed version strings and fails with a clear English error if any displayed version number is not 29.",
-  "frontend/scripts/check-displayed-version-35.sh": "Guard script that validates VERSION is 35, scans frontend source files for hardcoded displayed version strings that are not \"Version 35\", and verifies Footer.tsx uses VITE_APP_VERSION build-time variable."
+  "frontend/scripts/check-displayed-version-35.sh": "Guard script that validates VERSION is 35, scans frontend source files for hardcoded displayed version strings that are not \"Version 35\", and verifies Footer.tsx uses VITE_APP_VERSION build-time variable.",
+  "frontend/src/components/admin/ReEnableBooksByIdentifierCard.tsx": "Admin-only card component for re-enabling books by identifier with text input, success/error feedback showing updated and skipped books with proper bigint type handling, and clear English messaging for all states."
 }

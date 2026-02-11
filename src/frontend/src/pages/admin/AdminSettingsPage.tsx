@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { RotateCcw, AlertTriangle, CheckCircle2, Download, Upload, Info } from 'lucide-react';
+import ReEnableBooksByIdentifierCard from '@/components/admin/ReEnableBooksByIdentifierCard';
 import type { CatalogState } from '@/backend';
 
 export default function AdminSettingsPage() {
@@ -144,6 +145,9 @@ export default function AdminSettingsPage() {
           </p>
         </AlertDescription>
       </Alert>
+
+      {/* Re-enable Books by Identifier */}
+      <ReEnableBooksByIdentifierCard />
 
       {/* Export Catalog */}
       <Card>
@@ -372,28 +376,14 @@ export default function AdminSettingsPage() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="space-y-2">
-                    <p>
-                      This will permanently delete all data from your store, including:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>All books in the catalog</li>
-                      <li>All customer orders</li>
-                      <li>All shopping carts</li>
-                      <li>All customer support messages</li>
-                      <li>All token balances</li>
-                    </ul>
-                    <p className="font-semibold pt-2">
-                      This action cannot be undone. Your store will be reset to a completely clean state.
-                    </p>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all books, orders, cart items,
+                    customer messages, and token balances from your store.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleReset}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
+                  <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                     Yes, Reset Store
                   </AlertDialogAction>
                 </AlertDialogFooter>

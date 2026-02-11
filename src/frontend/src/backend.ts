@@ -98,6 +98,11 @@ export interface CustomerMessage {
     isAdminResponse: boolean;
 }
 export type Time = bigint;
+export interface ReEnableBooksResult {
+    updatedBooks: Array<string>;
+    skippedBooks: Array<string>;
+    updatedCount: bigint;
+}
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
@@ -209,6 +214,7 @@ export interface backendInterface {
     importCatalog(newCatalog: CatalogState): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
+    reEnableBooksByIdentifier(identifier: string): Promise<ReEnableBooksResult>;
     recoverAdminAccess(): Promise<void>;
     rejectKycProof(kycId: string): Promise<KYcState>;
     removeBookAudio(bookId: string, audioIndex: bigint): Promise<void>;
@@ -711,6 +717,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.mintTokens(arg0, arg1);
+            return result;
+        }
+    }
+    async reEnableBooksByIdentifier(arg0: string): Promise<ReEnableBooksResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.reEnableBooksByIdentifier(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.reEnableBooksByIdentifier(arg0);
             return result;
         }
     }

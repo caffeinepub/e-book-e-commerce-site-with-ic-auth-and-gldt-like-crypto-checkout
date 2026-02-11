@@ -23,6 +23,11 @@ export interface CustomerMessage {
     isAdminResponse: boolean;
 }
 export type Time = bigint;
+export interface ReEnableBooksResult {
+    updatedBooks: Array<string>;
+    skippedBooks: Array<string>;
+    updatedCount: bigint;
+}
 export interface Book {
     id: string;
     media: MediaContent;
@@ -116,6 +121,7 @@ export interface backendInterface {
     importCatalog(newCatalog: CatalogState): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     mintTokens(to: Principal, amount: bigint): Promise<void>;
+    reEnableBooksByIdentifier(identifier: string): Promise<ReEnableBooksResult>;
     recoverAdminAccess(): Promise<void>;
     rejectKycProof(kycId: string): Promise<KYcState>;
     removeBookAudio(bookId: string, audioIndex: bigint): Promise<void>;

@@ -2,39 +2,35 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [],
+  "architectural_notes": [
+    "Public site visibility depends on data stored on the PUBLIC canister; deploying a new version may not sync draft data to the public canister automatically."
+  ],
+  "known_issues": [
+    "Public site shows no books because entries on the public canister may be missing or marked unavailable (available=false), indicating draft/public data is out of sync."
+  ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-implement-a-frontend-only-rollback-workflow-that-deploys-draft-version-35-of-the-app-without-modifying-or-deploying-the-backend-canister",
-      "title": "Implement a frontend-only rollback workflow that deploys Draft Version 35 of the app without modifying or deploying the backend canister.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-user-visible-version-indicator-in-the-ui-footer-so-that-it-displays-version-35-after-the-draft-rollback-to-version-35",
-      "title": "Update the user-visible version indicator in the UI footer so that it displays Version 35 after the Draft rollback to Version 35.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-draft-version-35-rollback-build-displays-the-environment-as-draft-not-live-in-the-ui-environment-badge-by-setting-the-build-time-environment-configuration-appropriately-for-the-rollback-workflow",
-      "title": "Ensure the Draft Version 35 rollback build displays the environment as Draft (not Live) in the UI environment badge by setting the build-time environment configuration appropriately for the rollback workflow.",
+      "id": "feature-add-an-admin-settings-ui-section-that-lets-an-admin-paste-a-book-identifier-title-filename-text-and-run-the-new-backend-re-enable-by-identifier-operation-showing-a-clear-success-failure-summary-and-the-list-of-updated-skipped-matches",
+      "title": "Add an Admin Settings UI section that lets an admin paste a book identifier (title/filename text) and run the new backend re-enable-by-identifier operation, showing a clear success/failure summary and the list of updated/skipped matches.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-extend-the-existing-version-35-rollback-preflight-checks-to-validate-that-the-displayed-ui-version-label-matches-the-rollback-target-version-35-before-deploying-the-frontend-canister",
-      "title": "Extend the existing Version 35 rollback preflight checks to validate that the displayed UI version label matches the rollback target (Version 35) before deploying the frontend canister.",
+      "id": "feature-fix-public-catalog-visibility-by-making-the-public-facing-catalog-page-query-only-available-books-use-getavailablebooks-via-the-existing-react-query-hook-so-books-marked-available-true-are-what-appear-on-the-public-site",
+      "title": "Fix public catalog visibility by making the public-facing catalog page query only available books (use `getAvailableBooks` via the existing React Query hook), so books marked `available=true` are what appear on the public site.",
       "reqIds": [
         "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-consistent-visual-theme-for-the-new-admin-settings-controls-spacing-typography-button-hierarchy-alerts-that-matches-the-existing-admin-settings-page-styling-and-keeps-user-facing-text-in-english",
+      "title": "Apply a consistent visual theme for the new admin settings controls (spacing, typography, button hierarchy, alerts) that matches the existing admin settings page styling and keeps user-facing text in English.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -42,12 +38,22 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Revert/build and deploy draft version 35 (rollback from current live version)",
-      "reqIds": [],
+      "summary": "Add an admin-only backend method that sets `available=true` for books matching an admin-provided identifier (exact title/filename text match, case-insensitive), and returns a result containing (a) the number of books updated and (b) the list of updated book IDs/titles. The identifier to support immediately is: \"CRYPTO BEGINNER'S GUIDE: HOW TO BUY GOLD TOKENS / GLDT AND MORE FROM SCRATCH\".",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Ensure the backend re-enable-by-identifier operation does not re-list sold-out single-copy books: if a matching book has `singleCopy=true` and there is evidence it has already been sold (ownership/purchase record exists for that book), keep `available=false` for that book and report it as skipped in the returned result.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Revert (Draft) frontend deployment to Version 35 (frontend-only rollback)",
+  "projectName": "Restore public catalog visibility and enable targeted availability re-enable for a specific uploaded book",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

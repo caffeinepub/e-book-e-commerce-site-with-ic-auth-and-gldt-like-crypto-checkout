@@ -68,6 +68,11 @@ export interface Order {
   'deliveredBookIds' : Array<string>,
 }
 export interface OwnedBook { 'bookId' : string, 'purchasedBy' : string }
+export interface ReEnableBooksResult {
+  'updatedBooks' : Array<string>,
+  'skippedBooks' : Array<string>,
+  'updatedCount' : bigint,
+}
 export type Time = bigint;
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -131,6 +136,7 @@ export interface _SERVICE {
   'importCatalog' : ActorMethod<[CatalogState], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'mintTokens' : ActorMethod<[Principal, bigint], undefined>,
+  'reEnableBooksByIdentifier' : ActorMethod<[string], ReEnableBooksResult>,
   'recoverAdminAccess' : ActorMethod<[], undefined>,
   'rejectKycProof' : ActorMethod<[string], KYcState>,
   'removeBookAudio' : ActorMethod<[string, bigint], undefined>,
