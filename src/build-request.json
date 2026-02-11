@@ -1,65 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Publish frontend Version 29 to Live (public site)",
-  "priority": "normal",
+  "title": "Rollback to Version 35 and restore visibility of previously uploaded books",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-4",
-      "text": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
+      "id": "REQ-1",
+      "text": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2",
-          "msg-3",
-          "msg-4"
+          "msg-5"
         ],
         "quotes": [
-          "Version 33 is ready — would you like it published to your public site now?",
-          "yes"
+          "Revert to version 35 I can't see the books i uploaded"
         ]
       },
       "acceptanceCriteria": [
-        "The Live publish workflow is executed via the existing script: frontend/scripts/publish-live.sh.",
-        "The publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
-        "The publish workflow deploys only the frontend canister to the IC network (dfx deploy frontend --network ic) and does not deploy or reinstall the backend canister.",
-        "Preflight checks run successfully as part of the publish process (frontend/scripts/deployment-preflight.sh)."
+        "A documented, repeatable rollback procedure exists to deploy the Version 35 frontend build to the target environment.",
+        "Rollback workflow performs frontend-only deployment and does not run any backend deploy/reinstall/reset commands.",
+        "After rollback to Version 35, the Catalog page renders previously uploaded books for the same backend state (no data migration required)."
       ]
     },
     {
-      "id": "REQ-5",
-      "text": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
-      "target": "unknown",
+      "id": "REQ-2",
+      "text": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2",
-          "msg-3",
-          "msg-4"
+          "msg-5"
         ],
         "quotes": [
-          "yes"
+          "Revert to version 35 I can't see the books i uploaded"
         ]
       },
       "acceptanceCriteria": [
-        "The Live homepage shows the environment badge as 'Live' (not 'Draft').",
-        "The footer displays 'Version 29'.",
-        "Catalog page (/catalog) loads and shows books with cover images rendering.",
-        "A basic cart/checkout navigation path can be exercised without runtime errors (console checked).",
-        "Any failures are captured with URL, expected vs observed, and relevant console errors per the checklist in frontend/docs/live-smoke-test-v29.md."
+        "Existing Live publish workflow remains blocked unless the approved Live version condition is met (no accidental Live publish of arbitrary versions).",
+        "A separate rollback/testing flow can deploy a specified older frontend version without requiring edits that weaken the Live publish safeguards.",
+        "Documentation clearly states when to use Live publish vs rollback/testing, including safety warnings about preserving backend state."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "I can't see the books i uploaded"
+        ]
+      },
+      "acceptanceCriteria": [
+        "With the latest Draft build (post-fix), the Catalog page shows books that exist in backend state (including those uploaded previously).",
+        "Failure states are user-visible (English) and actionable (e.g., if fetching books fails, the UI shows an error instead of silently showing an empty catalog).",
+        "A documented manual verification step (or checklist update) is added to confirm: (1) catalog loads, (2) previously uploaded books appear, (3) book details pages open successfully."
       ]
     }
   ],
   "constraints": [
-    "Frontend version is locked to Version 29 only; frontend/VERSION must contain exactly '29' and any other version must fail fast.",
-    "Live publish must be frontend-only; do not deploy, reinstall, reset, or otherwise modify the backend canister or its state.",
-    "Do not edit files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT.",
+    "Do not deploy, reinstall, reset, stop, or otherwise modify the backend canister/state as part of rollback or publish workflows.",
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo). Only add backend/migration.mo if an upgrade requires state migration.",
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything in frontend/src/components/ui; compose around them instead.",
     "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding new application features unrelated to publishing Version 29 to Live.",
-    "Changing backend schemas, performing migrations, or wiping/modifying existing backend state (books, orders, users, KYC).",
-    "Introducing or supporting any frontend version other than 29."
+    "Implementing a new database or any external storage system.",
+    "Adding third-party authentication providers (anything beyond Internet Identity).",
+    "Adding real-time features (WebSockets/Socket.io)."
   ],
   "imageRequirements": {
     "required": [],

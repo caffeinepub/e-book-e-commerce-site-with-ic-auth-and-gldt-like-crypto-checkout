@@ -46,7 +46,7 @@ export default function Footer() {
 
           {/* Version indicator */}
           <p className="text-xs text-muted-foreground/70">
-            Version 29
+            Version 35
           </p>
         </div>
       </div>

@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Publish the existing frontend Version 29 build to the Live public site using the Version-29-only workflow, without deploying or modifying the backend canister.
+**Goal:** Restore visibility of previously uploaded books by enabling an emergency rollback to the known-good Version 35 frontend, while fixing the Draft v36 regression and keeping Live publishing safeguards intact.
 
 **Planned changes:**
-- Run the existing Live publish workflow script (`frontend/scripts/publish-live.sh`) to deploy only the frontend canister to the IC network.
-- Ensure the publish workflow blocks immediately unless `frontend/VERSION` is exactly `29`.
-- Run preflight checks as part of the publish process (`frontend/scripts/deployment-preflight.sh`).
-- After publishing, execute the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz and record any failures per `frontend/docs/live-smoke-test-v29.md`.
+- Document and provide a repeatable, frontend-only rollback workflow to deploy the Version 35 frontend build without any backend deploy/reinstall/reset actions.
+- Update deployment guardrails to keep the existing Live publish lock unchanged, while adding a separate controlled rollback/testing flow for deploying older frontend versions (e.g., v35) in Draft or a designated rollback path.
+- Identify and fix the Draft Version 36 regression that causes previously uploaded books to be missing from the Catalog/library UI, and add a minimal regression check plus a documented manual verification checklist (catalog loads, previously uploaded books appear, details pages open).
+- Ensure failure states in the Catalog are user-visible and actionable in English (e.g., show an error instead of an empty catalog when fetch fails).
 
-**User-visible outcome:** The public Live site is updated to frontend Version 29 (showing Live badge and “Version 29” in the footer), with catalog browsing and basic cart/checkout navigation working without runtime errors.
+**User-visible outcome:** Users can roll back to Version 35 to see their previously uploaded books without changing backend state, and the latest Draft build again shows previously uploaded books with clear errors if loading fails.

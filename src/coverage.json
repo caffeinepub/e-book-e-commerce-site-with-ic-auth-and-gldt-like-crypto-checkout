@@ -1,62 +1,86 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T00:47:10.188Z",
+  "generatedAt": "2026-02-11T01:19:54.643Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-4",
-        "summary": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
+        "id": "REQ-1",
+        "summary": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/publish-live.sh",
-          "frontend/scripts/deployment-preflight.sh",
-          "frontend/scripts/enforce-version-29.sh",
-          "frontend/docs/publish-live.md"
+          "frontend/docs/rollback-to-v35.md",
+          "frontend/scripts/rollback-frontend-v35.sh",
+          "frontend/VERSION",
+          "frontend/src/config/version.ts",
+          "frontend/src/components/layout/Footer.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/publish-live.sh",
-          "frontend/scripts/deployment-preflight.sh",
-          "frontend/scripts/enforce-version-29.sh",
-          "frontend/docs/publish-live.md"
+          "frontend/docs/rollback-to-v35.md",
+          "frontend/scripts/rollback-frontend-v35.sh",
+          "frontend/VERSION",
+          "frontend/src/components/layout/Footer.tsx"
         ]
       },
       {
-        "id": "REQ-5",
-        "summary": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
+        "id": "REQ-2",
+        "summary": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/docs/live-smoke-test-v29.md",
-          "frontend/scripts/live-smoke-test-v29-helper.sh",
-          "frontend/docs/live-smoke-test-v29-report-template.md"
+          "frontend/docs/publish-live.md",
+          "frontend/docs/deployment-preflight.md",
+          "frontend/scripts/enforce-version-29.sh",
+          "frontend/scripts/rollback-preflight.sh",
+          "frontend/scripts/rollback-frontend-v35.sh"
         ],
         "matchedFiles": [
+          "frontend/docs/publish-live.md",
+          "frontend/docs/deployment-preflight.md",
+          "frontend/scripts/enforce-version-29.sh",
+          "frontend/scripts/rollback-preflight.sh",
+          "frontend/scripts/rollback-frontend-v35.sh"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/CatalogPage.tsx",
+          "frontend/src/hooks/useBooks.ts",
           "frontend/docs/live-smoke-test-v29.md",
-          "frontend/scripts/live-smoke-test-v29-helper.sh",
-          "frontend/docs/live-smoke-test-v29-report-template.md"
+          "frontend/docs/draft-regression-checks.md"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/CatalogPage.tsx",
+          "frontend/docs/live-smoke-test-v29.md",
+          "frontend/docs/draft-regression-checks.md"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/docs/live-smoke-test-v29-report-template.md",
+    "frontend/VERSION",
+    "frontend/docs/deployment-preflight.md",
+    "frontend/docs/draft-regression-checks.md",
     "frontend/docs/live-smoke-test-v29.md",
     "frontend/docs/publish-live.md",
-    "frontend/scripts/deployment-preflight.sh",
+    "frontend/docs/rollback-to-v35.md",
     "frontend/scripts/enforce-version-29.sh",
-    "frontend/scripts/live-smoke-test-v29-helper.sh",
-    "frontend/scripts/publish-live.sh",
+    "frontend/scripts/rollback-frontend-v35.sh",
+    "frontend/scripts/rollback-preflight.sh",
+    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/pages/CatalogPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

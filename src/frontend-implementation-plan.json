@@ -1,65 +1,108 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend-only Live publish workflow for Version 29 + Live smoke test materials",
+  "title": "Frontend rollback to v35, deployment guardrails, and catalog visibility regression fix",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Harden and validate the existing Version-29-only Live frontend publish workflow to deploy frontend only.",
+      "id": "REQ-1",
+      "summary": "Add a documented, repeatable frontend-only rollback workflow to deploy Version 35 so previously uploaded books are visible again without touching backend state.",
       "acceptanceCriteria": [
-        "The Live publish workflow is executed via the existing script: frontend/scripts/publish-live.sh.",
-        "The publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
-        "The publish workflow deploys only the frontend canister to the IC network (dfx deploy frontend --network ic) and does not deploy or reinstall the backend canister.",
-        "Preflight checks run successfully as part of the publish process (frontend/scripts/deployment-preflight.sh)."
+        "A documented, repeatable rollback procedure exists to deploy the Version 35 frontend build to the target environment.",
+        "Rollback workflow performs frontend-only deployment and does not run any backend deploy/reinstall/reset commands.",
+        "After rollback to Version 35, the Catalog page renders previously uploaded books for the same backend state (no data migration required)."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/publish-live.sh",
-          "operation": "modify",
-          "description": "Tighten safety checks around the Live publish flow: ensure the script fails fast before any deploy action if the Version-29 guard fails; add explicit safeguards that prohibit any backend deploy/reinstall commands during this workflow and keep the deploy action strictly limited to deploying the frontend canister to the IC network."
+          "path": "frontend/docs/rollback-to-v35.md",
+          "operation": "create",
+          "description": "Create rollback documentation for deploying the Version 35 frontend build using a frontend-only procedure (explicitly warn against any backend deploy/reinstall/reset/stop). Include a repeatable sequence that uses the dedicated rollback script and a manual verification checklist focused on catalog visibility and book details navigation."
         },
         {
-          "path": "frontend/scripts/deployment-preflight.sh",
-          "operation": "modify",
-          "description": "Align preflight output with the Live publish acceptance criteria by clearly asserting the workflow is frontend-only for deployment purposes, and ensure the Version-29 enforcement remains the first gating step before other preflight actions run."
+          "path": "frontend/scripts/rollback-frontend-v35.sh",
+          "operation": "create",
+          "description": "Create an emergency rollback script that deploys the frontend canister only (no backend commands) and requires explicit confirmation before proceeding. The script must validate that frontend/VERSION is exactly 35 and must print post-deploy verification steps (catalog + book details)."
         },
         {
-          "path": "frontend/scripts/enforce-version-29.sh",
+          "path": "frontend/VERSION",
           "operation": "modify",
-          "description": "Confirm the guard blocks immediately when frontend/VERSION is not exactly '29' (including whitespace/newline edge cases), and keep messaging unambiguous that no other version is permitted."
+          "description": "Update the tracked frontend version to 35 as part of the rollback-to-v35 workflow so builds and UI version labeling align with the deployed rollback build."
         },
         {
-          "path": "frontend/docs/publish-live.md",
+          "path": "frontend/src/config/version.ts",
+          "operation": "create",
+          "description": "Add a small version helper that reads the frontend/VERSION value at build time and exposes a trimmed string for UI display, so the app reflects the rollback version consistently."
+        },
+        {
+          "path": "frontend/src/components/layout/Footer.tsx",
           "operation": "modify",
-          "description": "Update Live publish documentation to reflect the exact required workflow: running frontend/scripts/publish-live.sh, strict Version 29 enforcement via frontend/VERSION, and explicitly frontend-only deployment that must not deploy/modify/reinstall the backend canister."
+          "description": "Update the footer version indicator to render the version from the new version helper instead of a hard-coded value, so Version 35 displays correctly after rollback."
         }
       ]
     },
     {
-      "id": "REQ-5",
-      "summary": "Update the Version 29 Live smoke test checklist and helper materials to support manual post-publish verification on the Live site.",
+      "id": "REQ-2",
+      "summary": "Keep Live publish strictly version-locked while adding a separate, safe rollback/testing flow for older frontend versions (e.g., v35) with clear documentation and warnings.",
       "acceptanceCriteria": [
-        "The Live homepage shows the environment badge as 'Live' (not 'Draft').",
-        "The footer displays 'Version 29'.",
-        "Catalog page (/catalog) loads and shows books with cover images rendering.",
-        "A basic cart/checkout navigation path can be exercised without runtime errors (console checked).",
-        "Any failures are captured with URL, expected vs observed, and relevant console errors per the checklist in frontend/docs/live-smoke-test-v29.md."
+        "Existing Live publish workflow remains blocked unless the approved Live version condition is met (no accidental Live publish of arbitrary versions).",
+        "A separate rollback/testing flow can deploy a specified older frontend version without requiring edits that weaken the Live publish safeguards.",
+        "Documentation clearly states when to use Live publish vs rollback/testing, including safety warnings about preserving backend state."
       ],
       "file_operations": [
         {
+          "path": "frontend/docs/publish-live.md",
+          "operation": "modify",
+          "description": "Update documentation to explicitly distinguish Live publish (strict version lock) vs rollback/testing (separate flow). Add safety warnings that rollback/testing is frontend-only and must never run backend deploy/reinstall/reset/stop commands."
+        },
+        {
+          "path": "frontend/docs/deployment-preflight.md",
+          "operation": "modify",
+          "description": "Update preflight documentation to clarify which checks apply to Live publishing vs rollback/testing, and to point to the rollback/testing documentation and script as the only supported emergency rollback path (frontend-only)."
+        },
+        {
+          "path": "frontend/scripts/enforce-version-29.sh",
+          "operation": "modify",
+          "description": "Preserve Live publish strict locking by making the script messaging more explicit that it is the Live-publish guardrail only, and add guidance in output directing users to the separate rollback/testing flow for older versions (without adding any bypass)."
+        },
+        {
+          "path": "frontend/scripts/rollback-preflight.sh",
+          "operation": "create",
+          "description": "Create a rollback/testing preflight script that validates the rollback version (e.g., 35) and performs frontend-only build checks relevant to rollback without invoking any backend deploy/reinstall/reset commands."
+        },
+        {
+          "path": "frontend/scripts/rollback-frontend-v35.sh",
+          "operation": "modify",
+          "description": "Integrate the new rollback-preflight script into the rollback flow, ensure it remains frontend-only, and ensure it cannot be mistaken for the Live publish script (distinct prompts + warnings)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Fix Draft v36 regression by ensuring the catalog shows previously uploaded books (not silently empty) and add a minimal regression check via user-visible error states and a manual verification checklist update.",
+      "acceptanceCriteria": [
+        "With the latest Draft build (post-fix), the Catalog page shows books that exist in backend state (including those uploaded previously).",
+        "Failure states are user-visible (English) and actionable (e.g., if fetching books fails, the UI shows an error instead of silently showing an empty catalog).",
+        "A documented manual verification step (or checklist update) is added to confirm: (1) catalog loads, (2) previously uploaded books appear, (3) book details pages open successfully."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CatalogPage.tsx",
+          "operation": "modify",
+          "description": "Fix the catalog visibility regression by switching the catalog query to a books source that includes previously uploaded entries (not only currently-available items), and add explicit error-state rendering (English) so fetch failures do not appear as an empty catalog."
+        },
+        {
+          "path": "frontend/src/hooks/useBooks.ts",
+          "operation": "modify",
+          "description": "Add a dedicated catalog query hook that fetches all books intended to be visible in the catalog UI (including unavailable/sold-out), and ensure errors propagate in a way the UI can render actionable messages (avoid silently returning an empty array on failures)."
+        },
+        {
           "path": "frontend/docs/live-smoke-test-v29.md",
           "operation": "modify",
-          "description": "Revise the checklist to be explicitly for Live Version 29 (not 'Draft 29'), and ensure it prominently covers the required smoke test focus areas: environment badge 'Live', footer 'Version 29', catalog browsing with cover images rendering, and cart/checkout navigation sanity checks with explicit instructions to check the browser console and record failures (URL, expected vs observed, console errors)."
+          "description": "Add/update the manual verification checklist items to explicitly confirm: (1) catalog loads, (2) previously uploaded books are visible, (3) at least one book details page opens successfully, and note what to check if the catalog is empty (console errors, connectivity)."
         },
         {
-          "path": "frontend/scripts/live-smoke-test-v29-helper.sh",
-          "operation": "modify",
-          "description": "Update helper script headings and printed steps to match the Live Version 29 smoke test focus (environment badge, version label, catalog covers, checkout navigation without runtime errors) and ensure it points testers to frontend/docs/live-smoke-test-v29.md and the Live URL."
-        },
-        {
-          "path": "frontend/docs/live-smoke-test-v29-report-template.md",
-          "operation": "modify",
-          "description": "Update report template naming and prompts to match Live Version 29 (remove 'Draft 29' wording where it causes confusion) and ensure it includes fields for capturing failures with URL, expected vs observed, and relevant console errors consistent with frontend/docs/live-smoke-test-v29.md."
+          "path": "frontend/docs/draft-regression-checks.md",
+          "operation": "create",
+          "description": "Create a minimal draft regression checklist documenting a manual verification step to prevent shipping drafts with a blank/incorrect catalog: catalog loads, previously uploaded books appear, and book details pages open successfully."
         }
       ]
     }

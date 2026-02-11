@@ -1,58 +1,54 @@
 #!/bin/bash
 
-# Version 29 Enforcement Guard
-# Ensures only Version 29 can be built or published
-# This script is called by all deployment workflows to prevent non-29 versions
+# Version 29 Enforcement Script
+# This script is the Live publish guardrail - it blocks immediately if VERSION is not exactly '29'
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-VERSION_FILE="$REPO_ROOT/frontend/VERSION"
-
-# Color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
+echo "=================================================="
+echo "  Version 29 Enforcement Check"
+echo "=================================================="
+echo ""
+echo "This script enforces that ONLY Version 29 can be published to Live."
+echo ""
 
 # Check if VERSION file exists
-if [ ! -f "$VERSION_FILE" ]; then
-    echo -e "${RED}✗ VERSION file not found${NC}"
-    echo ""
-    echo "Expected location: $VERSION_FILE"
-    echo ""
-    echo -e "${RED}Only Version 29 is allowed.${NC}"
-    echo "Cannot proceed."
-    exit 1
+if [ ! -f "VERSION" ]; then
+  echo "❌ FAIL: VERSION file not found"
+  echo ""
+  echo "The VERSION file must exist in the frontend directory."
+  exit 1
 fi
 
-# Read and trim version (remove all whitespace including newlines)
-CURRENT_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
+# Read VERSION and strip all whitespace
+VERSION=$(cat VERSION | tr -d '[:space:]')
 
-# Enforce Version 29 only
-if [ "$CURRENT_VERSION" != "29" ]; then
-    echo -e "${RED}✗ Version check failed${NC}"
-    echo ""
-    echo "Expected version: 29"
-    echo "Current version:  $CURRENT_VERSION"
-    echo ""
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${RED}DEPLOYMENT BLOCKED${NC}"
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo "Only Version 29 is allowed."
-    echo "This deployment workflow is locked to Version 29."
-    echo "No other version may be created or published."
-    echo ""
-    echo "To fix this:"
-    echo "  1. Ensure frontend/VERSION contains exactly '29'"
-    echo "  2. Remove any whitespace or newlines"
-    echo "  3. Do not create or publish any other version"
-    echo ""
-    echo "Cannot proceed."
-    exit 1
+echo "Current VERSION: '$VERSION'"
+echo "Required VERSION: '29'"
+echo ""
+
+# Strict version check
+if [ "$VERSION" != "29" ]; then
+  echo "❌ FAIL: VERSION must be exactly '29' for Live publish"
+  echo ""
+  echo "Current VERSION is '$VERSION', which is not permitted for Live deployment."
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  IMPORTANT: This is intentional version control."
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "If you need to deploy a different version (e.g., Version 35):"
+  echo "  → Use the separate rollback/testing workflow"
+  echo "  → See: frontend/docs/rollback-to-v35.md"
+  echo "  → Run: frontend/scripts/rollback-frontend-v35.sh"
+  echo ""
+  echo "Do NOT modify this version check to bypass the safeguard."
+  echo ""
+  exit 1
 fi
 
-# Success
-echo -e "${GREEN}✓ Version verified: 29${NC}"
-exit 0
+echo "✅ PASS: VERSION is exactly '29'"
+echo ""
+echo "Version 29 is approved for Live publish."
+echo "Proceeding with deployment..."
+echo ""

@@ -2,13 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-publish-the-existing-frontend-version-29-build-to-the-live-public-site-using-the-project-s-version-29-only-frontend-publish-workflow-ensuring-the-deployment-is-frontend-only-and-does-not-deploy-modify-reinstall-the-backend-canister",
-      "featureTitle": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
+      "featureId": "feature-provide-an-emergency-rollback-workflow-that-deploys-the-previously-known-good-frontend-build-version-35-so-the-user-can-see-the-books-they-already-uploaded-without-deploying-reinstalling-modifying-the-backend-canister-or-backend-state",
+      "featureTitle": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
       "files": [
-        "frontend/docs/publish-live.md",
-        "frontend/scripts/deployment-preflight.sh",
-        "frontend/scripts/enforce-version-29.sh",
-        "frontend/scripts/publish-live.sh"
+        "frontend/VERSION",
+        "frontend/docs/rollback-to-v35.md",
+        "frontend/scripts/rollback-frontend-v35.sh",
+        "frontend/src/components/layout/Footer.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,17 +21,19 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-after-publishing-complete-the-manual-live-smoke-test-checklist-for-version-29-against-https-radicaleconomist101-h78-caffeine-xyz-focusing-on-environment-badge-version-label-catalog-browsing-and-purchase-flow-sanity-checks",
-      "featureTitle": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
+      "featureId": "feature-update-deployment-guardrails-so-that-live-publishing-remains-strictly-locked-as-currently-enforced-while-allowing-controlled-rollback-testing-of-older-frontend-versions-e-g-v35-in-draft-or-an-explicitly-designated-rollback-flow",
+      "featureTitle": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
       "files": [
-        "frontend/docs/live-smoke-test-v29-report-template.md",
-        "frontend/docs/live-smoke-test-v29.md",
-        "frontend/scripts/live-smoke-test-v29-helper.sh"
+        "frontend/docs/deployment-preflight.md",
+        "frontend/docs/publish-live.md",
+        "frontend/scripts/enforce-version-29.sh",
+        "frontend/scripts/rollback-frontend-v35.sh",
+        "frontend/scripts/rollback-preflight.sh"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,7 +46,30 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-identify-and-fix-the-regression-introduced-in-draft-version-36-that-prevents-previously-uploaded-books-from-being-visible-in-the-catalog-library-ui-and-add-a-minimal-regression-check-so-future-drafts-cannot-ship-with-the-same-failure",
+      "featureTitle": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+      "files": [
+        "frontend/docs/draft-regression-checks.md",
+        "frontend/docs/live-smoke-test-v29.md",
+        "frontend/src/pages/CatalogPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

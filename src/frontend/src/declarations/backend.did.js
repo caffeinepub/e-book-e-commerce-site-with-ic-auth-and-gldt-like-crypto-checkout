@@ -158,7 +158,7 @@ export const idlService = IDL.Service({
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
   'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
-  'getKycProof' : IDL.Func([IDL.Text], [KYcState], []),
+  'getKycProof' : IDL.Func([IDL.Text], [KYcState], ['query']),
   'getMessageResponses' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(CustomerMessage)],
@@ -359,7 +359,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
     'getDesignatedOwner' : IDL.Func([], [IDL.Opt(IDL.Principal)], ['query']),
-    'getKycProof' : IDL.Func([IDL.Text], [KYcState], []),
+    'getKycProof' : IDL.Func([IDL.Text], [KYcState], ['query']),
     'getMessageResponses' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(CustomerMessage)],

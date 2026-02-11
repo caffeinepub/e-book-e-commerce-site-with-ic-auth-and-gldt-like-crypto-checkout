@@ -122,7 +122,6 @@ actor {
     validationTimestamps : [(Text, Time.Time)];
     kycRestrictedPurchases : [(Text, Text)];
   };
-
   public shared ({ caller }) func exportCatalog() : async CatalogState {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can export catalog");
@@ -334,6 +333,10 @@ actor {
   };
 
   public query ({ caller }) func getMessageResponses(messageId : Nat) : async [CustomerMessage] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view message responses");
+    };
+
     switch (supportMessages.get(messageId)) {
       case (null) { Runtime.trap("Message not found") };
       case (?originalMsg) {
@@ -675,6 +678,10 @@ actor {
     orderId : Text,
     bookId : Text,
   ) : async MediaContent {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access media");
+    };
+
     if (not hasOrderAccess(caller, orderId)) {
       Runtime.trap("Unauthorized: Only the order owner or admins can access media");
     };
@@ -1002,7 +1009,7 @@ actor {
     (purchaseMsg, ?order);
   };
 
-  public shared ({ caller }) func getKycProof(kycId : Text) : async KYcState {
+  public query ({ caller }) func getKycProof(kycId : Text) : async KYcState {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can check KYC status");
     };
@@ -1049,6 +1056,10 @@ actor {
   };
 
   public query ({ caller }) func getOrder(orderId : Text) : async Order {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view orders");
+    };
+
     switch (orderStore.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
@@ -1068,6 +1079,10 @@ actor {
   };
 
   public query ({ caller }) func getUserOrders(user : Principal) : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view orders");
+    };
+
     if (user != caller and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only user or admins can access orders");
     };
@@ -1079,6 +1094,10 @@ actor {
   };
 
   public query ({ caller }) func getPurchasedBookContent(orderId : Text, bookId : Text) : async ?Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access book content");
+    };
+
     switch (orderStore.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {

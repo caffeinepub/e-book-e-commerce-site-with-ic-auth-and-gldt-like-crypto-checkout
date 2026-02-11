@@ -1,19 +1,25 @@
-# Live Smoke Test Report Template - Version 29
+# Live Smoke Test Report - Version 29
 
-**IMPORTANT:** After completing a Live smoke test, save the filled report to:  
-`frontend/docs/releases/v29-live-smoke-test-report.md`
-
-This ensures all Live publish results are consistently recorded and archived under the `frontend/docs/releases/` directory for future reference and audit trails.
-
----
-
-**Test Date:** ___________________________  
-**Tested By:** ___________________________  
-**Test Start Time:** ___________________________  
-**Test End Time:** ___________________________  
+**Test Date:** February 11, 2026  
+**Tested By:** [To be filled by operator]  
+**Test Start Time:** [To be filled by operator]  
+**Test End Time:** [To be filled by operator]  
 **Target URL:** https://radicaleconomist101-h78.caffeine.xyz  
 **Environment:** Live  
 **Version:** 29  
+
+---
+
+## Instructions for Operator
+
+This report template should be filled out after executing the Version 29 Live smoke test checklist documented in `frontend/docs/live-smoke-test-v29.md`.
+
+**How to use this template:**
+1. Execute each test step from the checklist
+2. Mark PASS or FAIL for each section
+3. Record observed results (especially for failures)
+4. Capture console errors when failures occur
+5. Complete the final summary and sign-off
 
 ---
 

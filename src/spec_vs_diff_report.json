@@ -1,73 +1,41 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T00:47:10.186Z",
-  "summary": "Diff includes significant changes beyond a frontend-only Version 29 Live publish workflow, including backend canister code modifications and apparent new/expanded frontend functionality and documentation/scripts. Key REQ-4/REQ-5 acceptance evidence is incomplete or not present in the diff summary (e.g., exact deploy command and proof of completed smoke test).",
+  "generatedAt": "2026-02-11T01:19:54.639Z",
+  "summary": "The diff implements a documented, frontend-only rollback-to-v35 workflow (docs + scripts), preserves Live publish guardrails via strict Version 29 enforcement while adding a separate rollback/testing path, and fixes the Draft v36 catalog regression by switching Catalog to use `useGetAllBooks()` plus explicit user-visible error rendering. A minimal manual regression checklist document is also added. However, the request mentions catalog/library UI; only the Catalog page change is evidenced in the diff. The diff also includes unrequested UI/footer marketing/support additions.",
   "missing_requirements": [
     {
-      "id": "REQ-4",
-      "requirement": "Publish workflow blocks immediately if frontend/VERSION is not exactly '29'.",
-      "reason": "The diff shows new/updated enforcement scripts, but does not show the actual content of frontend/VERSION or any change confirming it contains exactly '29'. The requirement explicitly constrains that file content, and the diff summary does not include it.",
+      "id": "REQ-3",
+      "requirement": "Fix the regression that prevents previously uploaded books from being visible in the catalog/library UI (not just catalog).",
+      "reason": "The diff shows a fix on `frontend/src/pages/CatalogPage.tsx` (switch to `useGetAllBooks()` and add error UI), but provides no evidence of any corresponding fix in the Library/MyLibrary UI components/pages. Since the requirement explicitly calls out catalog/library UI, coverage for the library side is not evidenced.",
       "evidence": [
-        "frontend/scripts/enforce-version-29.sh",
-        "frontend/scripts/deployment-preflight.sh",
-        "frontend/scripts/publish-live.sh"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "The publish workflow deploys only the frontend canister to the IC network using `dfx deploy frontend --network ic` and does not deploy/reinstall the backend canister.",
-      "reason": "frontend/scripts/publish-live.sh is truncated before the actual deployment command is shown, so the diff summary does not provide evidence that it runs exactly `dfx deploy frontend --network ic` (and only that).",
-      "evidence": [
-        "frontend/scripts/publish-live.sh (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "After publishing, complete the manual Live smoke test checklist for Version 29 and capture any failures per frontend/docs/live-smoke-test-v29.md.",
-      "reason": "The diff adds/updates the checklist and a report template, but provides no filled-out results/report demonstrating the smoke test was actually completed against the Live URL with pass/fail outcomes and captured issues.",
-      "evidence": [
-        "frontend/docs/live-smoke-test-v29.md (truncated)",
-        "frontend/docs/live-smoke-test-v29-report-template.md (truncated)"
+        "frontend/src/pages/CatalogPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Backend canister code changes were made despite the requirement/constraint that the Live publish must be frontend-only and must not deploy/modify/reinstall the backend canister or its state.",
-      "reason": "The diff explicitly modifies backend/main.mo, which constitutes backend code modification and violates the 'frontend-only' constraint for this publish task.",
+      "description": "Footer changes adding social/contact links, a customer service chat dialog entry point, and caffeine.ai attribution/UTM tracking (beyond a version indicator).",
+      "reason": "BuildRequest focuses on rollback workflow, deployment guardrails, and fixing catalog/library visibility regression. These footer marketing/support/attribution elements are not requested.",
       "evidence": [
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "description": "Added new/expanded frontend application functionality unrelated to publishing Version 29 (e.g., new route /purchase-confirmation/$orderId, enhanced media rendering, KYC/checkout behaviors, animations).",
-      "reason": "BuildRequest non-goals prohibit adding new application features unrelated to publishing Version 29 to Live; the diff summary (via frontend-file-summaries.txt) describes multiple functional enhancements beyond a publish workflow.",
-      "evidence": [
-        "frontend-file-summaries.txt (truncated)"
-      ]
-    },
-    {
-      "description": "Introduced new helper tooling and documentation artifacts (smoke test helper script, smoke test report template, expanded publish docs) that were not explicitly requested as deliverables.",
-      "reason": "REQ-4/REQ-5 focus on executing an existing publish script and completing a manual checklist; the diff includes new supporting files/scripts/templates not requested by the BuildRequest.",
-      "evidence": [
-        "frontend/scripts/live-smoke-test-v29-helper.sh (truncated)",
-        "frontend/docs/live-smoke-test-v29-report-template.md (truncated)",
-        "frontend/docs/publish-live.md"
+        "frontend/src/components/layout/Footer.tsx"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.74,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/docs/live-smoke-test-v29-report-template.md",
+    "frontend/VERSION",
+    "frontend/docs/deployment-preflight.md",
+    "frontend/docs/draft-regression-checks.md",
     "frontend/docs/live-smoke-test-v29.md",
     "frontend/docs/publish-live.md",
-    "frontend/scripts/deployment-preflight.sh",
+    "frontend/docs/rollback-to-v35.md",
     "frontend/scripts/enforce-version-29.sh",
-    "frontend/scripts/live-smoke-test-v29-helper.sh",
-    "frontend/scripts/publish-live.sh",
+    "frontend/scripts/rollback-frontend-v35.sh",
+    "frontend/scripts/rollback-preflight.sh",
+    "frontend/src/components/layout/Footer.tsx",
+    "frontend/src/pages/CatalogPage.tsx",
     "project_state.json"
   ]
 }

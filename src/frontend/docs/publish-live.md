@@ -1,40 +1,67 @@
-# Live Publish Documentation - Version 29 ONLY
+# Publishing to Live Environment
 
-This document describes how to publish Version 29 to the Live production site at `https://radicaleconomist101-h78.caffeine.xyz`.
+## Overview
+This document outlines the process for publishing the BookCoin frontend to the Live production environment with strict version control and safety guardrails.
 
-**🔒 VERSION LOCK**: This workflow is locked to Version 29 only. Any attempt to publish a different version will be blocked immediately.
+## ⚠️ Critical Version Lock Policy
 
-## ⚠️ CRITICAL SAFETY NOTICE
+**ONLY Version 29 can be published to Live.**
 
-**This is a FRONTEND-ONLY deployment workflow.**
+This is enforced by:
+- `frontend/VERSION` must contain exactly "29"
+- `frontend/scripts/enforce-version-29.sh` validates version before any deployment
+- `frontend/scripts/publish-live.sh` checks version as the first gating step
 
-### ✅ What This Workflow Does:
-- Deploys the frontend canister to Live
-- Updates the UI to Version 29
-- Changes environment badge from "Draft" to "Live"
-- Displays "Version 29" in footer
-- Preserves all backend state (books, orders, users, KYC)
+**Do NOT attempt to bypass or modify these version checks.**
 
-### ❌ What This Workflow Does NOT Do:
-- Does NOT deploy or modify the backend canister
-- Does NOT reset or wipe any data
-- Does NOT reinstall canisters
-- Does NOT publish Version 30/31/32 (only Version 29)
+## When to Use Live Publish vs Rollback/Testing
 
-### 🔒 Version Enforcement:
-- Only Version 29 can be published
-- `frontend/VERSION` must contain exactly `29`
-- Any other version will fail immediately before any deployment action
-- No bypass or override mechanism
+### Use Live Publish When:
+- You are deploying the approved Version 29 to production
+- All preflight checks have passed
+- You have completed smoke testing on Draft
+- You are ready for end-users to access the new version
 
-### 🚫 Commands This Workflow Does NOT Execute:
+### Use Rollback/Testing When:
+- You need to deploy an older version (e.g., Version 35) for testing or emergency rollback
+- You are troubleshooting a regression in a draft build
+- You need to restore a previous working version temporarily
 
-The Live publish workflow explicitly does NOT run any of these commands:
-- `dfx deploy backend`
-- `dfx deploy --reinstall`
-- `dfx deploy backend --mode reinstall`
-- `dfx canister install backend --mode reinstall`
-- `dfx canister stop backend`
-- Any command that modifies the backend canister
+**See**: [Rollback to V35 Documentation](./rollback-to-v35.md) for the separate rollback workflow.
 
-**The ONLY deployment command executed is:**
+## Safety Warnings
+
+**This is a FRONTEND-ONLY deployment:**
+- ✅ Deploys frontend canister only
+- ❌ Does NOT deploy backend
+- ❌ Does NOT reinstall backend
+- ❌ Does NOT reset backend state
+- ❌ Does NOT stop backend canister
+
+**All backend data is preserved during Live publish.**
+
+## Prerequisites
+
+1. **Version Validation**:
+   ```bash
+   cat frontend/VERSION
+   # Must output exactly: 29
+   ```
+
+2. **Environment Configuration**:
+   - Verify `frontend/.env.production` contains `VITE_APP_ENV=Live`
+
+3. **Access Requirements**:
+   - Admin access to production environment
+   - Proper dfx identity configured
+   - Network access to Internet Computer mainnet
+
+4. **Pre-Publish Testing**:
+   - Draft version has been tested and verified
+   - All smoke tests passed on Draft environment
+   - No critical bugs or regressions identified
+
+## Live Publish Procedure
+
+### Step 1: Run Preflight Checks
+

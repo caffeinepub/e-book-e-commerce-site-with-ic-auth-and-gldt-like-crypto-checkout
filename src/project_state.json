@@ -3,30 +3,47 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [
-    "User approved publishing/deploying the current build (Version 33) to the public site."
+    "Track and support deployment versioning/rollback so users can revert to a prior stable release when regressions occur."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Regression after deploying Draft Version 36: user cannot see previously uploaded books; user requests revert to version 35."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-publish-the-existing-frontend-version-29-build-to-the-live-public-site-using-the-project-s-version-29-only-frontend-publish-workflow-ensuring-the-deployment-is-frontend-only-and-does-not-deploy-modify-reinstall-the-backend-canister",
-      "title": "Publish the existing frontend Version 29 build to the Live public site using the project’s Version-29-only frontend publish workflow, ensuring the deployment is frontend-only and does not deploy/modify/reinstall the backend canister.",
+      "id": "feature-provide-an-emergency-rollback-workflow-that-deploys-the-previously-known-good-frontend-build-version-35-so-the-user-can-see-the-books-they-already-uploaded-without-deploying-reinstalling-modifying-the-backend-canister-or-backend-state",
+      "title": "Provide an emergency rollback workflow that deploys the previously known-good frontend build (Version 35) so the user can see the books they already uploaded, without deploying/reinstalling/modifying the backend canister or backend state.",
       "reqIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-after-publishing-complete-the-manual-live-smoke-test-checklist-for-version-29-against-https-radicaleconomist101-h78-caffeine-xyz-focusing-on-environment-badge-version-label-catalog-browsing-and-purchase-flow-sanity-checks",
-      "title": "After publishing, complete the manual Live smoke test checklist for Version 29 against https://radicaleconomist101-h78.caffeine.xyz, focusing on environment badge, version label, catalog browsing, and purchase flow sanity checks.",
+      "id": "feature-update-deployment-guardrails-so-that-live-publishing-remains-strictly-locked-as-currently-enforced-while-allowing-controlled-rollback-testing-of-older-frontend-versions-e-g-v35-in-draft-or-an-explicitly-designated-rollback-flow",
+      "title": "Update deployment guardrails so that Live publishing remains strictly locked (as currently enforced), while allowing controlled rollback/testing of older frontend versions (e.g., v35) in Draft or an explicitly designated rollback flow.",
       "reqIds": [
-        "REQ-5"
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-identify-and-fix-the-regression-introduced-in-draft-version-36-that-prevents-previously-uploaded-books-from-being-visible-in-the-catalog-library-ui-and-add-a-minimal-regression-check-so-future-drafts-cannot-ship-with-the-same-failure",
+      "title": "Identify and fix the regression introduced in Draft Version 36 that prevents previously uploaded books from being visible in the catalog/library UI, and add a minimal regression check so future drafts cannot ship with the same failure.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Publish frontend Version 29 to Live (public site)",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Provide a reliable rollback mechanism to revert deployments to a prior version (e.g., revert from v36 to v35)",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Rollback to Version 35 and restore visibility of previously uploaded books",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
